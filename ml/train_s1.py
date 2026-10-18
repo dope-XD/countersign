@@ -8,10 +8,10 @@
 - bf16 autocast, frozen CNN feature encoder, gradient checkpointing, gradient accumulation.
 - Dev EER on a fixed phone-channel copy of the dev split; best checkpoint kept.
 """
+
 from __future__ import annotations
 
 import argparse
-import csv
 import json
 import math
 import random
@@ -36,9 +36,9 @@ def evaluate(model, loader, device) -> tuple[float, float]:
             logp = model(x.to(device)).float()
         scores += torch.exp(logp[:, 0]).cpu().tolist()
         labels += y.tolist()
-    s, l = np.array(scores), np.array(labels) == 1
+    s, is_bona = np.array(scores), np.array(labels) == 1
     model.train()
-    e, thr = eer(s[l], s[~l])
+    e, thr = eer(s[is_bona], s[~is_bona])
     return e, thr
 
 
@@ -65,7 +65,7 @@ def main():
     torch.manual_seed(0)
     model = SLSModel()
     ck = torch.load(a.init, map_location="cpu", weights_only=False)
-    model.load_state_dict(ck["state_dict"] if "state_dict" in ck else ck)
+    model.load_state_dict(ck.get("state_dict", ck))
     model.ssl.freeze_feature_encoder()
     model.checkpointing = True
     model.to(device).train()
@@ -77,8 +77,15 @@ def main():
     print(f"train {len(train_rows)} rows, dev {len(dev_rows)} rows, device {device}")
 
     n_samples = a.steps * a.batch * a.accum
-    train_dl = DataLoader(TrainSet(train_rows), batch_size=a.batch, sampler=BalancedSampler(train_rows, n_samples),
-                          num_workers=a.workers, persistent_workers=a.workers > 0, prefetch_factor=4 if a.workers else None, drop_last=True)
+    train_dl = DataLoader(
+        TrainSet(train_rows),
+        batch_size=a.batch,
+        sampler=BalancedSampler(train_rows, n_samples),
+        num_workers=a.workers,
+        persistent_workers=a.workers > 0,
+        prefetch_factor=4 if a.workers else None,
+        drop_last=True,
+    )
     dev_dl = DataLoader(DevSet(dev_rows), batch_size=16, num_workers=2)
 
     backbone = [p for n, p in model.named_parameters() if n.startswith("ssl.") and p.requires_grad]

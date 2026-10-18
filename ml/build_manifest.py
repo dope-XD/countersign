@@ -9,6 +9,7 @@ Splits keep sources honest:
   train/dev : ASVspoof19 LA train, IndicSynth Hindi, FLEURS hi (bona fide), Kathbath / MLAAD if present
   eval only : ASVspoof19 LA eval, In-the-Wild, and IndiaCall (never used here)
 """
+
 from __future__ import annotations
 
 import csv
@@ -23,6 +24,7 @@ import soundfile as sf
 from tqdm import tqdm
 
 from engine.audio.codec import resample
+from ml.s1_data import read
 
 ROOT = Path(__file__).resolve().parent.parent / "data"
 DS = ROOT / "datasets"
@@ -92,9 +94,17 @@ def build_asv19_train(limit_spoof=8000):
         if x is None or len(x) < 8000:
             continue
         name = r.get("audio_file_name") or f"asv{bona + spoof}"
-        out.append({"path": _write("asv19_train", name, x), "label": "bonafide" if is_bona else "spoof",
-                    "speaker": r.get("speaker_id", ""), "language": "en", "generator": "-" if is_bona else r.get("system_id", ""),
-                    "source": "asv19", "split": ""})
+        out.append(
+            {
+                "path": _write("asv19_train", name, x),
+                "label": "bonafide" if is_bona else "spoof",
+                "speaker": r.get("speaker_id", ""),
+                "language": "en",
+                "generator": "-" if is_bona else r.get("system_id", ""),
+                "source": "asv19",
+                "split": "",
+            }
+        )
         bona += is_bona
         spoof += not is_bona
     return out
@@ -113,9 +123,17 @@ def build_labelled_eval(source: str, limit: int, prefix: str, language: str):
             notes = {}
         label = "bonafide" if int(r["label"]) == 0 else "spoof"
         key = notes.get("utterance_id") or f"{prefix}{i}"
-        out.append({"path": _write(source, str(key).replace("/", "_"), x), "label": label,
-                    "speaker": notes.get("speaker", notes.get("speaker_id", "")), "language": language,
-                    "generator": "", "source": source, "split": "eval"})
+        out.append(
+            {
+                "path": _write(source, str(key).replace("/", "_"), x),
+                "label": label,
+                "speaker": notes.get("speaker", notes.get("speaker_id", "")),
+                "language": language,
+                "generator": "",
+                "source": source,
+                "split": "eval",
+            }
+        )
     return out
 
 
@@ -125,9 +143,17 @@ def build_indicsynth(limit=6000):
         x = _decode(r["audio"])
         if x is None or len(x) < 8000:
             continue
-        out.append({"path": _write("indicsynth_hi", f"is{i}", x), "label": "spoof",
-                    "speaker": str(r.get("Target Speaker ID", "")), "language": "hi",
-                    "generator": str(r.get("Generative Model", "")), "source": "indicsynth", "split": ""})
+        out.append(
+            {
+                "path": _write("indicsynth_hi", f"is{i}", x),
+                "label": "spoof",
+                "speaker": str(r.get("Target Speaker ID", "")),
+                "language": "hi",
+                "generator": str(r.get("Generative Model", "")),
+                "source": "indicsynth",
+                "split": "",
+            }
+        )
     return out
 
 
@@ -137,9 +163,17 @@ def build_bona_parquet(source: str, limit: int, language: str, speaker_col: str 
         x = _decode(r.get("audio"))
         if x is None or len(x) < 8000:
             continue
-        out.append({"path": _write(source, f"{source}{i}", x), "label": "bonafide",
-                    "speaker": str(r.get(speaker_col, "")) if speaker_col else f"{source}{r.get('id', i)}",
-                    "language": language, "generator": "-", "source": source, "split": ""})
+        out.append(
+            {
+                "path": _write(source, f"{source}{i}", x),
+                "label": "bonafide",
+                "speaker": str(r.get(speaker_col, "")) if speaker_col else f"{source}{r.get('id', i)}",
+                "language": language,
+                "generator": "-",
+                "source": source,
+                "split": "",
+            }
+        )
     return out
 
 
@@ -151,8 +185,17 @@ def build_mlaad(limit=3000):
         x, sr = sf.read(p, dtype="float32", always_2d=True)
         x = resample(x.mean(axis=1), sr, 16000)[: int(MAX_S * 16000)]
         gen = p.parent.name
-        out.append({"path": _write("mlaad_hi", f"{gen}_{p.stem}"[:120], x), "label": "spoof", "speaker": "",
-                    "language": "hi", "generator": gen, "source": "mlaad", "split": ""})
+        out.append(
+            {
+                "path": _write("mlaad_hi", f"{gen}_{p.stem}"[:120], x),
+                "label": "spoof",
+                "speaker": "",
+                "language": "hi",
+                "generator": gen,
+                "source": "mlaad",
+                "split": "",
+            }
+        )
     return out
 
 
@@ -162,7 +205,10 @@ def split_train_dev(rows: list[dict], dev_frac=0.1, seed=0):
     rng = random.Random(seed)
     for src in sorted({r["source"] for r in rows}):
         sub = [r for r in rows if r["source"] == src]
-        key = lambda r: r["speaker"] or r["generator"] or r["path"]
+
+        def key(r: dict) -> str:
+            return r["speaker"] or r["generator"] or r["path"]
+
         groups = sorted({key(r) for r in sub})
         rng.shuffle(groups)
         size = {g: 0 for g in groups}
@@ -193,7 +239,7 @@ if __name__ == "__main__":
     import sys
 
     if "--resplit" in sys.argv:
-        pool = [r for n in ("train", "dev") for r in csv.DictReader(open(MAN / f"{n}.csv", encoding="utf-8"))]
+        pool = [r for n in ("train", "dev") for r in read(MAN / f"{n}.csv")]
         pool = split_train_dev(pool)
         write("train", [r for r in pool if r["split"] == "train"])
         write("dev", [r for r in pool if r["split"] == "dev"])

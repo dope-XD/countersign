@@ -1,19 +1,29 @@
 """Fraud cases, encrypted evidence clips and reporting (NCRP/1930, DoT DIP)."""
+
 from __future__ import annotations
 
-import hashlib
 import io
 import os
 import secrets
 import time
 import wave
+from pathlib import Path
 
 import numpy as np
 from cryptography.hazmat.primitives.ciphers.aead import AESGCM
 
+from engine.audio.codec import resample
 from engine.config import settings
 from engine.db import db, new_id
+from engine.fingerprint import replay_index
 from engine.hub import hub
+
+OUTCOMES = ("fraud_confirmed", "false_alarm", "callback")
+
+
+class CaseError(Exception):
+    pass
+
 
 EVIDENCE_DIR = settings.runtime_dir / "evidence"
 EVIDENCE_DIR.mkdir(parents=True, exist_ok=True)
@@ -39,9 +49,16 @@ def _wav_bytes(x: np.ndarray, sr: int) -> bytes:
     return buf.getvalue()
 
 
-def store_clip(case_id: str, audio16k: np.ndarray) -> str:
+def _wav_samples(wav: bytes) -> tuple[np.ndarray, int]:
+    with wave.open(io.BytesIO(wav)) as w:
+        sr = w.getframerate()
+        pcm = np.frombuffer(w.readframes(w.getnframes()), dtype=np.int16)
+    return pcm.astype(np.float32) / 32768.0, sr
+
+
+def store_clip(case_id: str, audio: np.ndarray, sr: int) -> str:
     nonce = os.urandom(12)
-    ct = AESGCM(_key()).encrypt(nonce, _wav_bytes(audio16k, 16000), case_id.encode())
+    ct = AESGCM(_key()).encrypt(nonce, _wav_bytes(audio, sr), case_id.encode())
     path = EVIDENCE_DIR / f"{case_id}.bin"
     path.write_bytes(nonce + ct)
     return str(path)
@@ -51,26 +68,23 @@ def read_clip(case_id: str, actor: str) -> bytes:
     c = db.get("cases", case_id)
     if not c or not c.get("clip_path") or not os.path.exists(c["clip_path"]):
         raise FileNotFoundError("no clip")
-    blob = open(c["clip_path"], "rb").read()
+    blob = Path(c["clip_path"]).read_bytes()
     db.audit(actor, "clip_played", case_id)  # every play is logged
     return AESGCM(_key()).decrypt(blob[:12], blob[12:], case_id.encode())
 
 
-def audio_hash(audio16k: np.ndarray) -> str:
-    """Coarse hash added to the replay list on confirmed fraud."""
-    x = audio16k[: 16000 * 4]
-    x = x[: len(x) // 400 * 400]
-    if len(x) < 800:
-        return ""
-    spec = np.abs(np.fft.rfft(x.reshape(-1, 400) * np.hanning(400), axis=1))
-    bands = spec[:, 5:150].reshape(spec.shape[0], -1, 5).mean(axis=2)
-    bits = (np.diff(bands, axis=1) > 0).astype(np.uint8)
-    return hashlib.sha256(np.packbits(bits).tobytes()).hexdigest()[:32]
-
-
-def open_case(*, channel: str, customer_id: str | None, call_id: str | None = None, request_id: str | None = None,
-              tier: str | None = None, reasons: list[str] | None = None, scores: dict | None = None,
-              model_version: str | None = None, event: str = "opened") -> dict:
+def open_case(
+    *,
+    channel: str,
+    customer_id: str | None,
+    call_id: str | None = None,
+    request_id: str | None = None,
+    tier: str | None = None,
+    reasons: list[str] | None = None,
+    scores: dict | None = None,
+    model_version: str | None = None,
+    event: str = "opened",
+) -> dict:
     existing = None
     if call_id:
         existing = next(iter(db.query("SELECT * FROM cases WHERE call_id=? AND status='open'", [call_id])), None)
@@ -90,12 +104,26 @@ def open_case(*, channel: str, customer_id: str | None, call_id: str | None = No
         add_event(existing["id"], event, tier=tier, reasons=reasons)
         return db.get("cases", existing["id"])
     cid = new_id("case")
-    db.insert("cases", {
-        "id": cid, "call_id": call_id, "request_id": request_id, "customer_id": customer_id, "channel": channel,
-        "opened_at": time.time(), "status": "open", "tier": tier, "reasons": reasons or [], "scores": scores or {},
-        "model_version": model_version, "timeline": [{"t": time.time(), "event": event, "tier": tier, "reasons": reasons}],
-        "clip_path": None, "clip_expires": None, "outcome": None,
-    })
+    db.insert(
+        "cases",
+        {
+            "id": cid,
+            "call_id": call_id,
+            "request_id": request_id,
+            "customer_id": customer_id,
+            "channel": channel,
+            "opened_at": time.time(),
+            "status": "open",
+            "tier": tier,
+            "reasons": reasons or [],
+            "scores": scores or {},
+            "model_version": model_version,
+            "timeline": [{"t": time.time(), "event": event, "tier": tier, "reasons": reasons}],
+            "clip_path": None,
+            "clip_expires": None,
+            "outcome": None,
+        },
+    )
     db.audit("system", "case_opened", cid, channel=channel, tier=tier)
     hub.publish("desk", {"type": "case", "case": db.get("cases", cid)})
     return db.get("cases", cid)
@@ -111,20 +139,25 @@ def add_event(case_id: str, event: str, **detail) -> None:
     hub.publish("desk", {"type": "case", "case": db.get("cases", case_id)})
 
 
-def attach_clip(case_id: str, audio16k: np.ndarray) -> None:
+def attach_clip(case_id: str, audio: np.ndarray, sr: int) -> None:
     c = db.get("cases", case_id)
-    if not c or c.get("clip_path"):
+    if not c or c.get("clip_path") or not len(audio):
         return
-    path = store_clip(case_id, audio16k[-int(settings.evidence_seconds * 16000):])
+    audio = audio[-int(settings.evidence_seconds * sr) :]
+    path = store_clip(case_id, audio, sr)
     db.update("cases", case_id, {"clip_path": path, "clip_expires": time.time() + settings.evidence_retention_days * 86400})
-    add_event(case_id, "evidence_clip_encrypted", seconds=round(min(len(audio16k) / 16000, settings.evidence_seconds), 1))
+    add_event(case_id, "evidence_clip_encrypted", seconds=round(len(audio) / sr, 1))
 
 
 def resolve(case_id: str, outcome: str, analyst: str, note: str = "") -> dict:
     """outcome: fraud_confirmed | false_alarm | callback"""
     c = db.get("cases", case_id)
     if not c:
-        raise KeyError(case_id)
+        raise CaseError("no such case")
+    if outcome not in OUTCOMES:
+        raise CaseError(f"outcome must be one of {', '.join(OUTCOMES)}")
+    if c["status"] == "closed":
+        raise CaseError(f"case already closed as {c['outcome']}")
     status = "closed" if outcome in ("fraud_confirmed", "false_alarm") else "open"
     db.update("cases", case_id, {"outcome": outcome, "status": status})
     add_event(case_id, outcome, analyst=analyst, note=note or None)
@@ -134,13 +167,10 @@ def resolve(case_id: str, outcome: str, analyst: str, note: str = "") -> dict:
         if (c.get("scores") or {}).get("caller_cli"):
             _report(case_id, "dot_dip", {"number": c["scores"]["caller_cli"], "category": "financial fraud"})
         if c.get("clip_path"):
-            try:
-                raw = read_clip(case_id, analyst)
-                pcm = np.frombuffer(raw[44:], dtype=np.int16).astype(np.float32) / 32768
-                db.execute("INSERT OR IGNORE INTO replay_hashes (hash, case_id, created_at) VALUES (?,?,?)",
-                           [audio_hash(pcm), case_id, time.time()])
-            except Exception:
-                pass
+            # remember the clip's fingerprint so a replay of it on any later call is flagged
+            x, sr = _wav_samples(read_clip(case_id, "system:replay-index"))
+            n = replay_index.add(case_id, resample(x, sr, 8000))
+            add_event(case_id, "added_to_replay_list", landmarks=n)
     if status == "closed" and c.get("clip_path") and outcome == "false_alarm":
         purge_clip(case_id, "case closed as false alarm")
     return db.get("cases", case_id)

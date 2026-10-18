@@ -3,6 +3,7 @@
 Topics: "call:<id>" (agent consoles on a call), "desk" (fraud desk), "app:<customer>"
 (that customer's phone), "demo" (operator panel), "calls" (list of live calls).
 """
+
 from __future__ import annotations
 
 import asyncio
@@ -35,10 +36,9 @@ class Hub:
 
     def publish(self, topic: str, event: dict[str, Any]) -> None:
         """Safe to call from any thread."""
-        event = {"topic": topic, "ts": time.time(), **event}
-        msg = json.dumps(event, default=str)
-        if self.loop is None:
-            return
+        if self.loop is None or self.loop.is_closed():
+            return  # no app running (scripts, tests, shutdown): nobody to tell
+        msg = json.dumps({"topic": topic, "ts": time.time(), **event}, default=str)
         try:
             running = asyncio.get_running_loop()
         except RuntimeError:

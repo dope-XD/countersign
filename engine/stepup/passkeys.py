@@ -4,11 +4,13 @@ The approval challenge is SHA-256 over the exact request summary shown on the ph
 so the signature proves the customer approved *that* change, on a device the caller
 doesn't hold. A cloned voice cannot produce it.
 """
+
 from __future__ import annotations
 
 import hashlib
 import json
 import os
+import sqlite3
 import time
 
 from webauthn import (
@@ -19,6 +21,7 @@ from webauthn import (
     verify_registration_response,
 )
 from webauthn.helpers import base64url_to_bytes, bytes_to_base64url
+from webauthn.helpers.exceptions import WebAuthnException
 from webauthn.helpers.structs import (
     AuthenticatorSelectionCriteria,
     PublicKeyCredentialDescriptor,
@@ -39,14 +42,25 @@ class StepUpError(Exception):
     pass
 
 
+LOCAL_HOSTS = ("localhost", "127.0.0.1")
+
+
 def _rp_id(host: str | None) -> str:
-    return settings.rp_id if settings.rp_id != "auto" or not host else host.split(":")[0]
+    if settings.rp_id != "auto":
+        return settings.rp_id
+    if not host:
+        raise StepUpError("cannot work out the passkey domain for this request")
+    return host.split(":")[0]
 
 
-def _origins(origin: str | None) -> list[str]:
+def _origins(host: str | None) -> list[str]:
+    """Origins a signature may come from. In auto mode they are derived from the same Host
+    the RP ID comes from, never echoed from the request's Origin header."""
     allowed = list(settings.origins)
-    if settings.rp_id == "auto" and origin:
-        allowed.append(origin)
+    if settings.rp_id == "auto" and host:
+        allowed.append(f"https://{host}")
+        if host.split(":")[0] in LOCAL_HOSTS:
+            allowed.append(f"http://{host}")
     return allowed
 
 
@@ -76,33 +90,55 @@ def registration_options(customer_id: str, host: str | None = None) -> str:
     return options_to_json(opts)
 
 
-def verify_registration(customer_id: str, credential: dict, device_label: str, host: str | None, origin: str | None) -> dict:
+def verify_registration(customer_id: str, credential: dict, device_label: str, host: str | None) -> dict:
     ch = _reg_challenges.pop(customer_id, None)
     if ch is None or time.time() - ch[1] > 300:
         raise StepUpError("enrolment expired, try again")
-    v = verify_registration_response(
-        credential=credential,
-        expected_challenge=ch[0],
-        expected_rp_id=_rp_id(host),
-        expected_origin=_origins(origin),
-        require_user_verification=True,
-    )
+    try:
+        v = verify_registration_response(
+            credential=credential,
+            expected_challenge=ch[0],
+            expected_rp_id=_rp_id(host),
+            expected_origin=_origins(host),
+            require_user_verification=True,
+        )
+    except WebAuthnException as e:
+        db.audit("stepup", "enrol_rejected", customer_id, error=str(e))
+        raise StepUpError(f"passkey could not be verified: {e}") from e
     cred_id = bytes_to_base64url(v.credential_id)
-    db.insert(
-        "credentials",
-        {
-            "id": cred_id, "customer_id": customer_id, "public_key": v.credential_public_key,
-            "sign_count": v.sign_count, "transports": credential.get("response", {}).get("transports") or [],
-            "device_label": device_label[:80], "created_at": time.time(),
-        },
-    )
+    try:
+        db.insert(
+            "credentials",
+            {
+                "id": cred_id,
+                "customer_id": customer_id,
+                "public_key": v.credential_public_key,
+                "sign_count": v.sign_count,
+                "transports": credential.get("response", {}).get("transports") or [],
+                "device_label": device_label[:80],
+                "created_at": time.time(),
+            },
+        )
+    except sqlite3.IntegrityError as e:
+        raise StepUpError("this passkey is already registered") from e
     db.audit(customer_id, "passkey_enrolled", cred_id, device=device_label[:80])
     return {"credential_id": cred_id}
 
 
 def credentials(customer_id: str) -> list[dict]:
-    rows = db.query("SELECT id, device_label, created_at FROM credentials WHERE customer_id=?", [customer_id])
-    return rows
+    return db.query("SELECT id, device_label, created_at FROM credentials WHERE customer_id=?", [customer_id])
+
+
+def is_open(aid: str) -> bool:
+    """Still waiting for the customer (pending and not past its time limit)."""
+    a = db.get("approvals", aid)
+    return bool(a) and a["status"] == "pending" and time.time() - a["created_at"] <= APPROVAL_TTL
+
+
+def expire(aid: str) -> None:
+    a = db.get("approvals", aid)
+    if a and a["status"] == "pending":
+        db.update("approvals", aid, {"status": "expired", "decided_at": time.time()})
 
 
 def remove_credentials(customer_id: str) -> None:
@@ -125,9 +161,16 @@ def request_approval(request_id: str, target_customer: str, kind: str, summary: 
     db.insert(
         "approvals",
         {
-            "id": aid, "request_id": request_id, "kind": kind, "target_customer": target_customer,
-            "challenge": bytes_to_base64url(challenge), "summary": summary, "status": "pending",
-            "created_at": time.time(), "decided_at": None, "credential_id": None,
+            "id": aid,
+            "request_id": request_id,
+            "kind": kind,
+            "target_customer": target_customer,
+            "challenge": bytes_to_base64url(challenge),
+            "summary": summary,
+            "status": "pending",
+            "created_at": time.time(),
+            "decided_at": None,
+            "credential_id": None,
         },
     )
     db.audit("stepup", "approval_requested", aid, request_id=request_id, kind=kind, target=target_customer)
@@ -167,7 +210,7 @@ def assertion_options(aid: str, host: str | None) -> str:
     return options_to_json(opts)
 
 
-def decide(aid: str, decision: str, credential: dict | None, host: str | None, origin: str | None) -> dict:
+def decide(aid: str, decision: str, credential: dict | None, host: str | None) -> dict:
     """decision 'approve' needs a valid passkey assertion over this approval's challenge.
     'decline' needs none: anyone holding the phone may refuse."""
     a = db.get("approvals", aid)
@@ -176,7 +219,7 @@ def decide(aid: str, decision: str, credential: dict | None, host: str | None, o
     if a["status"] != "pending":
         raise StepUpError(f"already {a['status']}")
     if time.time() - a["created_at"] > APPROVAL_TTL:
-        db.update("approvals", aid, {"status": "expired", "decided_at": time.time()})
+        expire(aid)
         raise StepUpError("approval expired")
     cred_id = None
     if decision == "approve":
@@ -187,15 +230,19 @@ def decide(aid: str, decision: str, credential: dict | None, host: str | None, o
         if row is None or row["customer_id"] != a["target_customer"]:
             db.audit("stepup", "approval_bad_credential", aid)
             raise StepUpError("this passkey is not registered to the account")
-        v = verify_authentication_response(
-            credential=credential,
-            expected_challenge=base64url_to_bytes(a["challenge"]),
-            expected_rp_id=_rp_id(host),
-            expected_origin=_origins(origin),
-            credential_public_key=row["public_key"],
-            credential_current_sign_count=row["sign_count"],
-            require_user_verification=True,
-        )
+        try:
+            v = verify_authentication_response(
+                credential=credential,
+                expected_challenge=base64url_to_bytes(a["challenge"]),
+                expected_rp_id=_rp_id(host),
+                expected_origin=_origins(host),
+                credential_public_key=row["public_key"],
+                credential_current_sign_count=row["sign_count"],
+                require_user_verification=True,
+            )
+        except WebAuthnException as e:
+            db.audit("stepup", "approval_bad_signature", aid, error=str(e))
+            raise StepUpError(f"signature could not be verified: {e}") from e
         db.execute("UPDATE credentials SET sign_count=? WHERE id=?", [v.new_sign_count, cred_id])
         status = "approved"
     elif decision == "decline":

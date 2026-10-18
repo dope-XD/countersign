@@ -3,7 +3,8 @@ import { api, wsUrl } from '../lib/api'
 import { useEvents, usePoll } from '../lib/events'
 import { PhoneAudio } from '../lib/phoneAudio'
 import { ACTIONS, REQ_LABEL, clock, inr, maskPhone, type BankRequest, type Call, type Tier } from '../lib/types'
-import { Dot, Spark, TierPill, TierText, TopBar, useToast } from '../components/ui'
+import { Dot, Spark, TierPill, TierText, TopBar } from '../components/ui'
+import { useToast } from '../lib/useToast'
 
 type LiveCall = { id: string; caller_cli: string; status: string; tier: Tier | null; language: string; started: number; customer_id: string | null }
 
@@ -19,11 +20,13 @@ const CUSTOMERS = [
   { id: 'sunita', name: 'Sunita Sharma' },
 ]
 
-function missing(r: BankRequest): string[] {
-  const now = Date.now() / 1000
-  return Object.entries(r.policy.reqs)
-    .filter(([k, s]) => (k === 'cooloff_24h' ? !(s.until || r.cooloff_until) || now < (s.until || r.cooloff_until || 0) : !['met', 'waived', 'replaced'].includes(s.status)))
-    .map(([k]) => k)
+const APPROVAL_TTL_S = 300 // must match engine/stepup/passkeys.py
+
+/** App approval can be (re)sent: never sent, or the last one expired unanswered. */
+function canSendApproval(r: BankRequest): boolean {
+  const s = r.policy.reqs.app_approval
+  if (!s || r.status !== 'open') return false
+  return s.status === 'pending' || (s.status === 'sent' && Date.now() / 1000 - (s.at || 0) > APPROVAL_TTL_S)
 }
 
 export default function Agent() {
@@ -178,7 +181,7 @@ function CallView({ call, raw, act, audioOn, startAudio, stopAudio, onClose }: {
   const tier = call.tier
   const elapsed = call.status === 'ended' ? call.elapsed : Date.now() / 1000 - call.started
   const openReqs = call.requests.filter((r) => r.status === 'open')
-  const nextReq = openReqs.map((r) => missing(r)).flat()[0]
+  const nextReq = openReqs.flatMap((r) => r.missing)[0]
   const script = tier === 'RED' && openReqs.some((r) => r.policy.risk === 'high') ? SCRIPT.app_approval : nextReq ? SCRIPT[nextReq] : null
   const updated = v ? Math.max(0, Math.round(Date.now() / 1000 - v.updated)) : null
   const highRed = tier === 'RED'
@@ -290,9 +293,9 @@ function CallView({ call, raw, act, audioOn, startAudio, stopAudio, onClose }: {
               <div className="mt-4 flex flex-wrap gap-2">
                 <button
                   className="btn-primary"
-                  disabled={!openReqs.some((r) => r.policy.reqs.app_approval?.status === 'pending')}
+                  disabled={!openReqs.some(canSendApproval)}
                   onClick={() => {
-                    const r = openReqs.find((x) => x.policy.reqs.app_approval?.status === 'pending')
+                    const r = openReqs.find(canSendApproval)
                     if (r) act(() => api.post(`/api/requests/${r.id}/send-approval`), 'Approval sent to the registered phone')
                   }}
                 >
@@ -361,7 +364,7 @@ function LivenessPanel({ call, act }: { call: Call; act: (fn: () => Promise<unkn
 }
 
 function RequestCard({ r, call, act }: { r: BankRequest; call: Call; act: (fn: () => Promise<unknown>, ok?: string) => Promise<void> }) {
-  const miss = missing(r)
+  const miss = r.missing
   const label = ACTIONS[r.action]?.label || r.action
   const statusTone = r.status === 'executed' ? 'text-green' : r.status === 'open' ? 'text-ink' : 'text-red'
   return (
@@ -389,7 +392,7 @@ function RequestCard({ r, call, act }: { r: BankRequest; call: Call; act: (fn: (
                 </span>
                 {REQ_LABEL[k] || k}
                 <span className="text-xs text-muted">
-                  {s.status === 'sent' && 'waiting for the customer…'}
+                  {s.status === 'sent' && (canSendApproval(r) ? 'no answer, approval expired' : 'waiting for the customer…')}
                   {s.status === 'waived' && 'overridden'}
                   {s.status === 'replaced' && 'replaced by app approval'}
                   {k === 'cooloff_24h' && (s.until ? `until ${new Date(s.until * 1000).toLocaleString()}` : 'starts after app approval')}
@@ -407,8 +410,10 @@ function RequestCard({ r, call, act }: { r: BankRequest; call: Call; act: (fn: (
                   {k === 'liveness' && s.status === 'pending' && (
                     <button className="btn-ghost px-2 py-1 text-xs" onClick={() => act(() => api.post(`/api/requests/${r.id}/decline-voice-check`), 'Switched to app approval')}>Customer declines voice check</button>
                   )}
-                  {k === 'app_approval' && s.status === 'pending' && (
-                    <button className="btn-primary px-2 py-1 text-xs" onClick={() => act(() => api.post(`/api/requests/${r.id}/send-approval`), 'Approval sent')}>Send</button>
+                  {k === 'app_approval' && canSendApproval(r) && (
+                    <button className="btn-primary px-2 py-1 text-xs" onClick={() => act(() => api.post(`/api/requests/${r.id}/send-approval`), 'Approval sent')}>
+                      {s.status === 'sent' ? 'Resend' : 'Send'}
+                    </button>
                   )}
                   {k === 'fraud_desk' && s.status === 'pending' && !call.case_id && (
                     <button className="btn-outline px-2 py-1 text-xs" onClick={() => act(() => api.post(`/api/calls/${call.id}/transfer`), 'Sent to fraud desk')}>Transfer</button>

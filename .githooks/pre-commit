@@ -1,0 +1,24 @@
+#!/bin/sh
+# Countersign pre-commit: lint and test what you are committing.
+# Enable once per clone:  git config core.hooksPath .githooks
+# Skip in an emergency:   git commit --no-verify   (then run .\check.ps1 before pushing)
+set -e
+root=$(git rev-parse --show-toplevel)
+cd "$root"
+py=".venv/Scripts/python.exe"
+[ -x "$py" ] || py=".venv/bin/python"
+
+staged=$(git diff --cached --name-only --diff-filter=ACMR)
+
+if echo "$staged" | grep -qE '^(engine|ml)/.*\.py$'; then
+  echo "pre-commit: ruff"
+  "$py" -m ruff check engine ml
+  "$py" -m ruff format --check engine ml
+  echo "pre-commit: pytest"
+  "$py" -m pytest -q -x
+fi
+
+if echo "$staged" | grep -qE '^web/'; then
+  echo "pre-commit: eslint + typecheck"
+  (cd web && npx eslint . --max-warnings 0 && npx tsc -b)
+fi

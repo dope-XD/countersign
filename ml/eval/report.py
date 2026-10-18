@@ -1,7 +1,8 @@
 """Merge benchmark and IndiaCall results into models/metrics.json for the metrics page.
 
-    python -m ml.eval.report --indiacall test
+python -m ml.eval.report --indiacall test
 """
+
 from __future__ import annotations
 
 import argparse
@@ -34,8 +35,15 @@ def indiacall_section(run: str) -> dict | None:
     levels = []
     for lvl, desc in LEVELS.items():
         rs = [r for r in att if r["plan"]["level"] == lvl]
-        levels.append({"level": lvl, "description": desc, "calls": len(rs), "approved": sum(r["executed"] for r in rs),
-                       "tiers": dict(Counter(r["final_tier"] or "none" for r in rs))})
+        levels.append(
+            {
+                "level": lvl,
+                "description": desc,
+                "calls": len(rs),
+                "approved": sum(r["executed"] for r in rs),
+                "tiers": dict(Counter(r["final_tier"] or "none" for r in rs)),
+            }
+        )
 
     overall = len(stepped) / len(gen) if gen else 0.0
     fairness = []
@@ -53,30 +61,72 @@ def indiacall_section(run: str) -> dict | None:
     misses = []
     for r in att:
         if r["final_tier"] != "RED":
-            misses.append({"id": r["plan"]["id"], "level": r["plan"]["level"], "language": LANG.get(r["language"], r["language"]),
-                           "tier": r["final_tier"] or "none",
-                           "why": f"generator {r['plan']['generator']}; S1 call score {((r.get('features') or {}).get('s1') or 0):.2f}; liveness {'passed' if (r.get('liveness') or {}).get('passed') else 'failed'}"
-                                  + ("; change was made" if r["executed"] else "; change still blocked by app approval")})
+            misses.append(
+                {
+                    "id": r["plan"]["id"],
+                    "level": r["plan"]["level"],
+                    "language": LANG.get(r["language"], r["language"]),
+                    "tier": r["final_tier"] or "none",
+                    "why": f"generator {r['plan']['generator']}; S1 call score {((r.get('features') or {}).get('s1') or 0):.2f}; liveness {'passed' if (r.get('liveness') or {}).get('passed') else 'failed'}"
+                    + ("; change was made" if r["executed"] else "; change still blocked by app approval"),
+                }
+            )
     for r in stepped:
-        misses.append({"id": r["plan"]["id"], "level": "genuine", "language": LANG.get(r["language"], r["language"]), "tier": r["final_tier"],
-                       "why": "genuine caller given an extra check: " + ", ".join(r.get("reasons") or [])})
+        misses.append(
+            {
+                "id": r["plan"]["id"],
+                "level": "genuine",
+                "language": LANG.get(r["language"], r["language"]),
+                "tier": r["final_tier"],
+                "why": "genuine caller given an extra check: " + ", ".join(r.get("reasons") or []),
+            }
+        )
 
     p95_first = float(np.percentile(first, 95)) if first else None
     targets = [
-        {"name": f"Risky changes approved for attackers L1 to L4", "target": f"0 of {len(att)}", "result": f"{len(approved)} of {len(att)}", "pass": len(approved) == 0},
-        {"name": f"Genuine callers given an extra check ({len(gen)} genuine calls)", "target": "5% or fewer", "result": f"{len(stepped)} ({overall:.0%})", "pass": overall <= 0.05},
-        {"name": "Genuine callers who completed the change with app approval", "target": "all", "result": f"{sum(r['executed'] for r in gen)} of {len(gen)}", "pass": all(r["executed"] for r in gen) if gen else None},
-        {"name": "First tier on the agent's screen (p95)", "target": "within 8 s", "result": f"{p95_first:.1f} s" if p95_first else "—", "pass": (p95_first <= 8.0) if p95_first else None},
+        {
+            "name": "Risky changes approved for attackers L1 to L4",
+            "target": f"0 of {len(att)}",
+            "result": f"{len(approved)} of {len(att)}",
+            "pass": len(approved) == 0,
+        },
+        {
+            "name": f"Genuine callers given an extra check ({len(gen)} genuine calls)",
+            "target": "5% or fewer",
+            "result": f"{len(stepped)} ({overall:.0%})",
+            "pass": overall <= 0.05,
+        },
+        {
+            "name": "Genuine callers who completed the change with app approval",
+            "target": "all",
+            "result": f"{sum(r['executed'] for r in gen)} of {len(gen)}",
+            "pass": all(r["executed"] for r in gen) if gen else None,
+        },
+        {
+            "name": "First tier on the agent's screen (p95)",
+            "target": "within 8 s",
+            "result": f"{p95_first:.1f} s" if p95_first else "—",
+            "pass": (p95_first <= 8.0) if p95_first else None,
+        },
         {"name": "Attack calls flagged RED", "target": "—", "result": f"{sum(r['final_tier'] == 'RED' for r in att)} of {len(att)}", "pass": None},
     ]
     worst = max((f["fpr"] for f in fairness if not f["group"].startswith("Speaker")), default=0)
-    targets.append({"name": "False alarms per language vs overall", "target": "under 2× overall", "result": f"worst {worst:.0%} vs {overall:.0%}",
-                    "pass": (worst <= 2 * overall) if overall > 0 else worst == 0})
+    targets.append(
+        {
+            "name": "False alarms per language vs overall",
+            "target": "under 2× overall",
+            "result": f"worst {worst:.0%} vs {overall:.0%}",
+            "pass": (worst <= 2 * overall) if overall > 0 else worst == 0,
+        }
+    )
     return {
-        "targets": targets, "levels": levels,
+        "targets": targets,
+        "levels": levels,
         "genuine": {"calls": len(gen), "stepped_up": len(stepped), "rate": overall},
         "first_tier_s": {"p50": float(np.median(first)), "p95": p95_first} if first else None,
-        "fairness": fairness, "misses": misses, "errors": len(errors),
+        "fairness": fairness,
+        "misses": misses,
+        "errors": len(errors),
     }
 
 

@@ -34,7 +34,7 @@ Windows caveat: in a single Python process, never import `pyarrow` before `trans
 .\run.ps1
 ```
 
-Open http://localhost:8000/demo. It shows model status, QR codes for phones, scenario switches and exactly what is stored.
+Open http://localhost:8000/demo and enter the staff PIN. The engine log prints it at startup (`Staff PIN for agent console…`); pin your own with `$env:COUNTERSIGN_STAFF_PIN = "…"`. The demo panel shows model status, QR codes for phones, scenario switches and exactly what is stored. Customer pages (`/bank/...`, `/call`) never ask for the PIN.
 
 ## Phones (passkeys and mic need HTTPS)
 
@@ -76,8 +76,10 @@ ngrok's free tier shows an interstitial page on first visit from each browser; t
 | No internet at all | Laptop-only: open everything on `http://localhost:8000` in Chrome; passkeys work on localhost with Windows Hello. |
 | faster-whisper fails on GPU | It falls back to CPU automatically (slower liveness check, still works). |
 
-## Tests
+## Checks
 
 ```powershell
-.venv\Scripts\python -m pytest engine -q
+.\check.ps1
 ```
+
+This runs ruff, the formatter check, pytest (unit and end-to-end API tests, no GPU needed), ESLint, the TypeScript check and the web build. The pre-commit hook (`git config core.hooksPath .githooks`) runs the fast subset on every commit.

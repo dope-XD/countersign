@@ -6,6 +6,7 @@ import Demo from './pages/Demo'
 import FraudDesk from './pages/FraudDesk'
 import Metrics from './pages/Metrics'
 import Record from './pages/Record'
+import StaffGate from './components/StaffGate'
 import { Signature } from './components/ui'
 
 function Home() {
@@ -42,12 +43,12 @@ export default function App() {
     <Routes>
       <Route path="/" element={<Home />} />
       <Route path="/call" element={<Caller />} />
-      <Route path="/agent" element={<Agent />} />
+      <Route path="/agent" element={<StaffGate><Agent /></StaffGate>} />
       <Route path="/bank/:customer" element={<Bank />} />
-      <Route path="/fraud" element={<FraudDesk />} />
-      <Route path="/metrics" element={<Metrics />} />
-      <Route path="/demo" element={<Demo />} />
-      <Route path="/record" element={<Record />} />
+      <Route path="/fraud" element={<StaffGate><FraudDesk /></StaffGate>} />
+      <Route path="/metrics" element={<StaffGate><Metrics /></StaffGate>} />
+      <Route path="/demo" element={<StaffGate><Demo /></StaffGate>} />
+      <Route path="/record" element={<StaffGate><Record /></StaffGate>} />
       <Route path="*" element={<Home />} />
     </Routes>
   )

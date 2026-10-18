@@ -83,7 +83,11 @@ export default function Caller() {
       }
       if (e.type === 'ended') hangup()
     }
-    sock.onclose = () => setState((s) => (s === 'idle' ? s : 'ended'))
+    sock.onerror = () => setErr('Could not reach the bank. Check the connection and try again.')
+    sock.onclose = () => {
+      setState((s) => (s === 'idle' ? s : 'ended'))
+      void a.stop()
+    }
     ws.current = sock
     setState('ringing')
   }

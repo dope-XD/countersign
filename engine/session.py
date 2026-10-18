@@ -1,14 +1,19 @@
 """Call orchestrator: one CallSession per live call.
 
-Caller audio (8 kHz mu-law) -> 20 s ring buffer at 16 kHz -> VAD -> a 4 s window every
-2 s -> S1 + S2 in a worker thread -> fusion with S3 + S4 -> tier + reasons -> agent console.
+Caller audio stays at the 8 kHz line rate the whole way: 8 kHz mu-law -> 20 s ring buffer
+-> VAD. Every 2 s the last 4 s window is upsampled once to 16 kHz and scored by S1 + S2 in
+a worker thread, then fused with S3 + S4 into a tier with reasons for the agent console.
+(Upsampling each 20 ms frame separately adds periodic clicks that look synthetic, so
+resampling happens per window, never per frame.)
 Agent audio is relayed to the caller and used only to time challenge replies.
 """
+
 from __future__ import annotations
 
 import asyncio
 import logging
 import time
+from collections import deque
 from dataclasses import dataclass, field
 
 import numpy as np
@@ -19,6 +24,7 @@ from engine.audio.ring import RingBuffer
 from engine.audio.vad import StreamingVAD
 from engine.config import settings
 from engine.db import db, new_id
+from engine.fingerprint import replay_index
 from engine.fusion import TIERS, fuse
 from engine.hub import hub
 from engine.mocks.world import world
@@ -27,8 +33,11 @@ from engine.signals.s1_synth import detector
 from engine.signals.s2_drift import CallDrift, embedder
 
 log = logging.getLogger(__name__)
-SR = settings.sample_rate
+LINE = settings.line_rate  # 8 kHz: every position in this module is in line-rate samples
+WINDOW = settings.window_samples // 2  # 4 s window at 8 kHz -> exactly window_samples at 16 kHz
+HOP = int(settings.hop_seconds * LINE)
 MIN_WINDOWS_FOR_TIER = 2
+ASR_LANG = {"en": "en", "hi": "hi", "hinglish": "hi"}
 
 
 @dataclass
@@ -52,25 +61,27 @@ class ActiveChallenge:
 
 class Track:
     def __init__(self, keep_audio: bool):
-        self.ring = RingBuffer(settings.buffer_seconds, SR) if keep_audio else None
-        self.vad = StreamingVAD()
+        self.ring = RingBuffer(settings.buffer_seconds, LINE) if keep_audio else None
+        self.vad = StreamingVAD(sample_rate=LINE)
         self.pos = 0
-        self._arrivals: list[tuple[int, float]] = []  # (abs pos, wall time) per frame
+        self._arrivals: deque[tuple[int, float]] = deque(maxlen=400)  # (abs pos, wall time) per frame, ~8 s
 
-    def push(self, mulaw: bytes) -> tuple[np.ndarray, list[tuple[str, int]]]:
-        x = upsample_8k_to_16k(mulaw_decode(mulaw))
+    def push(self, mulaw: bytes) -> list[tuple[str, int]]:
+        x = mulaw_decode(mulaw)
         if self.ring is not None:
             self.ring.write(x)
         self.pos += len(x)
         self._arrivals.append((self.pos, time.time()))
-        self._arrivals = self._arrivals[-400:]
-        return x, self.vad.feed(x)
+        return self.vad.feed(x)
 
     def wall_at(self, pos: int) -> float:
         for p, t in self._arrivals:
             if p >= pos:
-                return t - (p - pos) / SR
+                return t - (p - pos) / LINE
         return time.time()
+
+    def last_wall(self) -> float | None:
+        return self._arrivals[-1][1] if self._arrivals else None
 
 
 @dataclass
@@ -88,88 +99,108 @@ class CallSession:
     challenge: ActiveChallenge | None = None
     liveness: dict | None = None
     tier: str | None = None
+    peak: dict | None = None  # reasons that set the current tier; shown while the live verdict is lower
     verdict: dict | None = None
     request_ids: list[str] = field(default_factory=list)
     case_id: str | None = None
     first_tier_at: float | None = None
-    _next_window_pos: int = int(settings.window_samples)
-    _scoring: bool = False
     caller_rtt: float = 0.0
     replay_match: bool = False
     timeline: list[dict] = field(default_factory=list)
     caller_ws: object = None
     agent_wss: set = field(default_factory=set)
+    _next_window_pos: int = WINDOW
+    _scoring: bool = False
+
+    @property
+    def ended(self) -> bool:
+        return self.status == "ended"
+
+    def _elapsed(self) -> float:
+        return round(time.time() - self.started, 1)
 
     # ------------------------------------------------------------------ audio in
     async def on_caller_audio(self, mulaw: bytes) -> None:
-        if self.status == "ringing":
+        if self.status != "live":
             return
-        x, events = self.caller.push(mulaw)
-        for kind, pos in events:
+        for kind, pos in self.caller.push(mulaw):
             self._on_caller_vad(kind, pos)
         if self.caller.pos >= self._next_window_pos and not self._scoring:
-            self._next_window_pos = self.caller.pos + int(settings.hop_seconds * SR)
-            t0 = self.caller.pos - settings.window_samples
-            if self.caller.vad.voiced_fraction(t0, self.caller.pos) >= settings.min_voiced_fraction:
+            self._next_window_pos = self.caller.pos + HOP
+            if self.caller.vad.voiced_fraction(self.caller.pos - WINDOW, self.caller.pos) >= settings.min_voiced_fraction:
                 self._scoring = True
-                window = self.caller.ring.last(settings.window_samples)
-                asyncio.create_task(self._score(window, self.caller.pos / SR))
+                asyncio.create_task(self._score(self.caller.ring.last(WINDOW), self.caller.pos / LINE))
 
     async def on_agent_audio(self, mulaw: bytes) -> None:
-        _x, events = self.agent.push(mulaw)
-        for kind, pos in events:
-            if kind == "offset" and self.challenge and not self.challenge.done and self.challenge.reply_onset_wall is None:
+        for kind, pos in self.agent.push(mulaw):
+            c = self.challenge
+            if kind == "offset" and c and not c.done and c.reply_onset_wall is None:
                 wall = self.agent.wall_at(pos)
-                if wall > self.challenge.issued_wall:
-                    self.challenge.agent_end_wall = wall
+                if wall > c.issued_wall:
+                    c.agent_end_wall = wall
 
     # ------------------------------------------------------------------ scoring
-    async def _score(self, window: np.ndarray, t: float) -> None:
+    async def _score(self, window8k: np.ndarray, t: float) -> None:
         try:
-            res, emb = await asyncio.to_thread(self._infer, window)
+            res, emb, replay = await asyncio.to_thread(self._infer, window8k)
+            if self.ended:
+                return  # call hung up while scoring: drop the result, audio is already wiped
             drift = self.drift.update(emb)
             self.windows.append(WindowScore(t=t, p=res.p_synthetic, drift=drift, ms=res.ms))
-            hub.publish(f"call:{self.id}", {"type": "window", "t": round(t, 2), "p": round(res.p_synthetic, 4),
-                                            "drift": None if drift is None else round(drift, 4), "ms": round(res.ms, 1)})
-            self._replay_check(window)
+            self.replay_match = self.replay_match or replay
+            hub.publish(
+                f"call:{self.id}",
+                {
+                    "type": "window",
+                    "t": round(t, 2),
+                    "p": round(res.p_synthetic, 4),
+                    "drift": None if drift is None else round(drift, 4),
+                    "ms": round(res.ms, 1),
+                },
+            )
             self.recompute()
         except Exception:
             log.exception("scoring failed on call %s", self.id)
         finally:
             self._scoring = False
 
-    @staticmethod
-    def _infer(window: np.ndarray):
-        res = detector.score([window])[0]
-        emb = embedder.embed([window])[0]
-        return res, emb
-
-    def _replay_check(self, window: np.ndarray) -> None:
-        if self.replay_match:
-            return
-        h = cases.audio_hash(window)
-        if h and db.query("SELECT 1 FROM replay_hashes WHERE hash=?", [h]):
-            self.replay_match = True
+    def _infer(self, window8k: np.ndarray):
+        w16 = upsample_8k_to_16k(window8k)
+        res = detector.score([w16])[0]
+        emb = embedder.embed([w16])[0]
+        replay = False if self.replay_match else replay_index.matches(window8k) is not None
+        return res, emb, replay
 
     def recompute(self) -> None:
-        if len(self.windows) < MIN_WINDOWS_FOR_TIER and not self.liveness:
+        if self.ended:
+            return
+        if len(self.windows) < MIN_WINDOWS_FOR_TIER and not self.liveness and not self.replay_match:
             hub.publish(f"call:{self.id}", {"type": "state", "call": self.public()})
             return
-        recent = [w.p for w in self.windows if w.t >= self.caller.pos / SR - settings.buffer_seconds]
+        now_s = self.caller.pos / LINE
+        recent = [w.p for w in self.windows if w.t >= now_s - settings.buffer_seconds] or [w.p for w in self.windows[-3:]]
         ctx = s4_context.evaluate(self.customer_id, self.caller_cli)
-        v = fuse(recent or [w.p for w in self.windows[-3:]], self.drift.max_recent(), self.liveness, ctx.flags, ctx.info, self.replay_match)
+        v = fuse(recent, self.drift.max_recent(), self.liveness, ctx.flags, ctx.info, self.replay_match)
         prev = self.tier
-        # Tier within a call only rises; a quieter later stretch never clears an earlier alarm.
+        # Within a call the tier only rises: a quieter later stretch never clears an earlier alarm.
         if prev is None or TIERS.index(v.tier) > TIERS.index(prev):
             self.tier = v.tier
+            self.peak = {"reasons": v.reasons, "reason_text": v.reason_text}
             if self.first_tier_at is None:
                 self.first_tier_at = time.time() - self.started
-            self.timeline.append({"t": round(time.time() - self.started, 1), "event": "tier", "tier": v.tier, "reasons": v.reasons})
+            self.timeline.append({"t": self._elapsed(), "event": "tier", "tier": v.tier, "reasons": v.reasons})
             db.audit("engine", "tier_changed", self.id, tier=v.tier, reasons=v.reasons, model=detector.version)
+        shown = v if v.tier == self.tier else None  # live verdict explains the tier only if it matches it
         self.verdict = {
-            "r": round(v.r, 3), "voice_tier": v.voice_tier, "tier": self.tier, "live_tier": v.tier,
-            "reasons": v.reasons, "reason_text": v.reason_text, "features": v.features,
-            "context": {"flags": ctx.flags, **ctx.info}, "context_raised": v.context_raised,
+            "r": round(v.r, 3),
+            "voice_tier": v.voice_tier,
+            "tier": self.tier,
+            "live_tier": v.tier,
+            "reasons": shown.reasons if shown else self.peak["reasons"],
+            "reason_text": shown.reason_text if shown else self.peak["reason_text"],
+            "features": v.features,
+            "context": {"flags": ctx.flags, **ctx.info},
+            "context_raised": v.context_raised,
             "updated": time.time(),
         }
         if prev != self.tier:
@@ -181,98 +212,115 @@ class CallSession:
             try:
                 policy.escalate(rid, self.tier)
             except policy.PolicyError:
-                pass
+                log.warning("could not escalate %s", rid)
         if self.tier == "RED":
             self.ensure_case("tier_red")
-            cases.attach_clip(self.case_id, self.caller.ring.last(int(settings.evidence_seconds * SR)))
+            self.attach_evidence()
+
+    def attach_evidence(self) -> None:
+        if self.case_id and self.caller.ring.total:
+            cases.attach_clip(self.case_id, self.caller.ring.last(int(settings.evidence_seconds * LINE)), LINE)
 
     def ensure_case(self, event: str) -> str:
         v = self.verdict or {}
         c = cases.open_case(
-            channel="contact_centre", customer_id=self.customer_id, call_id=self.id,
-            request_id=self.request_ids[-1] if self.request_ids else None, tier=self.tier,
-            reasons=v.get("reasons"), scores={"r": v.get("r"), **(v.get("features") or {}), "caller_cli": self.caller_cli},
-            model_version=detector.version, event=event,
+            channel="contact_centre",
+            customer_id=self.customer_id,
+            call_id=self.id,
+            request_id=self.request_ids[-1] if self.request_ids else None,
+            tier=self.tier,
+            reasons=v.get("reasons"),
+            scores={"r": v.get("r"), **(v.get("features") or {}), "caller_cli": self.caller_cli},
+            model_version=detector.version,
+            event=event,
         )
         self.case_id = c["id"]
         return c["id"]
 
     # ------------------------------------------------------------------ liveness (S3)
-    def issue_challenge(self, fixed: s3_liveness.Challenge | None = None) -> dict:
+    def issue_challenge(self, fixed: s3_liveness.Challenge | None = None) -> ActiveChallenge:
         ch = fixed or s3_liveness.new_challenge()
         self.challenge = ActiveChallenge(ch=ch, issued_wall=time.time())
-        self.timeline.append({"t": round(time.time() - self.started, 1), "event": "challenge", "kind": ch.kind})
+        self.timeline.append({"t": self._elapsed(), "event": "challenge", "kind": ch.kind})
         db.audit("agent", "challenge_issued", self.id, kind=ch.kind)
-        return {"id": ch.id, "say": ch.say, "kind": ch.kind}
+        return self.challenge
 
     def agent_done_reading(self) -> None:
         """Manual fallback when the agent's mic isn't connected."""
         if self.challenge and not self.challenge.done:
             self.challenge.agent_end_wall = time.time()
 
+    def _agent_mic_live(self) -> bool:
+        last = self.agent.last_wall()
+        return last is not None and time.time() - last < 2.0
+
     def _on_caller_vad(self, kind: str, pos: int) -> None:
         c = self.challenge
         if c is None or c.done:
             return
         if kind == "onset" and c.reply_onset_wall is None:
+            if self._agent_mic_live() and (self.agent.vad.in_speech or c.agent_end_wall is None):
+                return  # the agent is still reading the challenge (or this is its echo)
             wall = self.caller.wall_at(pos)
-            agent_mic_live = self.agent.pos > 0 and time.time() - self.agent.wall_at(self.agent.pos) < 2.0
-            if agent_mic_live and (self.agent.vad.in_speech or c.agent_end_wall is None):
-                return  # agent is still reading the challenge (or echo of it)
-            ref = c.agent_end_wall or c.issued_wall
-            if wall > ref - 0.3:
+            if wall > (c.agent_end_wall or c.issued_wall) - 0.3:
                 c.reply_onset_wall = wall
                 c.reply_onset_pos = pos
         elif kind == "offset" and c.reply_onset_pos is not None and c.reply_end_pos is None:
             c.reply_end_pos = pos
-            asyncio.create_task(self._judge_challenge())
+            asyncio.create_task(self._judge_challenge(c))
 
-    async def check_challenge_timeout(self, seconds: float = 8.0) -> None:
+    async def challenge_timeout(self, c: ActiveChallenge, seconds: float = 10.0) -> None:
         await asyncio.sleep(seconds)
-        c = self.challenge
-        if c and not c.done and c.reply_end_pos is None:
+        if c is self.challenge and not c.done and c.reply_end_pos is None:
             if c.reply_onset_pos is not None:
                 c.reply_end_pos = self.caller.pos
-            await self._judge_challenge()
+            await self._judge_challenge(c)
 
-    async def _judge_challenge(self) -> None:
-        c = self.challenge
-        if c is None or c.done:
+    async def _judge_challenge(self, c: ActiveChallenge) -> None:
+        if c.done or c is not self.challenge or self.ended:
             return
         c.done = True
         lag = None
         reply = np.zeros(0, dtype=np.float32)
         if c.reply_onset_wall is not None:
-            ref = c.agent_end_wall or c.issued_wall
-            lag = max(0.0, c.reply_onset_wall - ref - self.caller_rtt)
-            reply = self.caller.ring.span(c.reply_onset_pos - int(0.2 * SR), c.reply_end_pos or self.caller.pos)
-        lang = {"en": "en", "hi": "hi", "hinglish": "hi"}.get(self.language)
-        text = await asyncio.to_thread(s3_liveness.asr.transcribe, reply, "", lang) if len(reply) else ""
-        match = s3_liveness.content_match(c.ch, text) if s3_liveness.asr.model is not None else 1.0
-        s1_reply = None
-        if len(reply) >= SR:
-            s1_reply = (await asyncio.to_thread(detector.score, [reply]))[0].p_synthetic
+            lag = max(0.0, c.reply_onset_wall - (c.agent_end_wall or c.issued_wall) - self.caller_rtt)
+            reply8 = self.caller.ring.span(c.reply_onset_pos - int(0.2 * LINE), c.reply_end_pos or self.caller.pos)
+            reply = upsample_8k_to_16k(reply8) if len(reply8) else reply
+        if s3_liveness.asr.model is None:
+            match = 1.0  # no ASR loaded: judge on timing and S1 only
+        else:
+            text = await asyncio.to_thread(s3_liveness.asr.transcribe, reply, "", ASR_LANG.get(self.language)) if len(reply) else ""
+            match = s3_liveness.content_match(c.ch, text)  # the transcript itself is not kept
+        s1_reply = (await asyncio.to_thread(detector.score, [reply]))[0].p_synthetic if len(reply) >= 16000 else None
+        if self.ended:
+            return
         res = s3_liveness.judge(c.ch, lag, match, s1_reply)
-        # transcript is discarded here; only pass/fail and timings are kept
-        self.liveness = {"passed": res.passed, "lag_s": None if lag is None else round(lag, 2), "match": round(match, 2),
-                         "s1_reply": None if s1_reply is None else round(s1_reply, 3), "reasons": res.reasons, "kind": c.ch.kind}
+        self.liveness = {
+            "passed": res.passed,
+            "lag_s": None if lag is None else round(lag, 2),
+            "match": round(match, 2),
+            "s1_reply": None if s1_reply is None else round(s1_reply, 3),
+            "reasons": res.reasons,
+            "kind": c.ch.kind,
+        }
         db.audit("engine", "liveness_result", self.id, passed=res.passed, reasons=res.reasons, lag=lag)
-        self.timeline.append({"t": round(time.time() - self.started, 1), "event": "liveness", **self.liveness})
+        self.timeline.append({"t": self._elapsed(), "event": "liveness", **self.liveness})
         for rid in self.request_ids:
             r = policy.get(rid)
-            if "liveness" in r["policy"]["reqs"] and r["policy"]["reqs"]["liveness"]["status"] == "pending":
+            if r["status"] == "open" and r["policy"]["reqs"].get("liveness", {}).get("status") == "pending":
                 policy.mark(rid, "liveness", "met" if res.passed else "failed", by="engine", reasons=res.reasons)
         self.recompute()
         hub.publish(f"call:{self.id}", {"type": "liveness", "result": self.liveness})
 
     # ------------------------------------------------------------------ lifecycle
     def answer(self) -> None:
-        self.status = "live"
-        self.started = time.time()
-        hub.publish("calls", {"type": "calls"})
+        if self.status == "ringing":
+            self.status = "live"
+            self.started = time.time()
+            hub.publish("calls", {"type": "calls"})
 
     def end(self) -> None:
-        if self.status == "ended":
+        if self.ended:
             return
         self.status = "ended"
         if self.customer_id:
@@ -282,21 +330,45 @@ class CallSession:
         self.drift.wipe()
         self.caller.vad.reset()
         self.agent.vad.reset()
-        db.audit("engine", "call_ended", self.id, tier=self.tier, windows=len(self.windows),
-                 first_tier_s=self.first_tier_at, audio_retained=bool(self.case_id and self.tier == "RED"))
+        db.audit(
+            "engine",
+            "call_ended",
+            self.id,
+            tier=self.tier,
+            windows=len(self.windows),
+            first_tier_s=self.first_tier_at,
+            audio_retained=bool(self.case_id and self.tier == "RED"),
+        )
         hub.publish(f"call:{self.id}", {"type": "ended", "call": self.public()})
         hub.publish("calls", {"type": "calls"})
 
+    def audio_seconds_in_memory(self) -> float:
+        return 0.0 if self.ended else round(min(self.caller.ring.total, self.caller.ring.capacity) / LINE, 1)
+
     def public(self) -> dict:
         cust = world.customer(self.customer_id) if self.customer_id else None
+        reqs = []
+        for rid in self.request_ids:
+            r = policy.get(rid)
+            reqs.append({**r, "missing": policy.missing(r)})
+        ch = self.challenge
         return {
-            "id": self.id, "caller_cli": self.caller_cli, "language": self.language, "status": self.status,
-            "customer": cust.__dict__ if cust else None, "started": self.started,
-            "elapsed": round(time.time() - self.started, 1), "tier": self.tier, "verdict": self.verdict,
+            "id": self.id,
+            "caller_cli": self.caller_cli,
+            "language": self.language,
+            "status": self.status,
+            "customer": cust.__dict__ if cust else None,
+            "started": self.started,
+            "elapsed": self._elapsed(),
+            "tier": self.tier,
+            "verdict": self.verdict,
             "windows": [{"t": round(w.t, 2), "p": round(w.p, 3), "drift": w.drift} for w in self.windows[-30:]],
-            "challenge": {"id": self.challenge.ch.id, "say": self.challenge.ch.say, "done": self.challenge.done} if self.challenge else None,
-            "liveness": self.liveness, "requests": [policy.get(r) for r in self.request_ids],
-            "case_id": self.case_id, "first_tier_at": self.first_tier_at, "model": {"s1": detector.backend, "version": detector.version, "s2": embedder.available},
+            "challenge": {"id": ch.ch.id, "say": ch.ch.say, "done": ch.done} if ch else None,
+            "liveness": self.liveness,
+            "requests": reqs,
+            "case_id": self.case_id,
+            "first_tier_at": self.first_tier_at,
+            "model": {"s1": detector.backend, "version": detector.version, "s2": embedder.available},
             "timeline": self.timeline[-30:],
         }
 
@@ -308,9 +380,8 @@ class Calls:
     def create(self, caller_cli: str, language: str) -> CallSession:
         cs = CallSession(id=new_id("call"), caller_cli=caller_cli, language=language)
         self.calls[cs.id] = cs
-        cust = world.by_mobile(caller_cli)
         db.audit("engine", "call_started", cs.id, cli=caller_cli)
-        hub.publish("calls", {"type": "calls", "suggested_customer": cust.id if cust else None})
+        hub.publish("calls", {"type": "calls"})
         return cs
 
     def get(self, cid: str) -> CallSession | None:
@@ -318,14 +389,22 @@ class Calls:
 
     def live(self) -> list[dict]:
         return [
-            {"id": c.id, "caller_cli": c.caller_cli, "status": c.status, "tier": c.tier, "language": c.language,
-             "started": c.started, "customer_id": c.customer_id}
-            for c in self.calls.values() if c.status != "ended"
+            {
+                "id": c.id,
+                "caller_cli": c.caller_cli,
+                "status": c.status,
+                "tier": c.tier,
+                "language": c.language,
+                "started": c.started,
+                "customer_id": c.customer_id,
+            }
+            for c in self.calls.values()
+            if not c.ended
         ]
 
     def prune(self) -> None:
         now = time.time()
-        for cid in [k for k, c in self.calls.items() if c.status == "ended" and now - c.started > 3600]:
+        for cid in [k for k, c in self.calls.items() if c.ended and now - c.started > 3600]:
             del self.calls[cid]
 
 

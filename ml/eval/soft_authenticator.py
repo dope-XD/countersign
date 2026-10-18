@@ -4,6 +4,7 @@ It produces real WebAuthn registration and assertion responses (P-256, "none"
 attestation) so simulated genuine customers go through exactly the same server-side
 signature checks as a phone. Never used outside ml/eval.
 """
+
 from __future__ import annotations
 
 import hashlib
@@ -46,7 +47,11 @@ class SoftAuthenticator:
         att = cbor2.dumps({"fmt": "none", "attStmt": {}, "authData": auth})
         cid = bytes_to_base64url(self.cred_id)
         return {
-            "id": cid, "rawId": cid, "type": "public-key", "authenticatorAttachment": "platform", "clientExtensionResults": {},
+            "id": cid,
+            "rawId": cid,
+            "type": "public-key",
+            "authenticatorAttachment": "platform",
+            "clientExtensionResults": {},
             "response": {"clientDataJSON": bytes_to_base64url(cd), "attestationObject": bytes_to_base64url(att), "transports": ["internal"]},
         }
 
@@ -57,10 +62,16 @@ class SoftAuthenticator:
         sig = self.key.sign(auth + hashlib.sha256(cd).digest(), ec.ECDSA(hashes.SHA256()))
         cid = bytes_to_base64url(self.cred_id)
         return {
-            "id": cid, "rawId": cid, "type": "public-key", "authenticatorAttachment": "platform", "clientExtensionResults": {},
+            "id": cid,
+            "rawId": cid,
+            "type": "public-key",
+            "authenticatorAttachment": "platform",
+            "clientExtensionResults": {},
             "response": {
-                "clientDataJSON": bytes_to_base64url(cd), "authenticatorData": bytes_to_base64url(auth),
-                "signature": bytes_to_base64url(sig), "userHandle": bytes_to_base64url(user_handle),
+                "clientDataJSON": bytes_to_base64url(cd),
+                "authenticatorData": bytes_to_base64url(auth),
+                "signature": bytes_to_base64url(sig),
+                "userHandle": bytes_to_base64url(user_handle),
             },
         }
 

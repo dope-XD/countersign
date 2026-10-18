@@ -1,0 +1,29 @@
+[project]
+name = "countersign"
+version = "0.2.0"
+description = "Voice-trust layer for Indian banks: a voice can ask, the customer's own phone has to sign."
+requires-python = ">=3.11"
+
+[tool.ruff]
+line-length = 160
+target-version = "py311"
+extend-exclude = ["web", "data", "models"]
+
+[tool.ruff.lint]
+# pyflakes, pycodestyle errors, isort, bugbear, pyupgrade, simplify, comprehensions
+select = ["F", "E", "W", "I", "B", "UP", "SIM", "C4"]
+ignore = [
+  "E501",   # long lines are allowed where they read better; the formatter wraps the rest
+  "SIM108", # ternaries are not always clearer
+]
+
+[tool.ruff.lint.isort]
+known-first-party = ["engine", "ml"]
+
+[tool.pytest.ini_options]
+testpaths = ["engine/tests"]
+filterwarnings = ["ignore::DeprecationWarning", "ignore::UserWarning"]
+
+[tool.ruff.lint.flake8-bugbear]
+# FastAPI's File()/Form()/Depends() defaults are its documented idiom, not shared mutable state
+extend-immutable-calls = ["fastapi.File", "fastapi.Form", "fastapi.Depends", "fastapi.Body", "fastapi.Query"]

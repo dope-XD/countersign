@@ -1,27 +1,31 @@
 """Countersign engine: one FastAPI process serving the API, websockets and the web app.
 
 Run:  .venv/Scripts/python -m uvicorn engine.app:app --host 0.0.0.0 --port 8000
+
+Every handler that touches call, request, approval or case state is `async`, so they all
+run on the event loop one at a time, alongside the audio pipeline. Blocking work (models,
+ffmpeg) goes to threads with asyncio.to_thread.
 """
+
 from __future__ import annotations
 
 import asyncio
 import json
 import logging
-import os
 import threading
 import time
 from contextlib import asynccontextmanager
 
-from fastapi import Body, FastAPI, File, Form, HTTPException, Request, UploadFile, WebSocket, WebSocketDisconnect
-from fastapi.responses import FileResponse, JSONResponse, Response
-from fastapi.staticfiles import StaticFiles
+from fastapi import APIRouter, Depends, FastAPI, File, Form, HTTPException, Request, Response, UploadFile, WebSocket, WebSocketDisconnect
+from fastapi.responses import FileResponse, JSONResponse
 
-from engine import cases, guard, indiacall, policy, voicenote
+from engine import auth, cases, guard, indiacall, policy, schemas, voicenote
 from engine.config import settings
 from engine.db import db
+from engine.fingerprint import replay_index
 from engine.hub import hub
 from engine.mocks.world import world
-from engine.session import calls
+from engine.session import LINE, CallSession, calls
 from engine.signals import s3_liveness
 from engine.signals.s1_synth import detector
 from engine.signals.s2_drift import embedder
@@ -34,6 +38,9 @@ MODEL_STATE = {"s1": "loading", "s2": "loading", "asr": "loading"}
 
 
 def _load_models() -> None:
+    import torch
+
+    torch.set_num_threads(1)  # Silero VAD's per-chunk CPU calls must not fight the GPU worker for cores
     try:
         detector.load()
         MODEL_STATE["s1"] = detector.backend
@@ -57,57 +64,117 @@ async def _housekeeping() -> None:
 @asynccontextmanager
 async def lifespan(_app: FastAPI):
     hub.loop = asyncio.get_running_loop()
+    log.warning("Staff PIN for agent console, fraud desk and demo panel: %s", auth.staff_pin())
     threading.Thread(target=_load_models, daemon=True).start()
     task = asyncio.create_task(_housekeeping())
     yield
     task.cancel()
+    hub.loop = None
 
 
 app = FastAPI(title="Countersign", lifespan=lifespan)
+staff = APIRouter(dependencies=[Depends(auth.require_staff)])
+public = APIRouter()
 
 
 @app.exception_handler(policy.PolicyError)
 async def _policy_err(_r, e):
-    return JSONResponse({"error": str(e)}, status_code=409)
+    return JSONResponse({"error": str(e)}, status_code=404 if str(e).startswith("no such") else 409)
 
 
 @app.exception_handler(passkeys.StepUpError)
 async def _stepup_err(_r, e):
-    return JSONResponse({"error": str(e)}, status_code=400)
+    return JSONResponse({"error": str(e)}, status_code=404 if str(e).startswith("no such") else 400)
 
 
-def _host(req: Request) -> str | None:
-    return req.headers.get("x-forwarded-host") or req.headers.get("host")
+@app.exception_handler(guard.GuardError)
+async def _guard_err(_r, e):
+    return JSONResponse({"error": str(e)}, status_code=e.status)
 
 
-def _origin(req: Request) -> str | None:
-    return req.headers.get("origin")
+@app.exception_handler(cases.CaseError)
+async def _case_err(_r, e):
+    return JSONResponse({"error": str(e)}, status_code=404 if str(e).startswith("no such") else 409)
 
 
-# ============================================================== health
-@app.get("/api/health")
-def health():
-    return {"ok": True, "models": MODEL_STATE, "s1_version": detector.version, "p95_ms": detector.p95_ms(),
-            "live_calls": len(calls.live()), "rp_id": settings.rp_id}
+def _host(conn: Request | WebSocket) -> str | None:
+    return conn.headers.get("x-forwarded-host") or conn.headers.get("host")
 
 
-# ============================================================== caller softphone
+def _customer(cid: str):
+    c = world.customer(cid)
+    if c is None:
+        raise HTTPException(404, "no such customer")
+    return c
+
+
+def _call(call_id: str) -> CallSession:
+    cs = calls.get(call_id)
+    if cs is None:
+        raise HTTPException(404, "no such call")
+    return cs
+
+
+def _publish_call(call_id: str | None) -> None:
+    cs = calls.get(call_id) if call_id else None
+    if cs:
+        hub.publish(f"call:{cs.id}", {"type": "state", "call": cs.public()})
+
+
+async def _send(ws: WebSocket | None, text: str | None = None, data: bytes | None = None) -> bool:
+    """Best-effort websocket send; False if the peer has gone."""
+    if ws is None:
+        return False
+    try:
+        if data is not None:
+            await ws.send_bytes(data)
+        else:
+            await ws.send_text(text)
+        return True
+    except Exception:
+        return False
+
+
+# ============================================================== health & staff login
+@public.get("/api/health")
+async def health():
+    return {"ok": True, "models": MODEL_STATE, "s1_version": detector.version, "p95_ms": detector.p95_ms(), "rp_id": settings.rp_id}
+
+
+@public.post("/api/staff/login")
+async def staff_login(body: schemas.StaffLogin, request: Request, response: Response):
+    if not auth.pin_ok(body.pin):
+        await asyncio.sleep(1.0)  # slow down guessing
+        raise HTTPException(401, "wrong PIN")
+    secure = request.url.scheme == "https" or request.headers.get("x-forwarded-proto") == "https"
+    response.set_cookie(auth.COOKIE, auth.make_cookie(), max_age=auth.TTL, httponly=True, samesite="lax", secure=secure)
+    return {"staff": True}
+
+
+@public.get("/api/staff/me")
+async def staff_me(request: Request):
+    return {"staff": auth.is_staff(request)}
+
+
+@public.post("/api/staff/logout")
+async def staff_logout(response: Response):
+    response.delete_cookie(auth.COOKIE)
+    return {"staff": False}
+
+
+# ============================================================== caller softphone (public)
 @app.websocket("/ws/caller")
 async def ws_caller(ws: WebSocket, cli: str = "", lang: str = "unknown"):
     await ws.accept()
     cli = cli.strip()
     if cli and cli[0].isdigit():
         cli = "+" + cli  # a raw "+" in a query string arrives as a space
-    cs = calls.create(cli or "+910000000000", lang)
+    cs = calls.create(cli or "+910000000000", lang if lang in ("en", "hi", "hinglish") else "unknown")
     cs.caller_ws = ws
-    await ws.send_text(json.dumps({"type": "call", "id": cs.id}))
+    await _send(ws, json.dumps({"type": "call", "id": cs.id}))
 
     async def pinger():
-        while cs.status != "ended":
-            try:
-                await ws.send_text(json.dumps({"type": "ping", "t": time.time()}))
-            except Exception:
-                return
+        while not cs.ended and await _send(ws, json.dumps({"type": "ping", "t": time.time()})):
             await asyncio.sleep(2)
 
     ping_task = asyncio.create_task(pinger())
@@ -119,14 +186,15 @@ async def ws_caller(ws: WebSocket, cli: str = "", lang: str = "unknown"):
             if msg.get("bytes") is not None:
                 await cs.on_caller_audio(msg["bytes"])
                 for a in list(cs.agent_wss):
-                    try:
-                        await a.send_bytes(msg["bytes"])
-                    except Exception:
+                    if not await _send(a, data=msg["bytes"]):
                         cs.agent_wss.discard(a)
             elif msg.get("text"):
-                data = json.loads(msg["text"])
-                if data.get("type") == "pong":
-                    rtt = time.time() - float(data["t"])
+                try:
+                    data = json.loads(msg["text"])
+                except json.JSONDecodeError:
+                    continue
+                if data.get("type") == "pong" and isinstance(data.get("t"), int | float):
+                    rtt = max(0.0, time.time() - float(data["t"]))
                     cs.caller_rtt = 0.8 * cs.caller_rtt + 0.2 * rtt if cs.caller_rtt else rtt
                 elif data.get("type") == "hangup":
                     break
@@ -137,22 +205,25 @@ async def ws_caller(ws: WebSocket, cli: str = "", lang: str = "unknown"):
         cs.end()
 
 
-# ============================================================== agent console
+# ============================================================== agent console (staff)
 @app.websocket("/ws/agent/{call_id}")
 async def ws_agent(ws: WebSocket, call_id: str):
+    if not auth.is_staff(ws):
+        await ws.close(code=4401)
+        return
     cs = calls.get(call_id)
     await ws.accept()
     if cs is None:
-        await ws.send_text(json.dumps({"type": "error", "error": "no such call"}))
+        await _send(ws, json.dumps({"type": "error", "error": "no such call"}))
         await ws.close()
         return
     cs.agent_wss.add(ws)
     q = hub.subscribe(f"call:{call_id}")
-    await ws.send_text(json.dumps({"type": "state", "call": cs.public()}))
+    await _send(ws, json.dumps({"type": "state", "call": cs.public()}))
 
     async def pump():
-        while True:
-            await ws.send_text(await q.get())
+        while await _send(ws, await q.get()):
+            pass
 
     pump_task = asyncio.create_task(pump())
     try:
@@ -162,12 +233,8 @@ async def ws_agent(ws: WebSocket, call_id: str):
                 break
             if msg.get("bytes") is not None:
                 await cs.on_agent_audio(msg["bytes"])
-                cw = getattr(cs, "caller_ws", None)
-                if cw is not None and cs.status == "live":
-                    try:
-                        await cw.send_bytes(msg["bytes"])
-                    except Exception:
-                        pass
+                if cs.status == "live":
+                    await _send(cs.caller_ws, data=msg["bytes"])
     except WebSocketDisconnect:
         pass
     finally:
@@ -176,180 +243,181 @@ async def ws_agent(ws: WebSocket, call_id: str):
         cs.agent_wss.discard(ws)
 
 
-def _call(call_id: str):
-    cs = calls.get(call_id)
-    if cs is None:
-        raise HTTPException(404, "no such call")
-    return cs
-
-
-@app.get("/api/calls")
-def list_calls():
+@staff.get("/api/calls")
+async def list_calls():
     return calls.live()
 
 
-@app.get("/api/calls/{call_id}")
-def get_call(call_id: str):
+@staff.get("/api/calls/{call_id}")
+async def get_call(call_id: str):
     return _call(call_id).public()
 
 
-@app.post("/api/calls/{call_id}/answer")
+@staff.post("/api/calls/{call_id}/answer")
 async def answer(call_id: str):
     cs = _call(call_id)
-    cs.answer()
-    cust = world.by_mobile(cs.caller_cli)
-    if cust:
-        cs.customer_id = cust.id  # IVR matched the caller ID; the agent can change it
-        world.calls_by_customer.setdefault(cust.id, []).append(time.time())
-    cw = getattr(cs, "caller_ws", None)
-    if cw:
-        await cw.send_text(json.dumps({"type": "answered"}))
+    if cs.status == "ringing":
+        cs.answer()
+        cust = world.by_mobile(cs.caller_cli)
+        if cust:
+            cs.customer_id = cust.id  # the IVR matched the caller ID; the agent can change it
+            world.calls_by_customer.setdefault(cust.id, []).append(time.time())
+        await _send(cs.caller_ws, json.dumps({"type": "answered"}))
     return cs.public()
 
 
-@app.post("/api/calls/{call_id}/identify")
-def identify(call_id: str, body: dict = Body(...)):
+@staff.post("/api/calls/{call_id}/identify")
+async def identify(call_id: str, body: schemas.CustomerRef):
     cs = _call(call_id)
-    cid = body.get("customer_id")
-    if world.customer(cid) is None:
-        raise HTTPException(404, "no such customer")
-    if cs.customer_id != cid:
-        cs.customer_id = cid
-        world.calls_by_customer.setdefault(cid, []).append(time.time())
-    db.audit("agent", "customer_identified", call_id, customer=cid)
+    _customer(body.customer_id)
+    if cs.customer_id != body.customer_id:
+        cs.customer_id = body.customer_id
+        world.calls_by_customer.setdefault(body.customer_id, []).append(time.time())
+    db.audit("agent", "customer_identified", call_id, customer=body.customer_id)
     if cs.case_id:
         cs.ensure_case("customer_identified")
     cs.recompute()
     return cs.public()
 
 
-@app.post("/api/calls/{call_id}/request")
-def new_request(call_id: str, body: dict = Body(...)):
+@staff.post("/api/calls/{call_id}/request")
+async def new_request(call_id: str, body: schemas.NewRequest):
     cs = _call(call_id)
     if not cs.customer_id:
         raise HTTPException(400, "identify the customer first")
+    if cs.ended:
+        raise HTTPException(409, "the call has ended")
     tier = cs.tier or "GREEN"
-    r = policy.create_request(cs.customer_id, "contact_centre", body["action"], body.get("details") or {}, tier, call_id)
+    r = policy.create_request(cs.customer_id, "contact_centre", body.action, body.details, tier, call_id)
     cs.request_ids.append(r["id"])
-    if cs.case_id is None and tier == "RED":
+    if tier == "RED":
         cs.ensure_case("risky_request_on_red")
     cs.recompute()
+    _publish_call(call_id)
     return r
 
 
-@app.post("/api/calls/{call_id}/challenge")
+@staff.post("/api/calls/{call_id}/challenge")
 async def challenge(call_id: str, force: str | None = None):
     cs = _call(call_id)
+    if cs.status != "live":
+        raise HTTPException(409, "the call is not live")
     fixed = None
     if force:
         # Only the IndiaCall simulator may pick the challenge, so recorded replies exist for it.
-        if os.environ.get("COUNTERSIGN_EVAL") != "1":
+        if not settings.eval_mode:
             raise HTTPException(403, "fixed challenges are only allowed in eval mode")
         fixed = indiacall.challenges().get(force)
-    ch = cs.issue_challenge(fixed)
-    asyncio.create_task(cs.check_challenge_timeout(10.0))
-    hub.publish(f"call:{call_id}", {"type": "state", "call": cs.public()})
-    return ch
+        if fixed is None:
+            raise HTTPException(404, "no such challenge")
+    c = cs.issue_challenge(fixed)
+    asyncio.create_task(cs.challenge_timeout(c))
+    _publish_call(call_id)
+    return {"id": c.ch.id, "say": c.ch.say, "kind": c.ch.kind}
 
 
-@app.post("/api/calls/{call_id}/challenge/done-reading")
-def done_reading(call_id: str):
+@staff.post("/api/calls/{call_id}/challenge/done-reading")
+async def done_reading(call_id: str):
     _call(call_id).agent_done_reading()
     return {"ok": True}
 
 
-@app.post("/api/calls/{call_id}/transfer")
-def transfer(call_id: str):
+@staff.post("/api/calls/{call_id}/transfer")
+async def transfer(call_id: str):
     cs = _call(call_id)
     case_id = cs.ensure_case("transferred_to_fraud_desk")
-    if cs.tier == "RED" and cs.caller.ring.total:
-        cases.attach_clip(case_id, cs.caller.ring.last(int(settings.evidence_seconds * 16000)))
+    if cs.tier == "RED":
+        cs.attach_evidence()
     db.audit("agent", "transferred_to_fraud_desk", call_id, case=case_id)
+    _publish_call(call_id)
     return {"case_id": case_id}
 
 
-@app.post("/api/calls/{call_id}/hangup")
+@staff.post("/api/calls/{call_id}/hangup")
 async def hangup(call_id: str):
     cs = _call(call_id)
-    cw = getattr(cs, "caller_ws", None)
-    if cw:
-        try:
-            await cw.send_text(json.dumps({"type": "ended"}))
-        except Exception:
-            pass
+    await _send(cs.caller_ws, json.dumps({"type": "ended"}))
     cs.end()
     return {"ok": True}
 
 
-# ============================================================== requests (policy)
-def _publish_request(rid: str) -> None:
-    r = policy.get(rid)
-    if r.get("call_id"):
-        cs = calls.get(r["call_id"])
-        if cs:
-            hub.publish(f"call:{cs.id}", {"type": "state", "call": cs.public()})
-
-
-@app.get("/api/requests/{rid}")
-def get_request(rid: str):
-    r = policy.get(rid)
+# ============================================================== requests (policy, staff)
+def _request_out(r: dict) -> dict:
     return {**r, "missing": policy.missing(r)}
 
 
-@app.post("/api/requests/{rid}/send-approval")
-def send_approval(rid: str):
+@staff.get("/api/requests/{rid}")
+async def get_request(rid: str):
+    return _request_out(policy.get(rid))
+
+
+@staff.post("/api/requests/{rid}/send-approval")
+async def send_approval(rid: str):
     r = policy.get(rid)
-    if "app_approval" not in r["policy"]["reqs"]:
+    if r["status"] != "open":
+        raise HTTPException(409, f"request is {r['status']}")
+    st = r["policy"]["reqs"].get("app_approval")
+    if st is None:
         raise HTTPException(400, "this request doesn't need an app approval")
+    if st["status"] == "sent":
+        if passkeys.is_open(st["approval_id"]):
+            raise HTTPException(409, "already waiting for the customer to answer")
+        passkeys.expire(st["approval_id"])  # resend after the old one timed out
+    elif st["status"] != "pending":
+        raise HTTPException(409, f"app approval is already {st['status']}")
     if not passkeys.credentials(r["customer_id"]):
         raise HTTPException(409, "No passkey on this account. The customer must approve at a branch or by video-KYC.")
     cust = world.customer(r["customer_id"])
     label = policy.ACTIONS[r["action"]]["label"]
-    d = r["details"] or {}
-    detail = ", ".join(f"{k.replace('_', ' ')}: {v}" for k, v in d.items()) or ""
-    summary = {"question": f"Did you ask us to: {label}?", "detail": detail, "action": r["action"],
-               "channel": "phone call to the bank", "customer": cust.name}
+    detail = ", ".join(f"{k.replace('_', ' ')}: {v}" for k, v in (r["details"] or {}).items())
+    summary = {
+        "question": f"Did you ask us to: {label}?",
+        "detail": detail,
+        "action": r["action"],
+        "channel": "phone call to the bank",
+        "customer": cust.name if cust else r["customer_id"],
+    }
     a = passkeys.request_approval(rid, r["customer_id"], "app_approval", summary)
     pol = r["policy"]
     pol["reqs"]["app_approval"] = {"status": "sent", "approval_id": a["id"], "at": time.time()}
-    db.update("requests", rid, {"policy": pol})
-    _publish_request(rid)
+    db.update("requests", rid, {"policy": pol, "updated_at": time.time()})
+    _publish_call(r["call_id"])
     return a
 
 
-@app.post("/api/requests/{rid}/standard-checks")
-def standard_checks(rid: str, body: dict = Body(...)):
-    r = policy.mark(rid, "standard_checks", "met" if body.get("passed") else "failed", by="agent")
-    _publish_request(rid)
-    return r
+@staff.post("/api/requests/{rid}/standard-checks")
+async def standard_checks(rid: str, body: schemas.StandardChecks):
+    r = policy.mark(rid, "standard_checks", "met" if body.passed else "failed", by="agent")
+    _publish_call(r["call_id"])
+    return _request_out(r)
 
 
-@app.post("/api/requests/{rid}/override")
-def override(rid: str, body: dict = Body(...)):
-    r = policy.override(rid, body["requirement"], body.get("agent", "agent"), body.get("reason", ""))
-    _publish_request(rid)
-    return r
+@staff.post("/api/requests/{rid}/override")
+async def override(rid: str, body: schemas.Override):
+    r = policy.override(rid, body.requirement, body.agent, body.reason)
+    _publish_call(r["call_id"])
+    return _request_out(r)
 
 
-@app.post("/api/requests/{rid}/decline-voice-check")
-def decline_voice(rid: str):
+@staff.post("/api/requests/{rid}/decline-voice-check")
+async def decline_voice(rid: str):
     r = policy.decline_voice_check(rid, "agent")
-    _publish_request(rid)
-    return r
+    _publish_call(r["call_id"])
+    return _request_out(r)
 
 
-@app.post("/api/requests/{rid}/execute")
-def execute(rid: str):
+@staff.post("/api/requests/{rid}/execute")
+async def execute(rid: str):
     r = policy.execute(rid, "agent")
-    _publish_request(rid)
-    return r
+    _publish_call(r["call_id"])
+    return _request_out(r)
 
 
 def _record_human_lag(call_id: str | None) -> None:
     """A passkey-approved request means the caller was the real customer, so their
     liveness reply delay is a genuine human sample for the IndiaCall simulator."""
     cs = calls.get(call_id) if call_id else None
-    if not cs or not cs.liveness or cs.liveness.get("lag_s") is None or os.environ.get("COUNTERSIGN_EVAL") == "1":
+    if not cs or not cs.liveness or cs.liveness.get("lag_s") is None or settings.eval_mode:
         return
     p = indiacall.ROOT / "human_lags.json"
     p.parent.mkdir(parents=True, exist_ok=True)
@@ -358,167 +426,178 @@ def _record_human_lag(call_id: str | None) -> None:
     p.write_text(json.dumps(lags))
 
 
-# ============================================================== passkeys & approvals
-@app.post("/api/app/{cid}/passkey/options")
-def passkey_options(cid: str, req: Request):
-    return Response(passkeys.registration_options(cid, _host(req)), media_type="application/json")
+# ============================================================== passkeys & approvals (customer phone)
+@public.post("/api/app/{cid}/passkey/options")
+async def passkey_options(cid: str, request: Request):
+    _customer(cid)
+    return Response(passkeys.registration_options(cid, _host(request)), media_type="application/json")
 
 
-@app.post("/api/app/{cid}/passkey/verify")
-def passkey_verify(cid: str, req: Request, body: dict = Body(...)):
-    return passkeys.verify_registration(cid, body["credential"], body.get("device", "phone"), _host(req), _origin(req))
+@public.post("/api/app/{cid}/passkey/verify")
+async def passkey_verify(cid: str, request: Request, body: schemas.PasskeyVerify):
+    _customer(cid)
+    return passkeys.verify_registration(cid, body.credential, body.device, _host(request))
 
 
-@app.delete("/api/app/{cid}/passkeys")
-def passkey_remove(cid: str):
+@staff.delete("/api/app/{cid}/passkeys")
+async def passkey_remove(cid: str):
+    _customer(cid)
     passkeys.remove_credentials(cid)
     return {"ok": True}
 
 
-@app.get("/api/approvals/{aid}")
-def approval(aid: str):
+@public.get("/api/approvals/{aid}")
+async def approval(aid: str):
     return passkeys.public_approval(aid)
 
 
-@app.post("/api/approvals/{aid}/options")
-def approval_options(aid: str, req: Request):
-    return Response(passkeys.assertion_options(aid, _host(req)), media_type="application/json")
+@public.post("/api/approvals/{aid}/options")
+async def approval_options(aid: str, request: Request):
+    return Response(passkeys.assertion_options(aid, _host(request)), media_type="application/json")
 
 
-@app.post("/api/approvals/{aid}/decide")
-def approval_decide(aid: str, req: Request, body: dict = Body(...)):
-    a = passkeys.decide(aid, body["decision"], body.get("credential"), _host(req), _origin(req))
-    if a["kind"] == "app_approval":
-        rid = a["request_id"]
-        if a["status"] == "approved":
-            policy.mark(rid, "app_approval", "met", by=a["target_customer"], approval_id=aid)
-            _record_human_lag(policy.get(rid).get("call_id"))
-        else:
-            policy.mark(rid, "app_approval", "failed", by=a["target_customer"], approval_id=aid)
-            r = policy.get(rid)
-            cs = calls.get(r["call_id"]) if r.get("call_id") else None
-            if cs:
-                cs.ensure_case("customer_declined_in_app")
-            else:
-                cases.open_case(channel="contact_centre", customer_id=r["customer_id"], request_id=rid, tier=r["tier"], event="customer_declined_in_app")
-            hub.publish(f"app:{a['target_customer']}", {"type": "alert", "title": "Thanks. Nothing was changed.",
-                                                        "body": "Our fraud team has the case. You can call us on the number on your card."})
-        _publish_request(rid)
-    else:
+@public.post("/api/approvals/{aid}/decide")
+async def approval_decide(aid: str, request: Request, body: schemas.Decide):
+    a = passkeys.decide(aid, body.decision, body.credential, _host(request))
+    if a["kind"] == "family_ping":
         guard.on_family_decision(a)
+        return a
+    rid = a["request_id"]
+    r = policy.get(rid)
+    if r["status"] != "open":
+        return a  # e.g. already cancelled by the fraud desk: the answer is recorded, nothing changes
+    if a["status"] == "approved":
+        r = policy.mark(rid, "app_approval", "met", by=a["target_customer"], approval_id=aid)
+        _record_human_lag(r.get("call_id"))
+    else:
+        r = policy.mark(rid, "app_approval", "failed", by=a["target_customer"], approval_id=aid)
+        cs = calls.get(r["call_id"]) if r.get("call_id") else None
+        if cs:
+            cs.ensure_case("customer_declined_in_app")
+        else:
+            cases.open_case(channel="contact_centre", customer_id=r["customer_id"], request_id=rid, tier=r["tier"], event="customer_declined_in_app")
+        hub.publish(
+            f"app:{a['target_customer']}",
+            {"type": "alert", "title": "Thanks. Nothing was changed.", "body": "Our fraud team has the case. You can call us on the number on your card."},
+        )
+    _publish_call(r.get("call_id"))
     return a
 
 
-# ============================================================== bank app (Entry B)
-@app.get("/api/app/{cid}/home")
-def app_home(cid: str):
-    cust = world.customer(cid)
-    if cust is None:
-        raise HTTPException(404, "no such customer")
+# ============================================================== bank app, Entry B (customer phone)
+@public.get("/api/app/{cid}/home")
+async def app_home(cid: str):
+    cust = _customer(cid)
     world.app_sessions[cid] = time.time()
-    pays = db.query("SELECT id, details, status, created_at FROM requests WHERE customer_id=? AND channel='app' ORDER BY created_at DESC LIMIT 10", [cid])
+    pays = db.query(
+        "SELECT id, details, status, created_at FROM requests WHERE customer_id=? AND channel='app' ORDER BY created_at DESC LIMIT 10",
+        [cid],
+    )
     return {
-        "customer": cust.__dict__, "passkeys": passkeys.credentials(cid), "pending": passkeys.pending_for(cid),
-        "payments": pays, "family": [world.customer(f).__dict__ for f in cust.family_circle if world.customer(f)],
+        "customer": cust.__dict__,
+        "passkeys": passkeys.credentials(cid),
+        "pending": passkeys.pending_for(cid),
+        "payments": pays,
+        "family": [f.__dict__ for f in (world.customer(x) for x in cust.family_circle) if f],
     }
 
 
-@app.post("/api/app/{cid}/pay")
-def app_pay(cid: str, body: dict = Body(...)):
-    return guard.start_payment(cid, body["payee"].strip(), float(body["amount"]), body.get("note", ""))
+@public.post("/api/app/{cid}/pay")
+async def app_pay(cid: str, body: schemas.Pay):
+    _customer(cid)
+    return guard.start_payment(cid, body.payee, body.amount, body.note)
 
 
-@app.post("/api/payments/{pid}/ask-family")
-def pay_ask_family(pid: str, body: dict = Body(...)):
-    try:
-        return guard.ask_family(pid, body["family_id"])
-    except PermissionError as e:
-        raise HTTPException(403, str(e))
+@public.post("/api/payments/{pid}/ask-family")
+async def pay_ask_family(pid: str, body: schemas.AskFamily):
+    return guard.ask_family(pid, body.family_id)
 
 
-@app.post("/api/payments/{pid}/continue")
-def pay_continue(pid: str):
+@public.post("/api/payments/{pid}/continue")
+async def pay_continue(pid: str):
     return guard.continue_anyway(pid)
 
 
-@app.post("/api/payments/{pid}/cancel")
-def pay_cancel(pid: str):
+@public.post("/api/payments/{pid}/cancel")
+async def pay_cancel(pid: str):
     return guard.cancel(pid)
 
 
-@app.post("/api/payments/{pid}/report")
-def pay_report(pid: str):
+@public.post("/api/payments/{pid}/report")
+async def pay_report(pid: str):
     return guard.prefill_1930(pid)
 
 
-@app.post("/api/voice-note")
+@public.post("/api/voice-note")
 async def voice_note(file: UploadFile = File(...)):
     data = await file.read()
     if len(data) > 20 * 1024 * 1024:
         raise HTTPException(413, "file too large")
-    res = await asyncio.to_thread(voicenote.check, data)
+    try:
+        res = await asyncio.to_thread(voicenote.check, data)
+    except voicenote.VoiceNoteError as e:
+        raise HTTPException(400, str(e)) from e
     db.audit("app", "voice_note_checked", None, verdict=res["verdict"], seconds=res.get("seconds"))
     return res
 
 
-# ============================================================== fraud desk
-@app.get("/api/cases")
-def list_cases():
+# ============================================================== fraud desk (staff)
+@staff.get("/api/cases")
+async def list_cases():
     return db.query("SELECT * FROM cases ORDER BY opened_at DESC LIMIT 100")
 
 
-@app.get("/api/cases/{case_id}")
-def get_case(case_id: str):
+@staff.get("/api/cases/{case_id}")
+async def get_case(case_id: str):
     c = db.get("cases", case_id)
     if not c:
-        raise HTTPException(404)
-    c["audit"] = db.query("SELECT * FROM audit WHERE ref IN (?,?,?) ORDER BY ts", [case_id, c.get("call_id") or "", c.get("request_id") or ""])
+        raise HTTPException(404, "no such case")
+    refs = [case_id, c.get("call_id") or "", c.get("request_id") or ""]
+    c["audit"] = db.query("SELECT * FROM audit WHERE ref IN (?,?,?) ORDER BY ts", refs)
     c["request"] = db.get("requests", c["request_id"]) if c.get("request_id") else None
     c["reports"] = db.query("SELECT * FROM reports WHERE case_id=?", [case_id])
-    c["has_clip"] = bool(c.get("clip_path"))
-    c.pop("clip_path", None)
+    c["has_clip"] = bool(c.pop("clip_path", None))
     return c
 
 
-@app.get("/api/cases/{case_id}/clip")
-def case_clip(case_id: str, analyst: str = "analyst"):
+@staff.get("/api/cases/{case_id}/clip")
+async def case_clip(case_id: str, analyst: str = "analyst"):
     try:
-        return Response(cases.read_clip(case_id, analyst), media_type="audio/wav")
-    except FileNotFoundError:
-        raise HTTPException(404, "no clip")
+        return Response(cases.read_clip(case_id, analyst[:64]), media_type="audio/wav")
+    except FileNotFoundError as e:
+        raise HTTPException(404, "no clip") from e
 
 
-@app.post("/api/cases/{case_id}/resolve")
-def case_resolve(case_id: str, body: dict = Body(...)):
-    outcome = body["outcome"]
-    analyst = body.get("analyst", "analyst")
-    c = cases.resolve(case_id, outcome, analyst, body.get("note", ""))
+@staff.post("/api/cases/{case_id}/resolve")
+async def case_resolve(case_id: str, body: schemas.Resolve):
+    c = cases.resolve(case_id, body.outcome, body.analyst, body.note)
     rid = c.get("request_id")
-    if rid:
-        r = db.get("requests", rid)
-        if r and r["status"] == "open" and "fraud_desk" in r["policy"]["reqs"]:
-            if outcome == "fraud_confirmed":
-                policy.mark(rid, "fraud_desk", "failed", by=analyst)
-                policy.cancel(rid, analyst, "fraud confirmed")
-            elif outcome == "false_alarm":
-                policy.mark(rid, "fraud_desk", "met", by=analyst)
-            _publish_request(rid)
+    r = db.get("requests", rid) if rid else None
+    if r and r["status"] == "open" and "fraud_desk" in r["policy"]["reqs"]:
+        if body.outcome == "fraud_confirmed":
+            policy.mark(rid, "fraud_desk", "failed", by=body.analyst)
+            policy.cancel(rid, body.analyst, "fraud confirmed")
+        elif body.outcome == "false_alarm":
+            policy.mark(rid, "fraud_desk", "met", by=body.analyst)
+        _publish_call(r["call_id"])
     return c
 
 
-# ============================================================== demo operator panel
-@app.get("/api/demo/world")
-def demo_world():
+# ============================================================== demo operator panel (staff)
+@staff.get("/api/demo/world")
+async def demo_world():
     return world.public()
 
 
-@app.post("/api/demo/reset")
-def demo_reset():
+@staff.post("/api/demo/reset")
+async def demo_reset():
     world.reset()
-    db.wipe_world()
     for c in list(calls.calls.values()):
+        await _send(c.caller_ws, json.dumps({"type": "ended"}))
         c.end()
     calls.calls.clear()
+    db.wipe_world()
+    replay_index.clear()
     for f in cases.EVIDENCE_DIR.glob("*.bin"):
         f.unlink()
     hub.publish("calls", {"type": "calls"})
@@ -526,118 +605,124 @@ def demo_reset():
     return {"ok": True}
 
 
-@app.post("/api/demo/sim-swap")
-def demo_sim_swap(body: dict = Body(...)):
-    cust = world.customer(body["customer_id"])
-    if body.get("on", True):
-        world.sim_swaps[cust.registered_mobile] = time.time() - 3600 * float(body.get("hours_ago", 5))
+@staff.post("/api/demo/sim-swap")
+async def demo_sim_swap(body: schemas.SimSwap):
+    cust = _customer(body.customer_id)
+    if body.on:
+        world.sim_swaps[cust.registered_mobile] = time.time() - 3600 * body.hours_ago
     else:
         world.sim_swaps.pop(cust.registered_mobile, None)
     return world.public()
 
 
-@app.post("/api/demo/fri")
-def demo_fri(body: dict = Body(...)):
-    if body.get("rating"):
-        world.fri[body["number"]] = body["rating"]
+@staff.post("/api/demo/fri")
+async def demo_fri(body: schemas.Fri):
+    if body.rating:
+        world.fri[body.number] = body.rating
     else:
-        world.fri.pop(body["number"], None)
+        world.fri.pop(body.number, None)
     return world.public()
 
 
-@app.post("/api/demo/recent-call")
-def demo_recent_call(body: dict = Body(...)):
-    if body.get("on", True):
-        world.recent_calls[body["customer_id"]] = time.time() - 60 * float(body.get("minutes_ago", 2))
+@staff.post("/api/demo/recent-call")
+async def demo_recent_call(body: schemas.RecentCall):
+    _customer(body.customer_id)
+    if body.on:
+        world.recent_calls[body.customer_id] = time.time() - 60 * body.minutes_ago
     else:
-        world.recent_calls.pop(body["customer_id"], None)
+        world.recent_calls.pop(body.customer_id, None)
     return world.public()
 
 
-@app.post("/api/demo/clear-call-history")
-def demo_clear_calls(body: dict = Body(...)):
-    world.calls_by_customer.pop(body["customer_id"], None)
+@staff.post("/api/demo/clear-call-history")
+async def demo_clear_calls(body: schemas.CustomerRef):
+    world.calls_by_customer.pop(body.customer_id, None)
     return {"ok": True}
 
 
-@app.get("/api/demo/stored")
-def demo_stored():
+@staff.get("/api/demo/stored")
+async def demo_stored():
     """Privacy inspector: exactly what Countersign holds right now."""
-    clips = [{"file": f.name, "bytes": f.stat().st_size, "encrypted": True} for f in cases.EVIDENCE_DIR.glob("*.bin")]
-    live_audio = {c.id: round(c.caller.ring.total / 16000, 1) if c.status != "ended" else 0 for c in calls.calls.values()}
+    live = [c for c in calls.calls.values() if not c.ended]
     return {
         "voiceprints": 0,
-        "speaker_embeddings_in_memory": sum(len(c.drift.history) and 1 for c in calls.calls.values() if c.status != "ended"),
-        "audio_files_on_disk": clips,
-        "live_audio_seconds_in_memory": live_audio,
+        "calls_with_speaker_embeddings_in_memory": sum(1 for c in live if c.drift.history),
+        "audio_files_on_disk": [{"file": f.name, "bytes": f.stat().st_size, "encrypted": True} for f in cases.EVIDENCE_DIR.glob("*.bin")],
+        "live_audio_seconds_in_memory": {c.id: c.audio_seconds_in_memory() for c in live},
+        "line_rate_hz": LINE,
         "case_rows": db.query("SELECT id, tier, reasons, status, outcome FROM cases"),
-        "audit_events": len(db.query("SELECT id FROM audit")),
+        "audit_events": db.query("SELECT COUNT(*) AS n FROM audit")[0]["n"],
         "transcripts_stored": 0,
     }
 
 
-@app.get("/api/demo/audit")
-def demo_audit(limit: int = 200):
-    return db.query("SELECT * FROM audit ORDER BY id DESC LIMIT ?", [limit])
+@staff.get("/api/demo/audit")
+async def demo_audit(limit: int = 200):
+    return db.query("SELECT * FROM audit ORDER BY id DESC LIMIT ?", [min(max(limit, 1), 1000)])
 
 
-# ============================================================== metrics
-@app.get("/api/metrics")
-def metrics():
+# ============================================================== metrics (staff)
+@staff.get("/api/metrics")
+async def metrics():
     p = settings.models_dir / "metrics.json"
-    report = json.loads(p.read_text(encoding="utf-8")) if p.exists() else None
-    lat = detector.latencies_ms
+    lat = sorted(detector.latencies_ms)
     return {
-        "report": report,
+        "report": json.loads(p.read_text(encoding="utf-8")) if p.exists() else None,
         "live": {
-            "s1_backend": detector.backend, "s1_version": detector.version,
-            "windows_scored": len(lat), "p50_ms": float(sorted(lat)[len(lat) // 2]) if lat else None,
+            "s1_backend": detector.backend,
+            "s1_version": detector.version,
+            "windows_scored": len(lat),
+            "p50_ms": float(lat[len(lat) // 2]) if lat else None,
             "p95_ms": detector.p95_ms(),
         },
     }
 
 
-# ============================================================== IndiaCall recorder
-@app.get("/api/indiacall/items")
-def ic_items():
+# ============================================================== IndiaCall recorder (staff: teammates)
+@staff.get("/api/indiacall/items")
+async def ic_items():
     return indiacall.items()
 
 
-@app.post("/api/indiacall/consent")
-def ic_consent(body: dict = Body(...)):
-    if not body.get("agree"):
+@staff.post("/api/indiacall/consent")
+async def ic_consent(body: schemas.Consent):
+    if not body.agree:
         raise HTTPException(400, "consent required")
-    return indiacall.record_consent(body["speaker"], body["name"], body.get("languages", []))
+    return indiacall.record_consent(body.speaker, body.name, body.languages)
 
 
-@app.get("/api/indiacall/progress/{speaker}")
-def ic_progress(speaker: str):
+@staff.get("/api/indiacall/progress/{speaker}")
+async def ic_progress(speaker: str):
     return {"done": indiacall.progress(speaker)}
 
 
-@app.post("/api/indiacall/upload")
+@staff.post("/api/indiacall/upload")
 async def ic_upload(speaker: str = Form(...), item: str = Form(...), file: UploadFile = File(...)):
     data = await file.read()
+    if len(data) > 20 * 1024 * 1024:
+        raise HTTPException(413, "file too large")
     ext = (file.filename or "rec.webm").rsplit(".", 1)[-1]
     try:
         return await asyncio.to_thread(indiacall.save_recording, speaker, item, data, ext)
     except PermissionError as e:
-        raise HTTPException(403, str(e))
+        raise HTTPException(403, str(e)) from e
     except ValueError as e:
-        raise HTTPException(400, str(e))
+        raise HTTPException(400, str(e)) from e
 
 
 # ============================================================== event stream for UIs
 @app.websocket("/ws/events")
 async def ws_events(ws: WebSocket, topics: str = "calls"):
+    names = [t for t in topics.split(",") if t][:10]
+    if not auth.is_staff(ws):
+        names = [t for t in names if t.startswith("app:")]  # customers only get their own app events
     await ws.accept()
-    names = [t for t in topics.split(",") if t]
     q = hub.subscribe(*names)
     app_customers = [t.split(":", 1)[1] for t in names if t.startswith("app:")]
 
     async def pump():
-        while True:
-            await ws.send_text(await q.get())
+        while await _send(ws, await q.get()):
+            pass
 
     pump_task = asyncio.create_task(pump())
     try:
@@ -652,13 +737,23 @@ async def ws_events(ws: WebSocket, topics: str = "calls"):
         hub.unsubscribe(q)
 
 
-# ============================================================== static web app
-if settings.web_dist.exists():
-    app.mount("/assets", StaticFiles(directory=settings.web_dist / "assets"), name="assets")
+app.include_router(public)
+app.include_router(staff)
 
-    @app.get("/{path:path}")
-    def spa(path: str):
-        f = settings.web_dist / path
-        if path and f.is_file():
-            return FileResponse(f)
-        return FileResponse(settings.web_dist / "index.html", headers={"Cache-Control": "no-store"})
+
+# ============================================================== static web app
+WEB_ROOT = settings.web_dist.resolve()
+
+
+@app.get("/{path:path}", include_in_schema=False)
+async def spa(path: str):
+    if path.startswith(("api/", "ws/")):
+        raise HTTPException(404, "not found")
+    index = WEB_ROOT / "index.html"
+    if not index.exists():
+        raise HTTPException(503, "web app not built (cd web; npm run build)")
+    f = (WEB_ROOT / path).resolve()
+    # never serve anything outside web/dist (e.g. /..%2F..%2Fdata/runtime/kms.key)
+    if path and f.is_file() and f.is_relative_to(WEB_ROOT):
+        return FileResponse(f)
+    return FileResponse(index, headers={"Cache-Control": "no-store"})

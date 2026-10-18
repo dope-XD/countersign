@@ -12,6 +12,7 @@ Timing note: reply delays are sampled (genuine: from data/indiacall/human_lags.j
 live calls fill in; attackers: from the attack model below). Audio, words, codecs, scoring,
 policy and signatures are all real. The metrics page says so.
 """
+
 from __future__ import annotations
 
 import argparse
@@ -29,6 +30,8 @@ import websockets
 from webauthn.helpers import bytes_to_base64url
 
 from engine.audio.codec import mulaw_encode, resample
+from engine.auth import HEADER as STAFF_HEADER
+from engine.auth import staff_pin
 from engine.indiacall import OPENINGS, challenges
 from ml.augment.telephony import load_audio
 from ml.eval.soft_authenticator import SoftAuthenticator
@@ -138,7 +141,9 @@ def build_plans(n_per_level: int, n_genuine: int, seed: int) -> list[Plan]:
                 if level == "L1":
                     # replay attacker can't answer an unseen challenge: plays a generic pre-made clip
                     fillers = [f.stem for f in base.glob("P0*.wav")] or ops
-                    plans.append(Plan(f"{level}-{i:03d}", level, s, rng.choice(ops), rng.choice(ch_ids) + ":" + rng.choice(fillers), g, OTHER, rng.uniform(0.8, 3.0)))
+                    plans.append(
+                        Plan(f"{level}-{i:03d}", level, s, rng.choice(ops), rng.choice(ch_ids) + ":" + rng.choice(fillers), g, OTHER, rng.uniform(0.8, 3.0))
+                    )
                 else:
                     chs = [c for c in ch_ids if have(base / f"{c}.wav")]
                     if not chs:
@@ -189,7 +194,7 @@ async def run_call(base: str, plan: Plan, auth: SoftAuthenticator) -> Result:
     lang = next(o[1] for o in OPENINGS if o[0] == plan.opening)
     res = Result(plan=asdict(plan), language=lang)
     wsbase = base.replace("http", "ws", 1)
-    async with httpx.AsyncClient(base_url=base, timeout=30) as http:
+    async with httpx.AsyncClient(base_url=base, timeout=30, headers={STAFF_HEADER: staff_pin()}) as http:
         # every simulated call is about the same account; don't let them count as repeat calls
         await http.post("/api/demo/clear-call-history", json={"customer_id": "rahul"})
         if plan.sim_swap:
@@ -269,7 +274,7 @@ async def run_call(base: str, plan: Plan, auth: SoftAuthenticator) -> Result:
 
 async def enrol(base: str, origin: str, rp_id: str) -> SoftAuthenticator:
     auth = SoftAuthenticator(rp_id, origin)
-    async with httpx.AsyncClient(base_url=base, timeout=30, headers={"Origin": origin}) as http:
+    async with httpx.AsyncClient(base_url=base, timeout=30, headers={STAFF_HEADER: staff_pin()}) as http:
         await http.delete("/api/app/rahul/passkeys")
         opts = (await http.post("/api/app/rahul/passkey/options")).json()
         assert opts["user"]["id"] == bytes_to_base64url(b"rahul")

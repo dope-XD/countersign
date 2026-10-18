@@ -6,16 +6,15 @@
 Manifest CSV columns: path,label (bonafide|spoof)[,speaker,language,generator].
 Writes models/eval/bench_<slug>.json, which ml.eval.report merges into metrics.json.
 """
+
 from __future__ import annotations
 
 import argparse
-import csv
 import json
 import random
 import re
 import time
 from concurrent.futures import ThreadPoolExecutor
-from pathlib import Path
 
 import numpy as np
 from tqdm import tqdm
@@ -24,12 +23,13 @@ from engine.config import settings
 from engine.signals.s1_synth import detector
 from ml.augment.telephony import channel, load_audio
 from ml.eval.metrics import detection_at_far, eer
+from ml.s1_data import read
 
 OUT = settings.models_dir / "eval"
 
 
 def read_manifest(path: str, limit: int | None, seed: int = 0) -> list[dict]:
-    rows = list(csv.DictReader(open(path, encoding="utf-8")))
+    rows = read(path)
     if limit and len(rows) > limit:
         rng = random.Random(seed)
         bona = [r for r in rows if r["label"] == "bonafide"]
@@ -45,11 +45,8 @@ def prep(row: dict, ch: str) -> np.ndarray:
     return channel(x, ch)
 
 
-def run(manifest: str, name: str, channels: list[str], limit: int | None, published: float | None, batch: int = 8,
-        checkpoint: str | None = None) -> dict:
-    if checkpoint:
-        object.__setattr__(settings, "s1_checkpoint", Path(checkpoint))
-    detector.load()
+def run(manifest: str, name: str, channels: list[str], limit: int | None, published: float | None, batch: int = 8, checkpoint: str | None = None) -> dict:
+    detector.load(checkpoint)
     if detector.backend != "sls":
         raise SystemExit("S1 is not the real model; convert a checkpoint first (ml/port_sls_checkpoint.py)")
     rows = read_manifest(manifest, limit)
@@ -60,17 +57,26 @@ def run(manifest: str, name: str, channels: list[str], limit: int | None, publis
         with ThreadPoolExecutor(8) as pool:
             for i in tqdm(range(0, len(rows), batch), desc=f"{name} [{ch}]"):
                 chunk = rows[i : i + batch]
-                wav = list(pool.map(lambda r: prep(r, ch), chunk))
+                wav = list(pool.map(prep, chunk, [ch] * len(chunk)))
                 scores += [r.p_synthetic for r in detector.score(wav)]
         labels = np.array([r["label"] == "bonafide" for r in rows])
         s = np.array(scores)
         e, thr = eer(s[labels], s[~labels])
         det, _ = detection_at_far(s[labels], s[~labels], 0.01)
-        results.append({
-            "set": name, "condition": ch, "model": detector.version, "eer": round(e, 4), "threshold": round(thr, 4),
-            "detect_at_1pct_far": round(det, 4), "n_bona": int(labels.sum()), "n_spoof": int((~labels).sum()),
-            "published_eer": published if ch == "clean" else None, "seconds": round(time.time() - t0, 1),
-        })
+        results.append(
+            {
+                "set": name,
+                "condition": ch,
+                "model": detector.version,
+                "eer": round(e, 4),
+                "threshold": round(thr, 4),
+                "detect_at_1pct_far": round(det, 4),
+                "n_bona": int(labels.sum()),
+                "n_spoof": int((~labels).sum()),
+                "published_eer": published if ch == "clean" else None,
+                "seconds": round(time.time() - t0, 1),
+            }
+        )
         print(results[-1])
     out = {"model": detector.version, "set": name, "manifest": manifest, "results": results}
     OUT.mkdir(parents=True, exist_ok=True)

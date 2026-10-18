@@ -3,12 +3,13 @@ import QRCode from 'qrcode'
 import { api } from '../lib/api'
 import { usePoll } from '../lib/events'
 import type { Customer } from '../lib/types'
-import { TopBar, useToast } from '../components/ui'
+import { TopBar } from '../components/ui'
+import { useToast } from '../lib/useToast'
 
 type World = { customers: Record<string, Customer>; fri: Record<string, string>; sim_swaps: Record<string, number>; recent_calls: Record<string, number> }
 type Stored = {
   voiceprints: number
-  speaker_embeddings_in_memory: number
+  calls_with_speaker_embeddings_in_memory: number
   audio_files_on_disk: { file: string; bytes: number; encrypted: boolean }[]
   live_audio_seconds_in_memory: Record<string, number>
   case_rows: { id: string; tier: string; reasons: string[]; status: string; outcome: string | null }[]
@@ -88,6 +89,21 @@ export default function Demo() {
             <button className="btn-outline w-full" onClick={() => call('/api/demo/sim-swap', { customer_id: 'rahul', on: !swapOn, hours_ago: 5 }, swapOn ? 'SIM swap cleared' : 'SIM swap on Rahul’s number 5 h ago')}>
               {swapOn ? 'Clear' : 'Simulate'} SIM swap on Rahul’s number
             </button>
+            <div className="grid grid-cols-2 gap-2">
+              {['rahul', 'sunita'].map((c) => (
+                <button key={c} className="btn-ghost border border-line text-xs" onClick={async () => {
+                  if (!confirm(`Unbind all phones (passkeys) from ${c}'s account?`)) return
+                  try {
+                    await api.del(`/api/app/${c}/passkeys`)
+                    show(`${c}'s phones unbound`)
+                  } catch (e) {
+                    show((e as Error).message, 'error')
+                  }
+                }}>
+                  Unbind {c}'s phones
+                </button>
+              ))}
+            </div>
             <div className="text-xs text-muted">
               FRI-rated numbers:{' '}
               {Object.entries(w?.fri || {}).map(([k, v]) => (

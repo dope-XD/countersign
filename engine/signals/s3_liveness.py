@@ -5,6 +5,7 @@ to the start of the caller's reply, check the words with faster-whisper, and re-
 reply with S1 (clones degrade on unusual delivery). Only pass/fail and timings are kept;
 the transcript is discarded.
 """
+
 from __future__ import annotations
 
 import logging
@@ -26,17 +27,59 @@ THINGS = [("tota", "तोता", "parrot"), ("aam", "आम", "mango"), ("ghod
 
 NUM_WORDS = {
     # English
-    "zero": "0", "oh": "0", "one": "1", "two": "2", "three": "3", "four": "4", "five": "5",
-    "six": "6", "seven": "7", "eight": "8", "nine": "9",
+    "zero": "0",
+    "oh": "0",
+    "one": "1",
+    "two": "2",
+    "three": "3",
+    "four": "4",
+    "five": "5",
+    "six": "6",
+    "seven": "7",
+    "eight": "8",
+    "nine": "9",
     # Hindi, Roman
-    "shunya": "0", "ek": "1", "do": "2", "teen": "3", "tin": "3", "char": "4", "chaar": "4", "paanch": "5",
-    "panch": "5", "chhe": "6", "chhah": "6", "che": "6", "saat": "7", "sat": "7", "aath": "8", "ath": "8",
+    "shunya": "0",
+    "ek": "1",
+    "do": "2",
+    "teen": "3",
+    "tin": "3",
+    "char": "4",
+    "chaar": "4",
+    "paanch": "5",
+    "panch": "5",
+    "chhe": "6",
+    "chhah": "6",
+    "che": "6",
+    "saat": "7",
+    "sat": "7",
+    "aath": "8",
+    "ath": "8",
     "nau": "9",
     # Hindi, Devanagari
-    "शून्य": "0", "एक": "1", "दो": "2", "तीन": "3", "चार": "4", "पांच": "5", "पाँच": "5", "छह": "6",
-    "छः": "6", "सात": "7", "आठ": "8", "नौ": "9",
+    "शून्य": "0",
+    "एक": "1",
+    "दो": "2",
+    "तीन": "3",
+    "चार": "4",
+    "पांच": "5",
+    "पाँच": "5",
+    "छह": "6",
+    "छः": "6",
+    "सात": "7",
+    "आठ": "8",
+    "नौ": "9",
     # Devanagari digits
-    "०": "0", "१": "1", "२": "2", "३": "3", "४": "4", "५": "5", "६": "6", "७": "7", "८": "8", "९": "9",
+    "०": "0",
+    "१": "1",
+    "२": "2",
+    "३": "3",
+    "४": "4",
+    "५": "5",
+    "६": "6",
+    "७": "7",
+    "८": "8",
+    "९": "9",
 }
 
 
@@ -119,6 +162,9 @@ class ASR:
         self._lock = threading.Lock()
 
     def load(self) -> None:
+        if settings.asr_model == "off":
+            log.info("ASR disabled; liveness checks judge timing and S1 only")
+            return
         try:
             import torch  # noqa: F401  (puts CUDA / cuDNN DLLs on the search path)
 

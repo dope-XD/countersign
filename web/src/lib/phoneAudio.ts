@@ -15,6 +15,15 @@ export class PhoneAudio {
   onFileEnded: () => void = () => {}
 
   async start(source: Source, monitorFile = true) {
+    try {
+      await this.init(source, monitorFile)
+    } catch (e) {
+      await this.stop() // don't leak an AudioContext (browsers cap how many can exist)
+      throw e
+    }
+  }
+
+  private async init(source: Source, monitorFile: boolean) {
     const AC = window.AudioContext || (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext
     this.ctx = new AC()
     await this.ctx.audioWorklet.addModule('/worklets/capture.js')

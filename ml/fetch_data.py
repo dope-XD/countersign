@@ -5,6 +5,7 @@
 
 Gated sets (accept terms on the HF page, then `huggingface-cli login`): kathbath, mlaad_hi.
 """
+
 import sys
 from pathlib import Path
 
@@ -16,7 +17,10 @@ SETS = {
     "itw": ("SpeechAntiSpoofingBenchmarks/InTheWild", ["data/labels.parquet", "data/test-0000[0-3]-of-00008.parquet"]),
     "asv19_eval": ("SpeechAntiSpoofingBenchmarks/ASVspoof2019_LA", ["data/labels.parquet", "data/test-0000[0-1]-of-00009.parquet"]),
     "asv19_train": ("Bisher/ASVspoof_2019_LA", ["data/train-*"]),
-    "indicsynth_hi": ("vdivyasharma/IndicSynth", ["Hindi/train-00000-of-00107.parquet", "Hindi/train-00053-of-00107.parquet", "Hindi/train-00106-of-00107.parquet"]),
+    "indicsynth_hi": (
+        "vdivyasharma/IndicSynth",
+        ["Hindi/train-00000-of-00107.parquet", "Hindi/train-00053-of-00107.parquet", "Hindi/train-00106-of-00107.parquet"],
+    ),
     "fleurs_hi": ("google/fleurs", ["parquet-data/hi_in/train-*", "parquet-data/hi_in/validation-*"]),
     # gated (auto-approved after you accept the terms on the dataset page)
     "kathbath_hi": ("ai4bharat/Kathbath", ["hindi/valid-*"]),

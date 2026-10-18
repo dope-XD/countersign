@@ -4,7 +4,8 @@ import { browserSupportsWebAuthn, startAuthentication, startRegistration } from 
 import { api } from '../lib/api'
 import { useEvents } from '../lib/events'
 import { inr, type Approval, type Customer } from '../lib/types'
-import { Dot, Signature, useToast } from '../components/ui'
+import { Dot, Signature } from '../components/ui'
+import { useToast } from '../lib/useToast'
 
 type Home = {
   customer: Customer
@@ -382,9 +383,6 @@ function Security({ customer, home, reload, onBack, toast }: { customer: string;
         ))}
       </ul>
       <button className="btn-primary w-full py-3" disabled={!supported} onClick={enrol}>Bind this phone (create passkey)</button>
-      {home.passkeys.length > 0 && (
-        <button className="btn-ghost w-full text-xs" onClick={async () => { await api.del(`/api/app/${customer}/passkeys`); reload() }}>Remove all bound phones (demo reset)</button>
-      )}
     </section>
   )
 }

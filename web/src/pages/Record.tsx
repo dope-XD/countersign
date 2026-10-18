@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { api } from '../lib/api'
-import { TopBar, useToast } from '../components/ui'
+import { TopBar } from '../components/ui'
+import { useToast } from '../lib/useToast'
 
 type Item = { id: string; kind: 'opening' | 'challenge' | 'passage' | 'voice_note'; lang: string; text: string }
 

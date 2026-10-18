@@ -9,6 +9,7 @@ Outputs go to data/indiacall/clones/<generator>/<speaker>/<item>.wav, each folde
 SYNTHETIC label file. Only speakers with a consent record are cloned. Clone files are
 never released and are deleted after the event (python -m ml.clones.generate purge).
 """
+
 from __future__ import annotations
 
 import argparse
@@ -34,11 +35,11 @@ PASSAGE_TEXT = {pid: text for pid, _l, text in PASSAGES}
 
 def texts() -> list[tuple[str, str, str]]:
     """(item id, language, text) for everything a clone has to say."""
-    out = [(i, l, t) for i, l, t in OPENINGS]
+    out = list(OPENINGS)
     for c in challenges().values():
         out.append((c.id, "any", c.say.split(": ", 1)[1].strip('"')))
-    out += [(i, l, t) for i, l, t in PASSAGES if l != "any"]
-    out += [(i, l, t) for i, l, t in VOICE_NOTES]
+    out += [p for p in PASSAGES if p[1] != "any"]
+    out += list(VOICE_NOTES)
     return out
 
 
@@ -143,9 +144,26 @@ def gen_seedvc(speakers: list[str], seedvc_dir: str) -> None:
             if not src.exists():
                 continue
             subprocess.run(
-                [sys.executable, "inference.py", "--source", str(src), "--target", str(ref), "--output", str(tmp),
-                 "--diffusion-steps", "30", "--length-adjust", "1.0", "--inference-cfg-rate", "0.7", "--f0-condition", "False"],
-                cwd=seedvc_dir, check=True,
+                [
+                    sys.executable,
+                    "inference.py",
+                    "--source",
+                    str(src),
+                    "--target",
+                    str(ref),
+                    "--output",
+                    str(tmp),
+                    "--diffusion-steps",
+                    "30",
+                    "--length-adjust",
+                    "1.0",
+                    "--inference-cfg-rate",
+                    "0.7",
+                    "--f0-condition",
+                    "False",
+                ],
+                cwd=seedvc_dir,
+                check=True,
             )
             produced = max(tmp.glob("*.wav"), key=lambda p: p.stat().st_mtime)
             shutil.move(produced, d / f"{item}.wav")

@@ -28,6 +28,7 @@ export type BankRequest = {
   status: string
   created_at: number
   cooloff_until: number | null
+  missing: string[] // requirements still outstanding, computed by the engine
   policy: {
     risk: string
     tier: Tier

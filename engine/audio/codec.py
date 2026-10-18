@@ -3,6 +3,7 @@
 The softphone sends 8 kHz mu-law, exactly what a PSTN leg carries, so every score the
 engine produces is on phone-quality audio.
 """
+
 from __future__ import annotations
 
 import numpy as np

@@ -3,6 +3,7 @@
 The file is decoded with ffmpeg, scored with S1 and S2 in memory, and deleted. Nothing
 is kept unless the customer opts in to training.
 """
+
 from __future__ import annotations
 
 import os
@@ -17,6 +18,10 @@ from engine.signals.s1_synth import detector
 from engine.signals.s2_drift import CallDrift, embedder
 
 
+class VoiceNoteError(Exception):
+    pass
+
+
 def decode_any(data: bytes, sr: int = 16000) -> np.ndarray:
     with tempfile.NamedTemporaryFile(delete=False, suffix=".bin") as f:
         f.write(data)
@@ -24,8 +29,12 @@ def decode_any(data: bytes, sr: int = 16000) -> np.ndarray:
     try:
         out = subprocess.run(
             ["ffmpeg", "-nostdin", "-v", "error", "-i", path, "-ac", "1", "-ar", str(sr), "-f", "f32le", "-"],
-            capture_output=True, check=True, timeout=60,
+            capture_output=True,
+            check=True,
+            timeout=60,
         ).stdout
+    except (subprocess.CalledProcessError, subprocess.TimeoutExpired) as e:
+        raise VoiceNoteError("this file isn't an audio format we can read") from e
     finally:
         os.remove(path)
     return np.frombuffer(out, dtype=np.float32).copy()
@@ -51,13 +60,21 @@ def check(data: bytes) -> dict:
     d = drift.max_recent(10)
     drift.wipe()
     if s1 >= settings.red_at:
-        verdict, msg = "likely_synthetic", "This voice note shows strong signs of a computer-made voice. Please check with the person on their saved number before you pay."
+        verdict, msg = (
+            "likely_synthetic",
+            "This voice note shows strong signs of a computer-made voice. Please check with the person on their saved number before you pay.",
+        )
     elif s1 >= settings.amber_at or (d is not None and d > 0.5):
         verdict, msg = "unsure", "We can't be sure this voice is real. Please check with the person on their saved number before you pay."
     else:
         verdict, msg = "no_signs", "We found no signs of a computer-made voice. Scammers can still pretend to be family, so check before sending money."
     return {
-        "verdict": verdict, "message": msg, "seconds": round(seconds, 1), "s1": round(s1, 3),
-        "windows": len(wins), "max_drift": None if d is None else round(d, 3), "model": detector.version,
+        "verdict": verdict,
+        "message": msg,
+        "seconds": round(seconds, 1),
+        "s1": round(s1, 3),
+        "windows": len(wins),
+        "max_drift": None if d is None else round(d, 3),
+        "model": detector.version,
         "stored": False,
     }

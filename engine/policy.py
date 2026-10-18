@@ -3,6 +3,7 @@
 A request cannot be executed until every requirement is met. The agent console only
 reflects this; it cannot route around it.
 """
+
 from __future__ import annotations
 
 import time
@@ -57,9 +58,18 @@ def create_request(customer_id: str, channel: str, action: str, details: dict, t
     db.insert(
         "requests",
         {
-            "id": rid, "customer_id": customer_id, "channel": channel, "call_id": call_id, "action": action,
-            "details": details, "tier": tier, "policy": policy, "status": "open",
-            "created_at": now, "updated_at": now, "cooloff_until": None,
+            "id": rid,
+            "customer_id": customer_id,
+            "channel": channel,
+            "call_id": call_id,
+            "action": action,
+            "details": details,
+            "tier": tier,
+            "policy": policy,
+            "status": "open",
+            "created_at": now,
+            "updated_at": now,
+            "cooloff_until": None,
         },
     )
     db.audit("policy", "request_created", rid, action=action, tier=tier, channel=channel)
@@ -101,9 +111,12 @@ def _auto_steps(r: dict) -> None:
         label = ACTIONS[r["action"]]["label"].lower()
         hub.publish(
             f"app:{r['customer_id']}",
-            {"type": "alert", "title": "Someone asked us to change your account",
-             "body": f"A caller asked to {label}. We paused it. If this wasn't you, you don't need to do anything.",
-             "request_id": r["id"]},
+            {
+                "type": "alert",
+                "title": "Someone asked us to change your account",
+                "body": f"A caller asked to {label}. We paused it. If this wasn't you, you don't need to do anything.",
+                "request_id": r["id"],
+            },
         )
         mark(r["id"], "alert_customer", "met", by="system", channel=f"app+sms {cust.registered_mobile if cust else ''}")
 

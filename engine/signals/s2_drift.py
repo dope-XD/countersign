@@ -5,6 +5,7 @@ windows of the same call. A jump suggests a hand-over to a TTS voice or a conver
 glitch. Embeddings live only in the CallDrift object and are dropped when the call ends.
 No voiceprint is enrolled or stored anywhere.
 """
+
 from __future__ import annotations
 
 import logging

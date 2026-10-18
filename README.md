@@ -24,13 +24,16 @@ RAKSHAM 2026 · Problem statement 01 (voice-cloning fraud) · Team losers: Pushk
 .\run.ps1            # builds the web app if needed, starts the engine on http://localhost:8000
 ```
 
-Then open http://localhost:8000/demo. For phones, see [docs/RUNBOOK.md](docs/RUNBOOK.md) (HTTPS tunnel, passkeys).
+Then open http://localhost:8000/demo. Staff pages (agent console, fraud desk, demo panel, metrics, recorder) ask for the **staff PIN**, which the engine prints in its console at startup. Set your own with `$env:COUNTERSIGN_STAFF_PIN`. The bank app and the softphone don't need it. For phones, see [docs/RUNBOOK.md](docs/RUNBOOK.md) (HTTPS tunnel, passkeys).
 
-## Tests
+## Checks and tests
 
 ```powershell
-.venv\Scripts\python -m pytest engine -q
+.\check.ps1          # ruff lint + format, pytest (unit + API regression), eslint, tsc, web build
+git config core.hooksPath .githooks   # once per clone: runs the fast checks on every commit
 ```
+
+Code style: `ruff format` for Python, ESLint for the web app. Please keep `.\check.ps1` green.
 
 ## Docs
 

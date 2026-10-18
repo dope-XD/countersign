@@ -3,6 +3,7 @@
 These stand in for the real integrations named in the deck (core banking, FRI via DIP,
 a telco SIM-swap API). The demo panel can flip any of them live.
 """
+
 from __future__ import annotations
 
 import copy
@@ -31,15 +32,30 @@ class Customer:
 
 SEED: dict[str, Customer] = {
     "rahul": Customer(
-        id="rahul", name="Rahul Sharma", age=29, city="Bengaluru", language="en-IN",
-        registered_mobile="+919845012210", account_no="50100231187210", balance=184_250.0,
-        upi_id="rahul.sharma@cbank", usual_upi_max=25_000, known_payees=["sunita.sharma@cbank", "landlord.blr@okaxis"],
+        id="rahul",
+        name="Rahul Sharma",
+        age=29,
+        city="Bengaluru",
+        language="en-IN",
+        registered_mobile="+919845012210",
+        account_no="50100231187210",
+        balance=184_250.0,
+        upi_id="rahul.sharma@cbank",
+        usual_upi_max=25_000,
+        known_payees=["sunita.sharma@cbank", "landlord.blr@okaxis"],
         family_circle=["sunita"],
     ),
     "sunita": Customer(
-        id="sunita", name="Sunita Sharma", age=62, city="Lucknow", language="hi-IN",
-        registered_mobile="+919415033618", account_no="50100110094618", balance=312_900.0,
-        upi_id="sunita.sharma@cbank", usual_upi_max=5_000,
+        id="sunita",
+        name="Sunita Sharma",
+        age=62,
+        city="Lucknow",
+        language="hi-IN",
+        registered_mobile="+919415033618",
+        account_no="50100110094618",
+        balance=312_900.0,
+        upi_id="sunita.sharma@cbank",
+        usual_upi_max=5_000,
         known_payees=["rahul.sharma@cbank", "doodhwala.lko@okicici", "medplus.lko@ybl"],
         family_circle=["rahul"],
     ),

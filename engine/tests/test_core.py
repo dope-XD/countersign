@@ -1,4 +1,5 @@
 import time
+from pathlib import Path
 
 import numpy as np
 import pytest
@@ -88,16 +89,19 @@ def test_s4_flags():
 
 
 # ------------------------------------------------------------------ policy
-@pytest.mark.parametrize("action,tier,expected", [
-    ("block_card", "RED", []),
-    ("balance", "AMBER", []),
-    ("account_details", "GREEN", ["standard_checks"]),
-    ("account_details", "AMBER", ["standard_checks", "liveness"]),
-    ("account_details", "RED", ["app_approval"]),
-    ("change_mobile", "GREEN", ["standard_checks", "app_approval"]),
-    ("add_payee", "AMBER", ["app_approval", "liveness"]),
-    ("change_mobile", "RED", ["app_approval", "cooloff_24h", "fraud_desk", "alert_customer"]),
-])
+@pytest.mark.parametrize(
+    "action,tier,expected",
+    [
+        ("block_card", "RED", []),
+        ("balance", "AMBER", []),
+        ("account_details", "GREEN", ["standard_checks"]),
+        ("account_details", "AMBER", ["standard_checks", "liveness"]),
+        ("account_details", "RED", ["app_approval"]),
+        ("change_mobile", "GREEN", ["standard_checks", "app_approval"]),
+        ("add_payee", "AMBER", ["app_approval", "liveness"]),
+        ("change_mobile", "RED", ["app_approval", "cooloff_24h", "fraud_desk", "alert_customer"]),
+    ],
+)
 def test_policy_matrix(action, tier, expected):
     assert policy.cell(action, tier)["requirements"] == expected
 
@@ -177,17 +181,17 @@ def test_approve_requires_signature_decline_does_not():
     r = policy.create_request("rahul", "contact_centre", "add_payee", {}, "GREEN")
     a = passkeys.request_approval(r["id"], "rahul", "app_approval", {"question": "?"})
     with pytest.raises(passkeys.StepUpError):
-        passkeys.decide(a["id"], "approve", None, "localhost", "http://localhost:8000")
-    assert passkeys.decide(a["id"], "decline", None, None, None)["status"] == "declined"
+        passkeys.decide(a["id"], "approve", None, "localhost:8000")
+    assert passkeys.decide(a["id"], "decline", None, None)["status"] == "declined"
 
 
 # ------------------------------------------------------------------ evidence
 def test_clip_encryption_roundtrip_and_audit():
     c = cases.open_case(channel="contact_centre", customer_id="rahul", call_id="call_t", tier="RED", reasons=["SYN_ARTIFACT_HIGH"])
-    audio = (np.random.randn(16000 * 3) * 0.1).astype(np.float32)
-    cases.attach_clip(c["id"], audio)
+    audio = (np.random.randn(8000 * 3) * 0.1).astype(np.float32)
+    cases.attach_clip(c["id"], audio, 8000)
     stored = db.get("cases", c["id"])
-    blob = open(stored["clip_path"], "rb").read()
+    blob = Path(stored["clip_path"]).read_bytes()
     assert b"RIFF" not in blob  # encrypted at rest
     wav = cases.read_clip(c["id"], "analyst_1")
     assert wav[:4] == b"RIFF"
@@ -196,7 +200,7 @@ def test_clip_encryption_roundtrip_and_audit():
 
 def test_false_alarm_deletes_clip():
     c = cases.open_case(channel="contact_centre", customer_id="rahul", call_id="call_u", tier="RED")
-    cases.attach_clip(c["id"], np.zeros(16000, dtype=np.float32))
+    cases.attach_clip(c["id"], np.full(8000, 0.01, dtype=np.float32), 8000)
     cases.resolve(c["id"], "false_alarm", "analyst")
     assert db.get("cases", c["id"])["clip_path"] is None
 
@@ -219,7 +223,7 @@ def test_family_decline_cancels_and_prefills_1930():
     p = guard.start_payment("sunita", "new.person@ybl", 50000)
     a = guard.ask_family(p["payment_id"], "rahul")
     assert "₹50,000" in a["summary"]["question"]
-    decided = passkeys.decide(a["id"], "decline", None, None, None)
+    decided = passkeys.decide(a["id"], "decline", None, None)
     guard.on_family_decision(decided)
     assert db.get("requests", p["payment_id"])["status"] == "cancelled"
     assert db.query("SELECT 1 FROM reports WHERE kind='ncrp_1930_prefill'")

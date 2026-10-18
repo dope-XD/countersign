@@ -8,6 +8,7 @@ the fairseq checkpoint by `ml/port_sls_checkpoint.py`.
 Input: 64,600 samples of raw 16 kHz audio (not normalised, as in the original).
 Output: log-probabilities [spoof, bonafide].
 """
+
 from __future__ import annotations
 
 import torch

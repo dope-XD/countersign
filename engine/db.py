@@ -1,7 +1,9 @@
 """SQLite case store and audit log. Holds scores, tiers, reason codes, decisions and
 passkey public keys. Never raw audio (RED evidence clips are separate encrypted files)."""
+
 from __future__ import annotations
 
+import contextlib
 import json
 import sqlite3
 import threading
@@ -40,9 +42,15 @@ CREATE TABLE IF NOT EXISTS audit (
 CREATE TABLE IF NOT EXISTS reports (
   id TEXT PRIMARY KEY, kind TEXT NOT NULL, case_id TEXT, created_at REAL NOT NULL, payload TEXT NOT NULL
 );
-CREATE TABLE IF NOT EXISTS replay_hashes (
-  hash TEXT PRIMARY KEY, case_id TEXT, created_at REAL NOT NULL
+CREATE TABLE IF NOT EXISTS replay_landmarks (
+  hash INTEGER NOT NULL, case_id TEXT NOT NULL, t INTEGER NOT NULL
 );
+DROP TABLE IF EXISTS replay_hashes;
+CREATE INDEX IF NOT EXISTS ix_requests_customer ON requests(customer_id, channel);
+CREATE INDEX IF NOT EXISTS ix_approvals_target ON approvals(target_customer, status);
+CREATE INDEX IF NOT EXISTS ix_cases_call ON cases(call_id, status);
+CREATE INDEX IF NOT EXISTS ix_cases_request ON cases(request_id, status);
+CREATE INDEX IF NOT EXISTS ix_audit_ref ON audit(ref);
 """
 
 _JSON_COLS = {"details", "policy", "reasons", "scores", "timeline", "detail", "payload", "summary", "transports"}
@@ -64,14 +72,12 @@ class DB:
         d = dict(r)
         for k in _JSON_COLS & d.keys():
             if isinstance(d[k], str):
-                try:
+                with contextlib.suppress(json.JSONDecodeError):
                     d[k] = json.loads(d[k])
-                except json.JSONDecodeError:
-                    pass
         return d
 
     def _enc(self, data: dict) -> dict:
-        return {k: (json.dumps(v) if k in _JSON_COLS and not isinstance(v, (str, bytes, type(None))) else v) for k, v in data.items()}
+        return {k: (json.dumps(v) if k in _JSON_COLS and not isinstance(v, str | bytes | None) else v) for k, v in data.items()}
 
     def insert(self, table: str, data: dict) -> None:
         data = self._enc(data)
@@ -98,13 +104,17 @@ class DB:
         with self._lock:
             self._conn.execute(sql, args)
 
+    def executemany(self, sql: str, rows: list[tuple]) -> None:
+        with self._lock:
+            self._conn.executemany(sql, rows)
+
     def audit(self, actor: str, event: str, ref: str | None = None, **detail) -> None:
         self.insert("audit", {"ts": time.time(), "actor": actor, "event": event, "ref": ref, "detail": detail or None})
 
     def wipe_world(self) -> None:
         """Demo reset: clears requests, cases, reports. Keeps enrolled passkeys."""
         with self._lock:
-            for t in ("requests", "approvals", "cases", "reports", "audit", "replay_hashes"):
+            for t in ("requests", "approvals", "cases", "reports", "audit", "replay_landmarks"):
                 self._conn.execute(f"DELETE FROM {t}")
 
 

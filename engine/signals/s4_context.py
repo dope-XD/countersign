@@ -1,4 +1,5 @@
 """S4: context risk. Never uses audio. Can raise the voice tier one step, never lower it."""
+
 from __future__ import annotations
 
 import time

@@ -1,4 +1,5 @@
 """Runtime settings. Everything can be overridden with COUNTERSIGN_* environment variables."""
+
 from __future__ import annotations
 
 import os
@@ -22,9 +23,9 @@ class Settings:
     # Detector. "dummy" scores with a heuristic so the pipeline runs without weights.
     s1_backend: str = _env("S1", "auto")  # auto | sls | dummy
     # the phone/Indic fine-tune when it exists, else the converted published checkpoint
-    s1_checkpoint: Path = Path(_env("S1_CKPT", str(
-        ROOT / "models" / ("s1_sls_phone.pt" if (ROOT / "models" / "s1_sls_phone.pt").exists() else "s1_sls_hf.pt")
-    )))
+    s1_checkpoint: Path = Path(
+        _env("S1_CKPT", str(ROOT / "models" / ("s1_sls_phone.pt" if (ROOT / "models" / "s1_sls_phone.pt").exists() else "s1_sls_hf.pt")))
+    )
     s2_enabled: bool = _env("S2", "1") == "1"
     asr_model: str = _env("ASR", "small")
     device: str = _env("DEVICE", "cuda")
@@ -45,12 +46,13 @@ class Settings:
     rp_id: str = _env("RP_ID", "auto")  # "auto" = the Host the page was loaded from
     rp_name: str = "Countersign Bank"
     origins: tuple[str, ...] = field(
-        default_factory=lambda: tuple(
-            o.strip()
-            for o in _env("ORIGINS", "http://localhost:8000,http://localhost:5173").split(",")
-            if o.strip()
-        )
+        default_factory=lambda: tuple(o.strip() for o in _env("ORIGINS", "http://localhost:8000,http://localhost:5173").split(",") if o.strip())
     )
+
+    # Staff PIN for the agent console, fraud desk, demo panel and metrics. Generated and
+    # printed on first run if unset (kept in runtime/staff_pin.txt).
+    staff_pin: str = _env("STAFF_PIN", "")
+    eval_mode: bool = _env("EVAL", "0") == "1"
 
     # Mock KMS: a 32-byte hex key. Generated on first run if absent.
     evidence_key_hex: str = _env("EVIDENCE_KEY", "")

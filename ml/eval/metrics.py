@@ -1,4 +1,5 @@
 """EER, detection rate at a fixed false-alarm rate, and Wilson intervals."""
+
 from __future__ import annotations
 
 import math

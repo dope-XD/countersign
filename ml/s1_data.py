@@ -1,7 +1,9 @@
 """Training/dev datasets for S1. Kept free of transformers so DataLoader workers stay small
 (each Windows worker re-imports this module)."""
+
 from __future__ import annotations
 
+import contextlib
 import csv
 import random
 import time
@@ -15,8 +17,10 @@ from ml.augment.telephony import channel, load_audio, random_phone_chain
 N_SAMPLES = 64600
 
 
-def read(path: str) -> list[dict]:
-    return list(csv.DictReader(open(path, encoding="utf-8")))
+def read(path) -> list[dict]:
+    """Rows of a manifest CSV (path,label,speaker,language,generator,source,split)."""
+    with open(path, encoding="utf-8", newline="") as f:
+        return list(csv.DictReader(f))
 
 
 def crop(x: np.ndarray, rng: random.Random, n: int = N_SAMPLES) -> np.ndarray:
@@ -39,10 +43,9 @@ class TrainSet(Dataset):
         rng = random.Random(hash((self.seed, i, time.time_ns())))
         r = self.rows[i]
         x = crop(load_audio(r["path"]), rng)
-        try:
+        # a codec hiccup shouldn't kill the epoch; the clean clip is still useful
+        with contextlib.suppress(Exception):
             x, _ = random_phone_chain(x, rng)
-        except Exception:
-            pass  # a codec hiccup shouldn't kill the epoch; the clean clip is still useful
         x = crop(x, rng)
         y = 1 if r["label"] == "bonafide" else 0
         return torch.from_numpy(np.ascontiguousarray(x, dtype=np.float32)), y

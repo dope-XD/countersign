@@ -22,3 +22,4 @@ pytest==8.3.4
 httpx==0.28.1
 pyarrow==18.1.0  # never import before transformers/sentencepiece in one process (Windows DLL clash)
 sentencepiece==0.2.0
+ruff==0.8.4

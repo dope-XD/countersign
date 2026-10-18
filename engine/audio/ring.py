@@ -1,4 +1,5 @@
 """Rolling in-memory audio buffer. Nothing here ever touches disk."""
+
 from __future__ import annotations
 
 import numpy as np

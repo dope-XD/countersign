@@ -8,6 +8,7 @@ Weights come from models/fusion.json once fitted on IndiaCall dev calls
 (ml/eval/fit_fusion.py); the defaults below are hand-set so the pipeline behaves sensibly
 before that.
 """
+
 from __future__ import annotations
 
 import json
@@ -44,7 +45,7 @@ class FusionWeights:
     source: str = "default"
 
     @classmethod
-    def load(cls) -> "FusionWeights":
+    def load(cls) -> FusionWeights:
         p = settings.models_dir / "fusion.json"
         if p.exists():
             d = json.loads(p.read_text())
@@ -76,6 +77,17 @@ def call_s1_score(window_probs: list[float]) -> float:
     return sum(top) / len(top) if top else 0.0
 
 
+def features(window_probs: list[float], drift: float | None, liveness: dict | None, w: FusionWeights | None = None) -> tuple[float, float, float]:
+    """(x1, x2, x3) as described at the top of this module. Shared with ml/eval/fit_fusion.py."""
+    w = w or weights
+    # no scored window yet: S1 gives no evidence either way (logit 0), rather than "certainly real"
+    x1 = _logit(call_s1_score(window_probs)) if window_probs else 0.0
+    x2 = min(2.0, max(0.0, (drift - w.drift_threshold) / w.drift_scale)) if drift is not None else 0.0
+    fails = (liveness or {}).get("reasons", [])
+    x3 = min(1.0, 0.5 * ("RESP_LAG" in fails or "NO_REPLY" in fails) + 0.5 * ("CHALLENGE_MISMATCH" in fails) + 0.5 * ("SYN_ARTIFACT_HIGH" in fails))
+    return x1, x2, x3
+
+
 def fuse(
     window_probs: list[float],
     drift: float | None,
@@ -86,13 +98,7 @@ def fuse(
 ) -> Verdict:
     w = weights
     s1 = call_s1_score(window_probs)
-    x1 = _logit(s1)
-    x2 = max(0.0, (drift - w.drift_threshold) / w.drift_scale) if drift is not None else 0.0
-    x2 = min(x2, 2.0)
-    x3 = 0.0
-    if liveness:
-        fails = liveness.get("reasons", [])
-        x3 = min(1.0, 0.5 * ("RESP_LAG" in fails or "NO_REPLY" in fails) + 0.5 * ("CHALLENGE_MISMATCH" in fails) + 0.5 * ("SYN_ARTIFACT_HIGH" in fails))
+    x1, x2, x3 = features(window_probs, drift, liveness, w)
     z = w.w1 * x1 + w.w2 * x2 + w.w3 * x3 + w.b
     r = 1 / (1 + math.exp(-z))
 
@@ -127,10 +133,7 @@ def fuse(
 
     info = context_info or {}
     lag = (liveness or {}).get("lag_s") or 0.0
-    texts = [
-        REASON_TEXT.get(c, c).format(k=k_hi if c == "SYN_ARTIFACT_HIGH" else k_mid, n=min(n, 10), lag=lag, fri=info.get("fri") or "high")
-        for c in codes
-    ]
+    texts = [REASON_TEXT.get(c, c).format(k=k_hi if c == "SYN_ARTIFACT_HIGH" else k_mid, n=min(n, 10), lag=lag, fri=info.get("fri") or "high") for c in codes]
     return Verdict(
         r=r,
         voice_tier=TIERS[voice_idx],

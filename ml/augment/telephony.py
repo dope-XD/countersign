@@ -3,6 +3,7 @@
 Each channel takes 16 kHz float32 audio and returns 16 kHz float32 audio that has gone
 through a real codec (via ffmpeg), so S1 learns phone artefacts and not just lab ones.
 """
+
 from __future__ import annotations
 
 import random
@@ -34,11 +35,15 @@ def _ffmpeg(x: np.ndarray, args: list[str], fmt: str, rate: int) -> np.ndarray:
     pcm = np.clip(x, -1, 1).astype(np.float32).tobytes()
     enc = subprocess.run(
         ["ffmpeg", "-nostdin", "-v", "error", "-f", "f32le", "-ar", "16000", "-ac", "1", "-i", "-", "-ar", str(rate), *args, "-f", fmt, "-"],
-        input=pcm, capture_output=True, check=True,
+        input=pcm,
+        capture_output=True,
+        check=True,
     ).stdout
     dec = subprocess.run(
         ["ffmpeg", "-nostdin", "-v", "error", "-f", fmt, "-i", "-", "-ac", "1", "-ar", "16000", "-f", "f32le", "-"],
-        input=enc, capture_output=True, check=True,
+        input=enc,
+        capture_output=True,
+        check=True,
     ).stdout
     y = np.frombuffer(dec, dtype=np.float32).copy()
     if len(y) >= len(x):
@@ -110,6 +115,7 @@ def load_audio(path: str, sr: int = 16000) -> np.ndarray:
     except Exception:
         out = subprocess.run(
             ["ffmpeg", "-nostdin", "-v", "error", "-i", path, "-ac", "1", "-ar", str(sr), "-f", "f32le", "-"],
-            capture_output=True, check=True,
+            capture_output=True,
+            check=True,
         ).stdout
         return np.frombuffer(out, dtype=np.float32).copy()

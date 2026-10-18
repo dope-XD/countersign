@@ -5,12 +5,14 @@ Backends:
   dummy - a spectral heuristic so the whole product runs before weights exist.
           The UI labels it clearly; it is never used for reported numbers.
 """
+
 from __future__ import annotations
 
 import logging
 import threading
 import time
 from dataclasses import dataclass
+from pathlib import Path
 
 import numpy as np
 
@@ -36,36 +38,38 @@ class S1Detector:
         self.calib = (1.0, 0.0)  # p = sigmoid(a * log-odds + b), fitted by ml/calibrate_s1.py
         self.calibrated = False
 
-    def load(self) -> None:
-        want = settings.s1_backend
-        if want in ("auto", "sls") and settings.s1_checkpoint.exists():
+    def load(self, checkpoint: Path | str | None = None) -> None:
+        """Load S1. `checkpoint` overrides settings.s1_checkpoint (used by the ML scripts)."""
+        want = "sls" if checkpoint else settings.s1_backend
+        ckpt = Path(checkpoint) if checkpoint else settings.s1_checkpoint
+        if want in ("auto", "sls") and ckpt.exists():
             try:
-                self._load_sls()
+                self._load_sls(ckpt)
                 return
             except Exception:
                 if want == "sls":
                     raise
                 log.exception("Could not load SLS checkpoint, falling back to dummy")
         elif want == "sls":
-            raise FileNotFoundError(settings.s1_checkpoint)
+            raise FileNotFoundError(ckpt)
         log.warning("S1 running the DUMMY scorer. Results are not meaningful.")
 
-    def _load_sls(self) -> None:
+    def _load_sls(self, path: Path) -> None:
         import torch
 
         from engine.signals.sls_model import SLSModel
 
         self.device = "cuda" if settings.device == "cuda" and torch.cuda.is_available() else "cpu"
-        ckpt = torch.load(settings.s1_checkpoint, map_location="cpu", weights_only=False)
+        ckpt = torch.load(path, map_location="cpu", weights_only=False)
         model = SLSModel()
-        state = ckpt["state_dict"] if "state_dict" in ckpt else ckpt
+        state = ckpt.get("state_dict", ckpt)
         model.load_state_dict(state, strict=True)
         model.eval().to(self.device)
         if self.device == "cuda":
             model.half()
         self.model = model
         self.backend = "sls"
-        self.version = ckpt.get("version", settings.s1_checkpoint.stem) if isinstance(ckpt, dict) else "sls"
+        self.version = ckpt.get("version", path.stem) if isinstance(ckpt, dict) else "sls"
         self._load_calibration()
         # Warm-up so the first live window isn't slow
         self.score([np.zeros(64600, dtype=np.float32)])

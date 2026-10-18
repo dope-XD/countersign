@@ -7,6 +7,7 @@ Logistic regression on the same features the engine computes (x1 = logit S1 call
 x2 = drift excess, x3 = liveness failure) with genuine = 0, attack = 1. The bias is then
 shifted so that at most 5% of genuine dev calls reach AMBER (deck target).
 """
+
 from __future__ import annotations
 
 import argparse
@@ -17,23 +18,18 @@ import numpy as np
 from sklearn.linear_model import LogisticRegression
 
 from engine.config import settings
-from engine.fusion import FusionWeights
+from engine.fusion import FusionWeights, features
 
 EVAL = settings.models_dir / "eval"
 
 
-def features(r: dict, w: FusionWeights) -> list[float] | None:
+def call_features(r: dict, w: FusionWeights) -> list[float] | None:
+    """Rebuild the engine's fusion features from a simulated call's result."""
     f = r.get("features")
-    if not f:
+    if not f or f.get("s1") is None:
         return None
-    s1 = min(max(f.get("s1") or 0.0, 1e-4), 1 - 1e-4)
-    x1 = math.log(s1 / (1 - s1))
-    d = f.get("drift")
-    x2 = min(2.0, max(0.0, (d - w.drift_threshold) / w.drift_scale)) if d is not None else 0.0
-    lv = r.get("liveness") or {}
-    reasons = lv.get("reasons", [])
-    x3 = min(1.0, 0.5 * ("RESP_LAG" in reasons or "NO_REPLY" in reasons) + 0.5 * ("CHALLENGE_MISMATCH" in reasons) + 0.5 * ("SYN_ARTIFACT_HIGH" in reasons))
-    return [x1, x2, x3]
+    # the engine reports the call-level S1 score, which is all x1 needs
+    return list(features([f["s1"]], f.get("drift"), r.get("liveness"), w))
 
 
 def main():
@@ -45,7 +41,7 @@ def main():
     rows = [r for r in json.loads((EVAL / f"indiacall_{a.dev}.json").read_text())["results"] if not r.get("error")]
     X, y = [], []
     for r in rows:
-        f = features(r, base)
+        f = call_features(r, base)
         if f is not None:
             X.append(f)
             y.append(0 if r["plan"]["level"] == "genuine" else 1)
@@ -65,10 +61,17 @@ def main():
     r = 1 / (1 + np.exp(-zr))
     gen_amber = float(np.mean(r[y == 0] >= settings.amber_at))
     att_red = float(np.mean(r[y == 1] >= settings.red_at))
-    out = {"w1": max(w1, 0.1), "w2": max(w2, 0.0), "w3": max(w3, 0.0), "b": b,
-           "drift_threshold": base.drift_threshold, "drift_scale": base.drift_scale,
-           "source": f"fitted on IndiaCall run '{a.dev}' ({len(y)} calls)",
-           "dev_genuine_amber_or_red": gen_amber, "dev_attack_red": att_red}
+    out = {
+        "w1": max(w1, 0.1),
+        "w2": max(w2, 0.0),
+        "w3": max(w3, 0.0),
+        "b": b,
+        "drift_threshold": base.drift_threshold,
+        "drift_scale": base.drift_scale,
+        "source": f"fitted on IndiaCall run '{a.dev}' ({len(y)} calls)",
+        "dev_genuine_amber_or_red": gen_amber,
+        "dev_attack_red": att_red,
+    }
     (settings.models_dir / "fusion.json").write_text(json.dumps(out, indent=2))
     print(json.dumps(out, indent=2))
 

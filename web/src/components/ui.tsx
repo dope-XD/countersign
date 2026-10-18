@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState, type ReactNode } from 'react'
+import type { ReactNode } from 'react'
 import { Link } from 'react-router-dom'
 import type { Tier } from '../lib/types'
 
@@ -42,33 +42,6 @@ export function TopBar({ title, right }: { title: string; right?: ReactNode }) {
 
 export function Dot({ ok }: { ok: boolean }) {
   return <span className={`inline-block h-2 w-2 rounded-full ${ok ? 'bg-green' : 'bg-red'}`} title={ok ? 'connected' : 'disconnected'} />
-}
-
-export function Toast({ msg, onDone, tone = 'info' }: { msg: string | null; onDone: () => void; tone?: 'info' | 'error' }) {
-  useEffect(() => {
-    if (!msg) return
-    const id = window.setTimeout(onDone, 4500)
-    return () => window.clearTimeout(id)
-  }, [msg, onDone])
-  if (!msg) return null
-  return (
-    <div className={`fixed bottom-4 left-1/2 z-50 -translate-x-1/2 rounded-md px-4 py-2 text-sm text-white shadow-lg ${tone === 'error' ? 'bg-red' : 'bg-ink'}`}>
-      {msg}
-    </div>
-  )
-}
-
-export function useToast() {
-  const [msg, setMsg] = useState<string | null>(null)
-  const [tone, setTone] = useState<'info' | 'error'>('info')
-  // stable identity: pages use `show` in effect dependencies
-  const show = useCallback((m: string, t: 'info' | 'error' = 'info') => {
-    setTone(t)
-    setMsg(m)
-  }, [])
-  const done = useCallback(() => setMsg(null), [])
-  const node = <Toast msg={msg} tone={tone} onDone={done} />
-  return { show, node }
 }
 
 export function Spark({ values, height = 40, threshold = [0.3, 0.7] }: { values: number[]; height?: number; threshold?: number[] }) {

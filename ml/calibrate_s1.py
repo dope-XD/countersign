@@ -7,12 +7,11 @@ The raw XLS-R+SLS output is very overconfident (real speech often gets P(fake) >
 so the GREEN/AMBER/RED cut-offs only mean something after this step. Dev clips are
 speaker-disjoint from training and never include IndiaCall or the public test sets.
 """
+
 from __future__ import annotations
 
 import argparse
-import csv
 import json
-import os
 import random
 from concurrent.futures import ThreadPoolExecutor
 
@@ -21,8 +20,10 @@ from sklearn.linear_model import LogisticRegression
 from tqdm import tqdm
 
 from engine.config import settings
+from engine.signals.s1_synth import S1Detector
 from ml.augment.telephony import channel, load_audio
 from ml.eval.metrics import eer
+from ml.s1_data import read
 
 CHANNELS = ["g711u", "amrnb_12k2", "opus_12k", "gsm", "clean"]
 
@@ -33,17 +34,10 @@ def main():
     ap.add_argument("--dev", default="data/manifests/dev.csv")
     ap.add_argument("--n", type=int, default=1500)
     a = ap.parse_args()
-    os.environ["COUNTERSIGN_S1_CKPT"] = a.checkpoint
-    # settings is read at import; re-point the detector explicitly
-    from engine.signals import s1_synth
+    det = S1Detector()
+    det.load(a.checkpoint)
 
-    object.__setattr__(settings, "s1_checkpoint", type(settings.s1_checkpoint)(a.checkpoint))
-    det = s1_synth.S1Detector()
-    det.load()
-    if det.backend != "sls":
-        raise SystemExit("could not load the checkpoint")
-
-    rows = list(csv.DictReader(open(a.dev, encoding="utf-8")))
+    rows = read(a.dev)
     rng = random.Random(0)
     bona = [r for r in rows if r["label"] == "bonafide"]
     spoof = [r for r in rows if r["label"] != "bonafide"]
@@ -68,7 +62,11 @@ def main():
     p = 1 / (1 + np.exp(-(A * z + B)))
     e, _ = eer(p[y == 0], p[y == 1])
     out = {
-        "version": det.version, "a": A, "b": B, "n": int(len(y)), "dev_eer": round(e, 4),
+        "version": det.version,
+        "a": A,
+        "b": B,
+        "n": int(len(y)),
+        "dev_eer": round(e, 4),
         "genuine_above_0.3": round(float(np.mean(p[y == 0] >= 0.3)), 4),
         "genuine_above_0.7": round(float(np.mean(p[y == 0] >= 0.7)), 4),
         "spoof_above_0.7": round(float(np.mean(p[y == 1] >= 0.7)), 4),

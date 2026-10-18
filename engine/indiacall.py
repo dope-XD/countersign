@@ -4,6 +4,7 @@ the clone generators and the call simulator.
 Only teammates who signed the consent form record. Clone outputs are labelled synthetic
 and deleted after the event.
 """
+
 from __future__ import annotations
 
 import json
@@ -29,12 +30,18 @@ OPENINGS = [
 
 _DIGITS = ["4729", "8153", "3961", "5284", "7316", "9142", "2678", "6835", "1497", "5923", "8261", "3574"]
 _PHRASES = [
-    ("neela tota", "नीला तोता", "blue parrot", "47"), ("hara aam", "हरा आम", "green mango", "18"),
-    ("peela ghoda", "पीला घोड़ा", "yellow horse", "36"), ("laal kitaab", "लाल किताब", "red book", "52"),
-    ("kaala chaand", "काला चांद", "black moon", "29"), ("neela aam", "नीला आम", "blue mango", "64"),
-    ("hara tota", "हरा तोता", "green parrot", "73"), ("laal ghoda", "लाल घोड़ा", "red horse", "85"),
-    ("peela chaand", "पीला चांद", "yellow moon", "91"), ("kaala tota", "काला तोता", "black parrot", "12"),
-    ("neela ghoda", "नीला घोड़ा", "blue horse", "58"), ("hara kitaab", "हरा किताब", "green book", "37"),
+    ("neela tota", "नीला तोता", "blue parrot", "47"),
+    ("hara aam", "हरा आम", "green mango", "18"),
+    ("peela ghoda", "पीला घोड़ा", "yellow horse", "36"),
+    ("laal kitaab", "लाल किताब", "red book", "52"),
+    ("kaala chaand", "काला चांद", "black moon", "29"),
+    ("neela aam", "नीला आम", "blue mango", "64"),
+    ("hara tota", "हरा तोता", "green parrot", "73"),
+    ("laal ghoda", "लाल घोड़ा", "red horse", "85"),
+    ("peela chaand", "पीला चांद", "yellow moon", "91"),
+    ("kaala tota", "काला तोता", "black parrot", "12"),
+    ("neela ghoda", "नीला घोड़ा", "blue horse", "58"),
+    ("hara kitaab", "हरा किताब", "green book", "37"),
 ]
 
 
@@ -50,9 +57,17 @@ def challenges() -> dict[str, Challenge]:
 
 
 PASSAGES = [
-    ("P01", "en", "The bank called me this morning about my card. I told them I would visit the branch on Saturday, because I prefer to sort these things out in person. My mother keeps reminding me to check every message twice before I pay anyone."),
+    (
+        "P01",
+        "en",
+        "The bank called me this morning about my card. I told them I would visit the branch on Saturday, because I prefer to sort these things out in person. My mother keeps reminding me to check every message twice before I pay anyone.",
+    ),
     ("P02", "hi", "आज सुबह मैंने बाज़ार से सब्ज़ियाँ खरीदीं और फिर दफ़्तर गया। शाम को माँ से फ़ोन पर बात हुई, उन्होंने पूछा कि खाना ठीक से खा रहा हूँ या नहीं।"),
-    ("P03", "hinglish", "Kal weekend pe hum dosto ke saath movie dekhne gaye the. Wapas aate hue traffic bahut tha, toh ghar pahunchne mein late ho gaya. Mummy ne phone karke poocha kahan ho."),
+    (
+        "P03",
+        "hinglish",
+        "Kal weekend pe hum dosto ke saath movie dekhne gaye the. Wapas aate hue traffic bahut tha, toh ghar pahunchne mein late ho gaya. Mummy ne phone karke poocha kahan ho.",
+    ),
     ("P04", "any", "Talk freely for about 40 seconds about your day, in whichever language you like."),
 ]
 
@@ -63,10 +78,10 @@ VOICE_NOTES = [
 
 
 def items() -> list[dict]:
-    out = [{"id": i, "kind": "opening", "lang": l, "text": t} for i, l, t in OPENINGS]
+    out = [{"id": i, "kind": "opening", "lang": lang, "text": t} for i, lang, t in OPENINGS]
     out += [{"id": c.id, "kind": "challenge", "lang": "any", "text": c.say.split(": ", 1)[1].strip('"')} for c in challenges().values()]
-    out += [{"id": i, "kind": "passage", "lang": l, "text": t} for i, l, t in PASSAGES]
-    out += [{"id": i, "kind": "voice_note", "lang": l, "text": t} for i, l, t in VOICE_NOTES]
+    out += [{"id": i, "kind": "passage", "lang": lang, "text": t} for i, lang, t in PASSAGES]
+    out += [{"id": i, "kind": "voice_note", "lang": lang, "text": t} for i, lang, t in VOICE_NOTES]
     return out
 
 
@@ -93,8 +108,13 @@ def save_recording(speaker: str, item_id: str, data: bytes, ext: str) -> dict:
 def record_consent(speaker: str, full_name: str, languages: list[str]) -> dict:
     speaker = _safe(speaker)
     (ROOT / "consent").mkdir(parents=True, exist_ok=True)
-    entry = {"speaker": speaker, "name": full_name, "languages": languages, "agreed_at": time.time(),
-             "terms": "Recordings used only for Countersign's IndiaCall test set at RAKSHAM 2026. Clones are labelled synthetic, never released, and deleted after the event."}
+    entry = {
+        "speaker": speaker,
+        "name": full_name,
+        "languages": languages,
+        "agreed_at": time.time(),
+        "terms": "Recordings used only for Countersign's IndiaCall test set at RAKSHAM 2026. Clones are labelled synthetic, never released, and deleted after the event.",
+    }
     (ROOT / "consent" / f"{speaker}.json").write_text(json.dumps(entry, indent=2, ensure_ascii=False), encoding="utf-8")
     return entry
 

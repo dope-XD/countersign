@@ -6,6 +6,7 @@ The published checkpoints hold the whole fine-tuned network (backbone + head) un
 fairseq names, usually prefixed with `module.` (DataParallel) and `ssl_model.model.`.
 Every tensor must map, and every SLSModel parameter must be filled, or this fails.
 """
+
 from __future__ import annotations
 
 import argparse

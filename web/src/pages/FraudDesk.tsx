@@ -2,7 +2,8 @@ import { useEffect, useState } from 'react'
 import { api } from '../lib/api'
 import { useEvents, usePoll } from '../lib/events'
 import { ACTIONS, ago, inr, type BankRequest, type Tier } from '../lib/types'
-import { Dot, TierPill, TopBar, useToast } from '../components/ui'
+import { Dot, TierPill, TopBar } from '../components/ui'
+import { useToast } from '../lib/useToast'
 
 type CaseRow = {
   id: string
@@ -50,6 +51,10 @@ export default function FraudDesk() {
     setClipUrl(null)
     if (sel) loadDetail(sel)
   }, [sel])
+  // free the decrypted clip from memory when it is replaced or the page closes
+  useEffect(() => () => {
+    if (clipUrl) URL.revokeObjectURL(clipUrl)
+  }, [clipUrl])
 
   const play = async () => {
     if (!detail) return
