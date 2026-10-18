@@ -1,0 +1,55 @@
+{
+  "model": "xlsr-sls-phone-indic",
+  "set": "ASVspoof 2019 LA eval",
+  "manifest": "data/manifests/asv19_eval.csv",
+  "results": [
+    {
+      "set": "ASVspoof 2019 LA eval",
+      "condition": "clean",
+      "model": "xlsr-sls-phone-indic",
+      "eer": 0.0908,
+      "threshold": 0.378,
+      "detect_at_1pct_far": 0.8374,
+      "n_bona": 419,
+      "n_spoof": 781,
+      "published_eer": null,
+      "seconds": 9.1
+    },
+    {
+      "set": "ASVspoof 2019 LA eval",
+      "condition": "g711u",
+      "model": "xlsr-sls-phone-indic",
+      "eer": 0.055,
+      "threshold": 0.3301,
+      "detect_at_1pct_far": 0.9065,
+      "n_bona": 419,
+      "n_spoof": 781,
+      "published_eer": null,
+      "seconds": 9.6
+    },
+    {
+      "set": "ASVspoof 2019 LA eval",
+      "condition": "amrnb_12k2",
+      "model": "xlsr-sls-phone-indic",
+      "eer": 0.0432,
+      "threshold": 0.2952,
+      "detect_at_1pct_far": 0.9117,
+      "n_bona": 419,
+      "n_spoof": 781,
+      "published_eer": null,
+      "seconds": 27.3
+    },
+    {
+      "set": "ASVspoof 2019 LA eval",
+      "condition": "opus_12k",
+      "model": "xlsr-sls-phone-indic",
+      "eer": 0.0358,
+      "threshold": 0.3769,
+      "detect_at_1pct_far": 0.9513,
+      "n_bona": 419,
+      "n_spoof": 781,
+      "published_eer": null,
+      "seconds": 30.9
+    }
+  ]
+}

@@ -1,0 +1,46 @@
+# Countersign policy: what each tier changes, by request risk (deck, architecture page 2).
+# Readable and editable by the bank's risk team. The engine refuses to execute a request
+# until every requirement in its cell is met.
+
+actions:
+  balance:         {risk: low,    label: "Balance enquiry"}
+  block_card:      {risk: low,    label: "Block card"}
+  report_fraud:    {risk: low,    label: "Report fraud"}
+  account_details: {risk: medium, label: "Account details"}
+  card_reissue:    {risk: medium, label: "Reissue card to registered address"}
+  change_mobile:   {risk: high,   label: "Change registered mobile number"}
+  add_payee:       {risk: high,   label: "Add a new payee"}
+  raise_limit:     {risk: high,   label: "Raise transfer limit"}
+  large_transfer:  {risk: high,   label: "Large transfer"}
+
+# requirements: standard_checks | liveness | app_approval | cooloff_24h | fraud_desk | alert_customer
+# no_sensitive_details: proceed, but the agent must not read out account details
+matrix:
+  low:
+    GREEN: {requirements: [], note: "Proceed."}
+    AMBER: {requirements: [], alert_agent: true, note: "Proceed. Agent alerted."}
+    RED:   {requirements: [], no_sensitive_details: true, note: "Proceed, but do not read out any account details."}
+  medium:
+    GREEN: {requirements: [standard_checks], note: "Standard checks."}
+    AMBER: {requirements: [standard_checks, liveness], note: "Standard checks plus a liveness check."}
+    RED:   {requirements: [app_approval], note: "Approval in the app."}
+  high:
+    GREEN: {requirements: [standard_checks, app_approval], note: "Standard checks plus approval in the app."}
+    AMBER: {requirements: [app_approval, liveness], note: "Approval in the app plus a liveness check."}
+    RED:
+      requirements: [app_approval, cooloff_24h, fraud_desk, alert_customer]
+      no_phone_approval: true
+      note: "No approval by phone. App approval, 24 h cool-off, fraud desk, customer alerted. Lost phone: branch or video-KYC."
+
+# Same words for every step-up, so fraudsters can't use us to tune a clone.
+script:
+  app_approval: "For your security, I've sent an approval request to the phone registered on this account."
+  liveness: "For your security, please repeat a short phrase after me."
+  standard_checks: "Could you confirm your date of birth and the last four digits of your card?"
+  fraud_desk: "I'm transferring you to a colleague who can help with this request."
+
+# Override (agent waives the liveness step with a logged reason) is never available on RED,
+# and never waives app approval.
+override:
+  allowed_tiers: [GREEN, AMBER]
+  waives: [liveness, standard_checks]

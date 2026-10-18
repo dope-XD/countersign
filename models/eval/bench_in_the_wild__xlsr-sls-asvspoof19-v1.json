@@ -1,0 +1,55 @@
+{
+  "model": "xlsr-sls-asvspoof19-v1",
+  "set": "In-the-Wild",
+  "manifest": "data/manifests/itw.csv",
+  "results": [
+    {
+      "set": "In-the-Wild",
+      "condition": "clean",
+      "model": "xlsr-sls-asvspoof19-v1",
+      "eer": 0.08,
+      "threshold": 0.7779,
+      "detect_at_1pct_far": 0.625,
+      "n_bona": 600,
+      "n_spoof": 600,
+      "published_eer": 0.0784,
+      "seconds": 10.2
+    },
+    {
+      "set": "In-the-Wild",
+      "condition": "g711u",
+      "model": "xlsr-sls-asvspoof19-v1",
+      "eer": 0.1067,
+      "threshold": 0.7985,
+      "detect_at_1pct_far": 0.54,
+      "n_bona": 600,
+      "n_spoof": 600,
+      "published_eer": null,
+      "seconds": 9.6
+    },
+    {
+      "set": "In-the-Wild",
+      "condition": "amrnb_12k2",
+      "model": "xlsr-sls-asvspoof19-v1",
+      "eer": 0.1483,
+      "threshold": 0.8337,
+      "detect_at_1pct_far": 0.3383,
+      "n_bona": 600,
+      "n_spoof": 600,
+      "published_eer": null,
+      "seconds": 27.3
+    },
+    {
+      "set": "In-the-Wild",
+      "condition": "opus_12k",
+      "model": "xlsr-sls-asvspoof19-v1",
+      "eer": 0.1492,
+      "threshold": 0.8659,
+      "detect_at_1pct_far": 0.2867,
+      "n_bona": 600,
+      "n_spoof": 600,
+      "published_eer": null,
+      "seconds": 31.3
+    }
+  ]
+}

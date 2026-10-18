@@ -1,0 +1,207 @@
+{
+  "generated_at": "2026-10-18T20:08:49",
+  "model": {
+    "s1": "xlsr-sls-phone-indic",
+    "fusion": "default weights"
+  },
+  "benchmarks": [
+    {
+      "set": "ASVspoof 2019 LA eval",
+      "condition": "clean",
+      "model": "xlsr-sls-asvspoof19-v1",
+      "eer": 0.0025,
+      "threshold": 0.2188,
+      "detect_at_1pct_far": 0.9987,
+      "n_bona": 419,
+      "n_spoof": 781,
+      "published_eer": null,
+      "seconds": 9.9
+    },
+    {
+      "set": "ASVspoof 2019 LA eval",
+      "condition": "g711u",
+      "model": "xlsr-sls-asvspoof19-v1",
+      "eer": 0.0049,
+      "threshold": 0.3146,
+      "detect_at_1pct_far": 0.9974,
+      "n_bona": 419,
+      "n_spoof": 781,
+      "published_eer": null,
+      "seconds": 9.4
+    },
+    {
+      "set": "ASVspoof 2019 LA eval",
+      "condition": "amrnb_12k2",
+      "model": "xlsr-sls-asvspoof19-v1",
+      "eer": 0.0124,
+      "threshold": 0.6541,
+      "detect_at_1pct_far": 0.9872,
+      "n_bona": 419,
+      "n_spoof": 781,
+      "published_eer": null,
+      "seconds": 27.3
+    },
+    {
+      "set": "ASVspoof 2019 LA eval",
+      "condition": "opus_12k",
+      "model": "xlsr-sls-asvspoof19-v1",
+      "eer": 0.0167,
+      "threshold": 0.7244,
+      "detect_at_1pct_far": 0.9834,
+      "n_bona": 419,
+      "n_spoof": 781,
+      "published_eer": null,
+      "seconds": 30.9
+    },
+    {
+      "set": "ASVspoof 2019 LA eval",
+      "condition": "clean",
+      "model": "xlsr-sls-phone-indic",
+      "eer": 0.0908,
+      "threshold": 0.378,
+      "detect_at_1pct_far": 0.8374,
+      "n_bona": 419,
+      "n_spoof": 781,
+      "published_eer": null,
+      "seconds": 9.1
+    },
+    {
+      "set": "ASVspoof 2019 LA eval",
+      "condition": "g711u",
+      "model": "xlsr-sls-phone-indic",
+      "eer": 0.055,
+      "threshold": 0.3301,
+      "detect_at_1pct_far": 0.9065,
+      "n_bona": 419,
+      "n_spoof": 781,
+      "published_eer": null,
+      "seconds": 9.6
+    },
+    {
+      "set": "ASVspoof 2019 LA eval",
+      "condition": "amrnb_12k2",
+      "model": "xlsr-sls-phone-indic",
+      "eer": 0.0432,
+      "threshold": 0.2952,
+      "detect_at_1pct_far": 0.9117,
+      "n_bona": 419,
+      "n_spoof": 781,
+      "published_eer": null,
+      "seconds": 27.3
+    },
+    {
+      "set": "ASVspoof 2019 LA eval",
+      "condition": "opus_12k",
+      "model": "xlsr-sls-phone-indic",
+      "eer": 0.0358,
+      "threshold": 0.3769,
+      "detect_at_1pct_far": 0.9513,
+      "n_bona": 419,
+      "n_spoof": 781,
+      "published_eer": null,
+      "seconds": 30.9
+    },
+    {
+      "set": "In-the-Wild",
+      "condition": "clean",
+      "model": "xlsr-sls-asvspoof19-v1",
+      "eer": 0.08,
+      "threshold": 0.7779,
+      "detect_at_1pct_far": 0.625,
+      "n_bona": 600,
+      "n_spoof": 600,
+      "published_eer": 0.0784,
+      "seconds": 10.2
+    },
+    {
+      "set": "In-the-Wild",
+      "condition": "g711u",
+      "model": "xlsr-sls-asvspoof19-v1",
+      "eer": 0.1067,
+      "threshold": 0.7985,
+      "detect_at_1pct_far": 0.54,
+      "n_bona": 600,
+      "n_spoof": 600,
+      "published_eer": null,
+      "seconds": 9.6
+    },
+    {
+      "set": "In-the-Wild",
+      "condition": "amrnb_12k2",
+      "model": "xlsr-sls-asvspoof19-v1",
+      "eer": 0.1483,
+      "threshold": 0.8337,
+      "detect_at_1pct_far": 0.3383,
+      "n_bona": 600,
+      "n_spoof": 600,
+      "published_eer": null,
+      "seconds": 27.3
+    },
+    {
+      "set": "In-the-Wild",
+      "condition": "opus_12k",
+      "model": "xlsr-sls-asvspoof19-v1",
+      "eer": 0.1492,
+      "threshold": 0.8659,
+      "detect_at_1pct_far": 0.2867,
+      "n_bona": 600,
+      "n_spoof": 600,
+      "published_eer": null,
+      "seconds": 31.3
+    },
+    {
+      "set": "In-the-Wild",
+      "condition": "clean",
+      "model": "xlsr-sls-phone-indic",
+      "eer": 0.085,
+      "threshold": 0.5605,
+      "detect_at_1pct_far": 0.5817,
+      "n_bona": 600,
+      "n_spoof": 600,
+      "published_eer": 0.0784,
+      "seconds": 9.0
+    },
+    {
+      "set": "In-the-Wild",
+      "condition": "g711u",
+      "model": "xlsr-sls-phone-indic",
+      "eer": 0.1017,
+      "threshold": 0.6697,
+      "detect_at_1pct_far": 0.6333,
+      "n_bona": 600,
+      "n_spoof": 600,
+      "published_eer": null,
+      "seconds": 9.4
+    },
+    {
+      "set": "In-the-Wild",
+      "condition": "amrnb_12k2",
+      "model": "xlsr-sls-phone-indic",
+      "eer": 0.1267,
+      "threshold": 0.6697,
+      "detect_at_1pct_far": 0.46,
+      "n_bona": 600,
+      "n_spoof": 600,
+      "published_eer": null,
+      "seconds": 27.7
+    },
+    {
+      "set": "In-the-Wild",
+      "condition": "opus_12k",
+      "model": "xlsr-sls-phone-indic",
+      "eer": 0.1117,
+      "threshold": 0.7569,
+      "detect_at_1pct_far": 0.5217,
+      "n_bona": 600,
+      "n_spoof": 600,
+      "published_eer": null,
+      "seconds": 31.2
+    }
+  ],
+  "indiacall": null,
+  "notes": [
+    "Detector EERs use the first 4 s of each clip, passed through the named phone channel (ffmpeg codecs).",
+    "IndiaCall: teammates' consented voices and their clones, streamed through the live engine over G.711. Reply delays are sampled from live-call measurements; audio, words, scoring, policy and passkey signatures are real.",
+    "Speakers whose voices were cloned were never in S1 training data."
+  ]
+}

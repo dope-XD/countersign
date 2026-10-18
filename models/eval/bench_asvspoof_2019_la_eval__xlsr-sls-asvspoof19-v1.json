@@ -1,0 +1,55 @@
+{
+  "model": "xlsr-sls-asvspoof19-v1",
+  "set": "ASVspoof 2019 LA eval",
+  "manifest": "data/manifests/asv19_eval.csv",
+  "results": [
+    {
+      "set": "ASVspoof 2019 LA eval",
+      "condition": "clean",
+      "model": "xlsr-sls-asvspoof19-v1",
+      "eer": 0.0025,
+      "threshold": 0.2188,
+      "detect_at_1pct_far": 0.9987,
+      "n_bona": 419,
+      "n_spoof": 781,
+      "published_eer": null,
+      "seconds": 9.9
+    },
+    {
+      "set": "ASVspoof 2019 LA eval",
+      "condition": "g711u",
+      "model": "xlsr-sls-asvspoof19-v1",
+      "eer": 0.0049,
+      "threshold": 0.3146,
+      "detect_at_1pct_far": 0.9974,
+      "n_bona": 419,
+      "n_spoof": 781,
+      "published_eer": null,
+      "seconds": 9.4
+    },
+    {
+      "set": "ASVspoof 2019 LA eval",
+      "condition": "amrnb_12k2",
+      "model": "xlsr-sls-asvspoof19-v1",
+      "eer": 0.0124,
+      "threshold": 0.6541,
+      "detect_at_1pct_far": 0.9872,
+      "n_bona": 419,
+      "n_spoof": 781,
+      "published_eer": null,
+      "seconds": 27.3
+    },
+    {
+      "set": "ASVspoof 2019 LA eval",
+      "condition": "opus_12k",
+      "model": "xlsr-sls-asvspoof19-v1",
+      "eer": 0.0167,
+      "threshold": 0.7244,
+      "detect_at_1pct_far": 0.9834,
+      "n_bona": 419,
+      "n_spoof": 781,
+      "published_eer": null,
+      "seconds": 30.9
+    }
+  ]
+}

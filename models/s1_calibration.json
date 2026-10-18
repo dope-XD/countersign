@@ -1,0 +1,36 @@
+{
+  "xlsr-sls-asvspoof19-v1": {
+    "version": "xlsr-sls-asvspoof19-v1",
+    "a": 0.20762704509591842,
+    "b": -0.6847326069314246,
+    "n": 1315,
+    "dev_eer": 0.159,
+    "genuine_above_0.3": 0.3009,
+    "genuine_above_0.7": 0.1469,
+    "spoof_above_0.7": 0.836,
+    "channels": [
+      "g711u",
+      "amrnb_12k2",
+      "opus_12k",
+      "gsm",
+      "clean"
+    ]
+  },
+  "xlsr-sls-phone-indic": {
+    "version": "xlsr-sls-phone-indic",
+    "a": 0.3198461889684736,
+    "b": 2.4181315790323015,
+    "n": 1315,
+    "dev_eer": 0.0905,
+    "genuine_above_0.3": 0.108,
+    "genuine_above_0.7": 0.0265,
+    "spoof_above_0.7": 0.848,
+    "channels": [
+      "g711u",
+      "amrnb_12k2",
+      "opus_12k",
+      "gsm",
+      "clean"
+    ]
+  }
+}

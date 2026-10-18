@@ -1,0 +1,24 @@
+# engine
+fastapi==0.115.6
+uvicorn[standard]==0.32.1
+python-multipart==0.0.20
+numpy<2.3
+scipy==1.14.1
+pyyaml==6.0.2
+cryptography==44.0.0
+webauthn==2.5.0
+rapidfuzz==3.11.0
+transformers==4.46.3
+silero-vad==5.1.2
+speechbrain==1.0.3
+faster-whisper==1.1.1
+soundfile==0.12.1
+huggingface_hub==0.26.5
+# ml / eval
+scikit-learn==1.6.0
+pandas==2.2.3
+tqdm==4.67.1
+pytest==8.3.4
+httpx==0.28.1
+pyarrow==18.1.0  # never import before transformers/sentencepiece in one process (Windows DLL clash)
+sentencepiece==0.2.0

@@ -1,0 +1,9 @@
+{
+  "name": "Countersign Bank",
+  "short_name": "CS Bank",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#F4F3EF",
+  "theme_color": "#1F3F94",
+  "icons": [{ "src": "/icon.svg", "sizes": "any", "type": "image/svg+xml" }]
+}

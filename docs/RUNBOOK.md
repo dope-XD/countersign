@@ -1,0 +1,83 @@
+# Runbook
+
+## Setup (once)
+
+```powershell
+cd countersign
+python -m venv .venv
+uv pip install --python .venv\Scripts\python.exe torch==2.8.0 torchaudio==2.8.0 --index-url https://download.pytorch.org/whl/cu128
+uv pip install --python .venv\Scripts\python.exe -r requirements.txt
+cd web; npm install; npm run build; cd ..
+```
+
+Detector weights (1.4 GB download, then converted):
+
+```powershell
+curl.exe -L -o models\src\sls_v1_epoch_2.pth https://huggingface.co/sukhdeveyash/XLS-R-SLS-Deepfake-Detection/resolve/main/v1/epoch_2.pth
+.venv\Scripts\python -m ml.port_sls_checkpoint models\src\sls_v1_epoch_2.pth models\s1_sls_hf.pt
+```
+
+Calibrate it, which is required: raw SLS scores are badly overconfident, and the GREEN/AMBER/RED cut-offs assume calibrated scores:
+
+```powershell
+.venv\Scripts\python -m ml.fetch_data; .venv\Scripts\python -m ml.build_manifest
+.venv\Scripts\python -m ml.calibrate_s1 --checkpoint models\s1_sls_hf.pt
+```
+
+The engine uses `models\s1_sls_phone.pt` (the phone/Indic fine-tune, see docs/ML.md) when it exists, and otherwise the converted checkpoint. `models\s1_calibration.json` holds one calibration per model version. The engine log says which model and calibration it loaded.
+
+Windows caveat: in a single Python process, never import `pyarrow` before `transformers`/`sentencepiece`. That order crashes with an access violation (a DLL clash). The engine never imports pyarrow.
+
+## Run
+
+```powershell
+.\run.ps1
+```
+
+Open http://localhost:8000/demo. It shows model status, QR codes for phones, scenario switches and exactly what is stored.
+
+## Phones (passkeys and mic need HTTPS)
+
+Browsers only allow passkeys and microphone access on HTTPS (or localhost). Use a tunnel with a **fixed** hostname, because passkeys are bound to the hostname they were created on.
+
+1. Make a free ngrok account and claim the free static domain (Dashboard → Domains), e.g. `countersign-demo.ngrok-free.app`.
+2. `ngrok config add-authtoken <token>` (once).
+3. `ngrok http --url=countersign-demo.ngrok-free.app 8000`
+4. Open `https://countersign-demo.ngrok-free.app/demo` on the laptop and scan the QR codes with the phones.
+
+The engine derives the passkey RP ID from the host by default (`COUNTERSIGN_RP_ID=auto`). For the event, pin it:
+
+```powershell
+$env:COUNTERSIGN_RP_ID = "countersign-demo.ngrok-free.app"
+$env:COUNTERSIGN_ORIGINS = "https://countersign-demo.ngrok-free.app,http://localhost:8000"
+```
+
+Bind each demo phone once: open `/bank/rahul` on Rahul's phone → Security → Bind this phone. Passkeys survive engine restarts (`data/runtime/countersign.db`), and **Reset demo world keeps them**.
+
+ngrok's free tier shows an interstitial page on first visit from each browser; tap "Visit Site" once per phone before the demo.
+
+## Venue checklist
+
+- Run the tunnel over a phone hotspot, not venue Wi-Fi.
+- Laptop on power, `nvidia-smi` shows the RTX 5070, engine log says `S1 loaded ... on cuda`.
+- `/demo` → Engine card shows S1 `sls`, S2 `ecapa`, ASR `small`.
+- Phones: screen lock set (passkeys need it), brightness up, Do Not Disturb off, ngrok page already accepted.
+- Press **Reset demo world** before each run.
+
+## If something breaks
+
+| Symptom | Fix |
+|---|---|
+| Phone shows "doesn't support passkeys" | You opened the LAN IP over http. Use the https tunnel URL. |
+| "The RP ID is invalid for this domain" | `COUNTERSIGN_RP_ID` doesn't match the hostname in the address bar. |
+| Approval sheet never appears on Rahul's phone | Keep `/bank/rahul` open in the foreground; the green dot must be on. |
+| Agent console never leaves LISTENING | Caller mic muted, or < 4 s of speech so far. Check the level ring on the caller's screen. |
+| Engine slow / p95 above 300 ms | Another GPU app is running; close it. `-Dummy` mode for UI-only work. |
+| No internet at all | Laptop-only: open everything on `http://localhost:8000` in Chrome; passkeys work on localhost with Windows Hello. |
+| faster-whisper fails on GPU | It falls back to CPU automatically (slower liveness check, still works). |
+
+## Tests
+
+```powershell
+.venv\Scripts\python -m pytest engine -q
+```

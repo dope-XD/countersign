@@ -1,0 +1,55 @@
+{
+  "model": "xlsr-sls-phone-indic",
+  "set": "In-the-Wild",
+  "manifest": "data/manifests/itw.csv",
+  "results": [
+    {
+      "set": "In-the-Wild",
+      "condition": "clean",
+      "model": "xlsr-sls-phone-indic",
+      "eer": 0.085,
+      "threshold": 0.5605,
+      "detect_at_1pct_far": 0.5817,
+      "n_bona": 600,
+      "n_spoof": 600,
+      "published_eer": 0.0784,
+      "seconds": 9.0
+    },
+    {
+      "set": "In-the-Wild",
+      "condition": "g711u",
+      "model": "xlsr-sls-phone-indic",
+      "eer": 0.1017,
+      "threshold": 0.6697,
+      "detect_at_1pct_far": 0.6333,
+      "n_bona": 600,
+      "n_spoof": 600,
+      "published_eer": null,
+      "seconds": 9.4
+    },
+    {
+      "set": "In-the-Wild",
+      "condition": "amrnb_12k2",
+      "model": "xlsr-sls-phone-indic",
+      "eer": 0.1267,
+      "threshold": 0.6697,
+      "detect_at_1pct_far": 0.46,
+      "n_bona": 600,
+      "n_spoof": 600,
+      "published_eer": null,
+      "seconds": 27.7
+    },
+    {
+      "set": "In-the-Wild",
+      "condition": "opus_12k",
+      "model": "xlsr-sls-phone-indic",
+      "eer": 0.1117,
+      "threshold": 0.7569,
+      "detect_at_1pct_far": 0.5217,
+      "n_bona": 600,
+      "n_spoof": 600,
+      "published_eer": null,
+      "seconds": 31.2
+    }
+  ]
+}
