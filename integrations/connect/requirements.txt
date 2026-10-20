@@ -1,0 +1,2 @@
+# Laptop-side consumer (kvs_dump). The Lambda and the EBML reader are stdlib only.
+boto3>=1.35,<2
