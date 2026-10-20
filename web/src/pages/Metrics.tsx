@@ -4,9 +4,12 @@ import { TopBar } from '../components/ui'
 
 type Bench = { set: string; condition: string; model?: string; detect_at_1pct_far?: number; eer: number; n_bona: number; n_spoof: number; published_eer?: number | null }
 type Target = { name: string; target: string; result: string; pass: boolean | null }
-type Level = { level: string; description: string; calls: number; approved: number; tiers: Record<string, number> }
+type Level = { level: string; description: string; calls: number; approved: number; tiers: Record<string, number>; by_cli?: Record<string, number> }
 type Fair = { group: string; n: number; fpr: number; ci: [number, number] }
-type Miss = { id: string; level: string; language: string; tier: string; why: string }
+type Miss = { id: string; level: string; cli_kind?: string; language: string; tier: string; why: string }
+type CliKind = 'registered' | 'other'
+type GenuineRow = { cli_kind: CliKind; label: string; n: number; k: number; rate: number; ci: [number, number]; executed: number }
+type Detection = { level: string; cli_kind: CliKind; spoofed_cli: boolean; n: number; k: number; rate: number; ci: [number, number]; red: number; ended_green: number }
 type Report = {
   generated_at: string
   model: Record<string, string>
@@ -14,7 +17,8 @@ type Report = {
   indiacall?: {
     targets: Target[]
     levels: Level[]
-    genuine: { calls: number; stepped_up: number; rate: number }
+    genuine: { calls: number; stepped_up: number; rate: number; by_cli?: GenuineRow[] }
+    detection?: Detection[]
     first_tier_s?: { p50: number; p95: number }
     latency_ms?: { p50: number; p95: number }
     fairness: Fair[]
@@ -26,6 +30,8 @@ type Metrics = { report: Report | null; live: { s1_backend: string; s1_version: 
 
 const CH: Record<string, string> = { clean: 'clean', g711u: 'G.711 μ-law (PSTN)', amrnb_12k2: 'AMR-NB 12.2k (mobile)', opus_12k: 'Opus 12k (VoIP)' }
 const pct = (x: number) => `${(x * 100).toFixed(x < 0.1 ? 2 : 1)}%`
+const ci = (c: [number, number]) => `[${pct(c[0])}, ${pct(c[1])}]`
+const NUMBER: Record<string, string> = { registered: 'registered number', other: 'another number' }
 
 export default function Metrics() {
   const { data } = usePoll(() => api.get<Metrics>('/api/metrics'), 5000)
@@ -87,17 +93,30 @@ export default function Metrics() {
                       <td className="font-mono text-xs">{l.tiers.GREEN || 0} / {l.tiers.AMBER || 0} / {l.tiers.RED || 0}</td>
                     </tr>
                   ))}
-                  <tr className="border-b border-line">
-                    <td className="py-2 font-semibold">Genuine</td>
-                    <td>{ic.genuine.calls}</td>
-                    <td colSpan={2}>{ic.genuine.stepped_up} given an extra check ({pct(ic.genuine.rate)})</td>
-                  </tr>
+                  {ic.genuine.by_cli ? (
+                    ic.genuine.by_cli.map((g) => (
+                      <tr key={g.cli_kind} className="border-b border-line">
+                        <td className="py-2 font-semibold">Genuine<div className="text-xs font-normal text-muted">{NUMBER[g.cli_kind]}</div></td>
+                        <td>{g.n}</td>
+                        <td colSpan={2}>
+                          {g.k} given an extra check ({pct(g.rate)} <span className="font-mono text-xs text-muted">{ci(g.ci)}</span>)
+                          {g.cli_kind === 'registered' ? <div className="text-xs text-muted">target 5% or fewer</div> : <div className="text-xs text-muted">expected: an unknown number gets a liveness check</div>}
+                        </td>
+                      </tr>
+                    ))
+                  ) : (
+                    <tr className="border-b border-line">
+                      <td className="py-2 font-semibold">Genuine</td>
+                      <td>{ic.genuine.calls}</td>
+                      <td colSpan={2}>{ic.genuine.stepped_up} given an extra check ({pct(ic.genuine.rate)})</td>
+                    </tr>
+                  )}
                 </tbody>
               </table>
             </div>
             <div>
               <h2 className="text-xl font-bold">False alarms by group</h2>
-              <p className="text-xs text-muted">Genuine calls stepped up, with 95% Wilson intervals. Target: no group above 2× overall.</p>
+              <p className="text-xs text-muted">Genuine calls from the registered number stepped up, with 95% Wilson intervals. Target: no group above 2× overall.</p>
               <div className="mt-3 space-y-2">
                 {ic.fairness.map((f) => (
                   <div key={f.group} className="text-sm">
@@ -110,6 +129,33 @@ export default function Metrics() {
                 ))}
               </div>
             </div>
+          </section>
+        )}
+
+        {ic?.detection && ic.detection.length > 0 && (
+          <section>
+            <h2 className="text-xl font-bold">Detection only</h2>
+            <p className="text-xs text-muted">
+              Attack calls the agent saw as AMBER or RED, ignoring whether app approval later stopped them. Ended GREEN means a voice-only bank would have approved them.
+              With the registered number spoofed there is no caller-ID flag, so the tier comes from the voice signals alone.
+            </p>
+            <table className="mt-3 w-full text-sm">
+              <thead>
+                <tr className="border-b border-ink text-left"><th className="py-2">Level</th><th>Calling from</th><th>Calls</th><th>Reached AMBER or RED</th><th>RED</th><th>Ended GREEN</th></tr>
+              </thead>
+              <tbody>
+                {ic.detection.map((d) => (
+                  <tr key={`${d.level}-${d.cli_kind}`} className="border-b border-line">
+                    <td className="py-2 font-semibold">{d.level}</td>
+                    <td>{d.spoofed_cli ? (d.level === 'L4' ? 'registered number (spoofed, SIM swap)' : 'registered number (spoofed)') : 'own number (FRI High)'}</td>
+                    <td>{d.n}</td>
+                    <td>{pct(d.rate)} <span className="font-mono text-xs text-muted">{ci(d.ci)}</span></td>
+                    <td>{d.red}</td>
+                    <td className={d.ended_green ? 'font-semibold text-red' : 'text-green'}>{d.ended_green}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
           </section>
         )}
 
@@ -146,7 +192,7 @@ export default function Metrics() {
               <tbody>
                 {ic.misses.map((m) => (
                   <tr key={m.id} className="border-b border-line">
-                    <td className="py-2 font-mono text-xs">{m.id}</td><td>{m.level}</td><td>{m.language}</td><td>{m.tier}</td><td className="text-muted">{m.why}</td>
+                    <td className="py-2 font-mono text-xs">{m.id}</td><td>{m.level}{m.cli_kind && <div className="text-xs text-muted">{NUMBER[m.cli_kind]}</div>}</td><td>{m.language}</td><td>{m.tier}</td><td className="text-muted">{m.why}</td>
                   </tr>
                 ))}
               </tbody>

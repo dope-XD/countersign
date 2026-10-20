@@ -61,10 +61,14 @@ SEED: dict[str, Customer] = {
     ),
 }
 
+# Numbers the demo and the IndiaCall simulator use besides the registered ones.
+FRAUD_PHONE = "+917000012345"  # rated High on FRI: an attacker calling from their own number
+SPARE_PHONE = "+919886045120"  # unregistered and unrated: a genuine customer on a family member's phone
+
 # FRI as DoT shares it: Medium / High / Very High per mobile number (absent = not rated).
 FRI_SEED = {
     "+918877665544": "Very High",
-    "+917000012345": "High",
+    FRAUD_PHONE: "High",
     "quickhelp.relief@okaxis": "High",  # UPI handle linked to a high-FRI number
 }
 
