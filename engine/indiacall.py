@@ -105,15 +105,24 @@ def save_recording(speaker: str, item_id: str, data: bytes, ext: str) -> dict:
     return {"speaker": speaker, "item": item_id, "path": str(wav.relative_to(settings.data_dir))}
 
 
-def record_consent(speaker: str, full_name: str, languages: list[str]) -> dict:
+def record_consent(speaker: str, full_name: str, languages: list[str], clone: bool = False, age_band: str | None = None, gender: str | None = None) -> dict:
     speaker = _safe(speaker)
     (ROOT / "consent").mkdir(parents=True, exist_ok=True)
+    terms = "Recordings used only for Countersign's IndiaCall test set at RAKSHAM 2026 and deleted after the event."
+    terms += (
+        " Clones of this voice may be made; they are labelled synthetic and never released."
+        if clone
+        else " Genuine recordings only: this voice is never cloned or used as a source for voice conversion."
+    )
     entry = {
         "speaker": speaker,
         "name": full_name,
         "languages": languages,
+        "clone": clone,
+        "age_band": age_band,
+        "gender": gender,
         "agreed_at": time.time(),
-        "terms": "Recordings used only for Countersign's IndiaCall test set at RAKSHAM 2026. Clones are labelled synthetic, never released, and deleted after the event.",
+        "terms": terms,
     }
     (ROOT / "consent" / f"{speaker}.json").write_text(json.dumps(entry, indent=2, ensure_ascii=False), encoding="utf-8")
     return entry

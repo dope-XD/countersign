@@ -86,3 +86,6 @@ class Consent(BaseModel):
     name: str = Field(min_length=2, max_length=100)
     agree: bool
     languages: list[str] = Field(default_factory=list, max_length=10)
+    clone: bool = False  # genuine-only volunteers are recorded but never cloned or used as a conversion source
+    age_band: Literal["18-29", "30-44", "45-59", "60+"] | None = None  # optional, for false-alarm rates by group
+    gender: Literal["female", "male", "other"] | None = None

@@ -688,7 +688,7 @@ async def ic_items():
 async def ic_consent(body: schemas.Consent):
     if not body.agree:
         raise HTTPException(400, "consent required")
-    return indiacall.record_consent(body.speaker, body.name, body.languages)
+    return indiacall.record_consent(body.speaker, body.name, body.languages, body.clone, body.age_band, body.gender)
 
 
 @staff.get("/api/indiacall/progress/{speaker}")

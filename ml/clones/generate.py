@@ -43,9 +43,16 @@ def texts() -> list[tuple[str, str, str]]:
     return out
 
 
+def may_clone(speaker: str) -> bool:
+    """Only speakers who explicitly agreed to cloning. Genuine-only volunteers are skipped,
+    as clone targets and as Seed-VC source voices."""
+    p = IC / "consent" / f"{speaker}.json"
+    return p.exists() and json.loads(p.read_text(encoding="utf-8")).get("clone") is True
+
+
 def check_consent(speaker: str) -> None:
-    if not (IC / "consent" / f"{speaker}.json").exists():
-        raise SystemExit(f"No consent record for {speaker}; refusing to clone.")
+    if not may_clone(speaker):
+        raise SystemExit(f"{speaker} has not agreed to be cloned; refusing.")
 
 
 def reference(speaker: str, prefer: tuple[str, ...] = ("P01", "P03", "P02", "P04")) -> tuple[Path, str]:
@@ -132,7 +139,7 @@ def gen_seedvc(speakers: list[str], seedvc_dir: str) -> None:
 
     for victim in speakers:
         ref, _ = reference(victim)
-        attackers = [a for a in sorted(p.name for p in REC.iterdir() if p.is_dir()) if a != victim]
+        attackers = [a for a in sorted(p.name for p in REC.iterdir() if p.is_dir()) if a != victim and may_clone(a)]
         if not attackers:
             raise SystemExit("Seed-VC needs at least two speakers")
         d = out_dir("seedvc", victim)
@@ -186,7 +193,7 @@ if __name__ == "__main__":
     if a.generator == "purge":
         purge()
         sys.exit(0)
-    spk = a.speakers or sorted(p.name for p in REC.iterdir() if p.is_dir())
+    spk = a.speakers or sorted(p.name for p in REC.iterdir() if p.is_dir() and may_clone(p.name))
     for s in spk:
         check_consent(s)
     {"xtts": gen_xtts, "f5": gen_f5, "indicf5": gen_indicf5, "chatterbox": gen_chatterbox}.get(a.generator, lambda s: gen_seedvc(s, a.seedvc_dir))(spk)

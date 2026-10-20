@@ -18,6 +18,9 @@ export default function Record() {
   const [consented, setConsented] = useState(() => localStorage.getItem('ic.consented') === '1')
   const [name, setName] = useState('')
   const [agree, setAgree] = useState(false)
+  const [clone, setClone] = useState(false)
+  const [ageBand, setAgeBand] = useState('')
+  const [gender, setGender] = useState('')
   const [items, setItems] = useState<Item[]>([])
   const [done, setDone] = useState<string[]>([])
   const [rec, setRec] = useState<string | null>(null)
@@ -35,13 +38,35 @@ export default function Record() {
 
   const giveConsent = async () => {
     try {
-      await api.post('/api/indiacall/consent', { speaker, name, agree, languages: ['hi', 'en', 'hinglish'] })
+      await api.post('/api/indiacall/consent', {
+        speaker,
+        name,
+        agree,
+        clone,
+        age_band: ageBand || null,
+        gender: gender || null,
+        languages: ['hi', 'en', 'hinglish'],
+      })
       localStorage.setItem('ic.speaker', speaker)
       localStorage.setItem('ic.consented', '1')
       setConsented(true)
     } catch (e) {
       show((e as Error).message, 'error')
     }
+  }
+
+  // the next volunteer on the same laptop must not record under the previous speaker id
+  const switchSpeaker = () => {
+    localStorage.removeItem('ic.speaker')
+    localStorage.removeItem('ic.consented')
+    setSpeaker('')
+    setName('')
+    setAgree(false)
+    setClone(false)
+    setAgeBand('')
+    setGender('')
+    setDone([])
+    setConsented(false)
   }
 
   const start = async (id: string) => {
@@ -88,15 +113,31 @@ export default function Record() {
           <h1 className="text-2xl font-bold">Before you record</h1>
           <div className="card space-y-2 p-4 text-sm">
             <p>Your recordings are used only to test Countersign at RAKSHAM 2026.</p>
-            <p>We will make <b>cloned versions of your voice</b> to attack our own system. Every cloned file is labelled synthetic, is never shared or published, and is deleted after the event, together with your recordings.</p>
+            <p>Volunteers record their real voice only. Teammates may also agree to <b>cloned versions of their voice</b> being made to attack our own system. Every cloned file is labelled synthetic, is never shared or published, and is deleted after the event, together with the recordings.</p>
             <p>Your voice is never used to train the detector, so the test stays fair. You can withdraw at any time and we delete everything.</p>
             <p>Please also sign the paper consent form (docs/CONSENT.md).</p>
           </div>
           <input className="input" placeholder="Short speaker id, e.g. pushkar" value={speaker} onChange={(e) => setSpeaker(e.target.value.toLowerCase().replace(/[^a-z0-9_-]/g, ''))} />
           <input className="input" placeholder="Full name" value={name} onChange={(e) => setName(e.target.value)} />
+          <div className="grid grid-cols-2 gap-2">
+            <select className="input" value={ageBand} onChange={(e) => setAgeBand(e.target.value)} aria-label="Age band (optional)">
+              <option value="">Age band (optional)</option>
+              {['18-29', '30-44', '45-59', '60+'].map((a) => <option key={a} value={a}>{a}</option>)}
+            </select>
+            <select className="input" value={gender} onChange={(e) => setGender(e.target.value)} aria-label="Gender (optional)">
+              <option value="">Gender (optional)</option>
+              <option value="female">Female</option>
+              <option value="male">Male</option>
+              <option value="other">Other</option>
+            </select>
+          </div>
           <label className="flex items-start gap-2 text-sm">
             <input type="checkbox" checked={agree} onChange={(e) => setAgree(e.target.checked)} className="mt-1" />
-            I agree to be recorded and cloned for this test only, on the terms above.
+            I agree to be recorded for this test only, on the terms above.
+          </label>
+          <label className="flex items-start gap-2 text-sm">
+            <input type="checkbox" checked={clone} onChange={(e) => setClone(e.target.checked)} className="mt-1" />
+            I also agree to cloned versions of my voice being made for the attack tests (teammates only; leave this unticked if you are a volunteer).
           </label>
           <button className="btn-primary w-full" disabled={!agree || !speaker || !name} onClick={giveConsent}>Continue</button>
         </main>
@@ -107,7 +148,15 @@ export default function Record() {
 
   return (
     <div className="min-h-full">
-      <TopBar title="IndiaCall recorder" right={<span className="text-muted">{speaker} · {done.length}/{items.length}</span>} />
+      <TopBar
+        title="IndiaCall recorder"
+        right={
+          <span className="text-muted">
+            {speaker} · {done.length}/{items.length} ·{' '}
+            <button className="underline" onClick={switchSpeaker}>Switch speaker</button>
+          </span>
+        }
+      />
       <main className="mx-auto max-w-2xl space-y-3 p-4">
         <p className="text-sm text-muted">Quiet room, phone or laptop mic, normal speaking distance. Record each line once; re-record anytime. Speak as you would on a real call.</p>
         {items.map((it) => (
