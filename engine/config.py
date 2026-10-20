@@ -13,6 +13,16 @@ def _env(name: str, default: str) -> str:
     return os.environ.get(f"COUNTERSIGN_{name}", default)
 
 
+def _default_s1() -> str:
+    """The best S1 on disk. The AntiDeepfake W2V-Large + XLS-R-1B ensemble won the phone-channel
+    benchmark (docs/ML.md); then the phone/Indic SLS fine-tune; then the published SLS port."""
+    m = ROOT / "models"
+    ensemble = [m / "s1_add_w2vlarge.pt", m / "s1_add_xlsr1b.pt"]
+    if all(p.exists() for p in ensemble):
+        return ",".join(str(p) for p in ensemble)
+    return str(m / ("s1_sls_phone.pt" if (m / "s1_sls_phone.pt").exists() else "s1_sls_hf.pt"))
+
+
 @dataclass(frozen=True)
 class Settings:
     data_dir: Path = Path(_env("DATA", str(ROOT / "data")))
@@ -21,11 +31,9 @@ class Settings:
     web_dist: Path = ROOT / "web" / "dist"
 
     # Detector. "dummy" scores with a heuristic so the pipeline runs without weights.
-    s1_backend: str = _env("S1", "auto")  # auto | sls | dummy
-    # the phone/Indic fine-tune when it exists, else the converted published checkpoint
-    s1_checkpoint: Path = Path(
-        _env("S1_CKPT", str(ROOT / "models" / ("s1_sls_phone.pt" if (ROOT / "models" / "s1_sls_phone.pt").exists() else "s1_sls_hf.pt")))
-    )
+    s1_backend: str = _env("S1", "auto")  # auto | dummy | sls/antideepfake (fail if the checkpoint will not load)
+    # comma-separated checkpoints form an ensemble; see _default_s1() for the order of preference
+    s1_checkpoint: Path = Path(_env("S1_CKPT", _default_s1()))
     s2_enabled: bool = _env("S2", "1") == "1"
     asr_model: str = _env("ASR", "small")
     device: str = _env("DEVICE", "cuda")

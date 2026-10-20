@@ -32,5 +32,101 @@
       "gsm",
       "clean"
     ]
+  },
+  "add-mms-300m": {
+    "version": "add-mms-300m",
+    "a": 0.8106827718888991,
+    "b": -0.38361106853582944,
+    "n": 1315,
+    "dev_eer": 0.0463,
+    "genuine_above_0.3": 0.0991,
+    "genuine_above_0.7": 0.0319,
+    "spoof_above_0.7": 0.932,
+    "channels": [
+      "g711u",
+      "amrnb_12k2",
+      "opus_12k",
+      "gsm",
+      "clean"
+    ]
+  },
+  "add-wav2vec-large": {
+    "version": "add-wav2vec-large",
+    "a": 0.8883813011527842,
+    "b": -3.165580393267899,
+    "n": 1315,
+    "dev_eer": 0.0197,
+    "genuine_above_0.3": 0.0336,
+    "genuine_above_0.7": 0.0177,
+    "spoof_above_0.7": 0.98,
+    "channels": [
+      "g711u",
+      "amrnb_12k2",
+      "opus_12k",
+      "gsm",
+      "clean"
+    ]
+  },
+  "add-xls-r-1b": {
+    "version": "add-xls-r-1b",
+    "w": [
+      0.9232878573084684
+    ],
+    "a": 0.9232878573084684,
+    "b": -1.0668413563710144,
+    "n": 1315,
+    "dev_eer": 0.0282,
+    "genuine_above_0.3": 0.0442,
+    "genuine_above_0.7": 0.0177,
+    "spoof_above_0.7": 0.9613,
+    "channels": [
+      "g711u",
+      "amrnb_12k2",
+      "opus_12k",
+      "gsm",
+      "clean"
+    ]
+  },
+  "add-wav2vec-large+add-xls-r-1b": {
+    "version": "add-wav2vec-large+add-xls-r-1b",
+    "w": [
+      0.7268825941014614,
+      0.5793663756220896
+    ],
+    "a": 0.7268825941014614,
+    "b": -4.332210176125519,
+    "n": 1315,
+    "dev_eer": 0.0122,
+    "genuine_above_0.3": 0.0177,
+    "genuine_above_0.7": 0.0106,
+    "spoof_above_0.7": 0.988,
+    "channels": [
+      "g711u",
+      "amrnb_12k2",
+      "opus_12k",
+      "gsm",
+      "clean"
+    ]
+  },
+  "add-wav2vec-large+xlsr-sls-phone-indic": {
+    "version": "add-wav2vec-large+xlsr-sls-phone-indic",
+    "w": [
+      0.792625837057487,
+      0.3162129940645137
+    ],
+    "a": 0.792625837057487,
+    "b": 0.32656508421123737,
+    "n": 1315,
+    "dev_eer": 0.0144,
+    "genuine_above_0.3": 0.023,
+    "genuine_above_0.7": 0.0088,
+    "spoof_above_0.7": 0.984,
+    "channels": [
+      "g711u",
+      "amrnb_12k2",
+      "opus_12k",
+      "gsm",
+      "clean"
+    ]
   }
 }

@@ -19,6 +19,7 @@
 
 | Dataset | License | Content | Use |
 |---|---|---|---|
+| NII AntiDeepfake weights (W2V-Large, XLS-R-1B) | CC BY-NC-SA 4.0 | detector post-trained on 74k h, 100+ languages | S1 backbone (inference) |
 | ASVspoof 2019 LA | ODC-By / research | English, bona fide + 19 attack systems | train, test |
 | In-the-Wild (Müller et al. 2022) | Apache-2.0 (mirror) | public figures, real and deepfake | test |
 | IndicSynth (IIIT-Delhi, ACL 2025) | CC-BY-NC-4.0 | synthetic Hindi | train |

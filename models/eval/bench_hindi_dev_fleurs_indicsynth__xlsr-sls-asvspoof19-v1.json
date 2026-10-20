@@ -1,0 +1,62 @@
+{
+  "model": "xlsr-sls-asvspoof19-v1",
+  "set": "Hindi dev (FLEURS + IndicSynth)",
+  "manifest": "data/manifests/dev.csv",
+  "sources": [
+    "fleurs_hi",
+    "indicsynth"
+  ],
+  "results": [
+    {
+      "set": "Hindi dev (FLEURS + IndicSynth)",
+      "condition": "g711u",
+      "model": "xlsr-sls-asvspoof19-v1",
+      "calibrated": true,
+      "n_bona": 174,
+      "n_spoof": 586,
+      "eer": 0.4485,
+      "threshold": 0.3725,
+      "detect_at_1pct_far": 0.029,
+      "false_alarm_amber": 0.4943,
+      "detect_amber": 0.6451,
+      "false_alarm_red": 0.1782,
+      "detect_red": 0.2526,
+      "published_eer": null,
+      "seconds": 5.9
+    },
+    {
+      "set": "Hindi dev (FLEURS + IndicSynth)",
+      "condition": "amrnb_12k2",
+      "model": "xlsr-sls-asvspoof19-v1",
+      "calibrated": true,
+      "n_bona": 174,
+      "n_spoof": 586,
+      "eer": 0.4134,
+      "threshold": 0.6754,
+      "detect_at_1pct_far": 0.0222,
+      "false_alarm_amber": 0.8391,
+      "detect_amber": 0.8669,
+      "false_alarm_red": 0.3851,
+      "detect_red": 0.5461,
+      "published_eer": null,
+      "seconds": 19.0
+    },
+    {
+      "set": "Hindi dev (FLEURS + IndicSynth)",
+      "condition": "g711u+loss+noise",
+      "model": "xlsr-sls-asvspoof19-v1",
+      "calibrated": true,
+      "n_bona": 174,
+      "n_spoof": 586,
+      "eer": 0.5,
+      "threshold": 0.8008,
+      "detect_at_1pct_far": 0.0085,
+      "false_alarm_amber": 0.9368,
+      "detect_amber": 0.9369,
+      "false_alarm_red": 0.7069,
+      "detect_red": 0.7116,
+      "published_eer": null,
+      "seconds": 6.5
+    }
+  ]
+}

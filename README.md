@@ -9,7 +9,7 @@ RAKSHAM 2026 · Problem statement 01 (voice-cloning fraud) · Team losers: Pushk
 | Part | Where | What it does |
 |---|---|---|
 | Engine | `engine/` | FastAPI app: live call audio over websockets (8 kHz G.711), S1–S4 signals, fusion, policy, passkey step-up, cases, Entry B guard |
-| S1 synthetic speech | `engine/signals/sls_model.py`, `s1_synth.py` | XLS-R 300M + SLS head, ported from fairseq to transformers |
+| S1 synthetic speech | `engine/signals/antideepfake_model.py`, `sls_model.py`, `s1_synth.py` | ensemble of NII AntiDeepfake W2V-Large + XLS-R-1B (XLS-R + SLS kept as fallback), ported from fairseq to transformers |
 | S2 speaker drift | `engine/signals/s2_drift.py` | ECAPA-TDNN, this call only, nothing stored |
 | S3 liveness | `engine/signals/s3_liveness.py` | random challenge, reply timing, faster-whisper word check, S1 on the reply |
 | S4 context | `engine/signals/s4_context.py`, `engine/mocks/world.py` | caller ID, SIM swap, DoT FRI, repeat calls (mocked feeds) |
@@ -46,4 +46,4 @@ Code style: `ruff format` for Python, ESLint for the web app. Please keep `.\che
 
 ## Disclosure
 
-Code written with Claude Code (Anthropic) and reviewed by the team. Mocked in the prototype: core banking, DoT FRI, telco SIM-swap feed, NCRP/1930 and DIP submission.
+Code written with Claude Code (Anthropic) and reviewed by the team. S1 uses NII's AntiDeepfake weights (Yamagishi Lab, CC BY-NC-SA 4.0, research and education only). Mocked in the prototype: core banking, DoT FRI, telco SIM-swap feed, NCRP/1930 and DIP submission.

@@ -62,6 +62,9 @@ class SLSModel(nn.Module):
         self.fc3 = nn.Linear(1024, 2)
         self.logsoftmax = nn.LogSoftmax(dim=1)
 
+    def set_checkpointing(self, on: bool) -> None:
+        self.checkpointing = on
+
     def layer_features(self, x: torch.Tensor) -> torch.Tensor:
         """Raw (pre final layer-norm) output of every transformer layer: (B, 24, T, 1024).
 

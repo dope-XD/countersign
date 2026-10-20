@@ -1,0 +1,62 @@
+{
+  "model": "add-wav2vec-large+add-xls-r-1b",
+  "set": "Hindi dev (FLEURS + IndicSynth)",
+  "manifest": "data/manifests/dev.csv",
+  "sources": [
+    "fleurs_hi",
+    "indicsynth"
+  ],
+  "results": [
+    {
+      "set": "Hindi dev (FLEURS + IndicSynth)",
+      "condition": "g711u",
+      "model": "add-wav2vec-large+add-xls-r-1b",
+      "calibrated": true,
+      "n_bona": 174,
+      "n_spoof": 586,
+      "eer": 0.0,
+      "threshold": 0.2398,
+      "detect_at_1pct_far": 1.0,
+      "false_alarm_amber": 0.0,
+      "detect_amber": 0.9983,
+      "false_alarm_red": 0.0,
+      "detect_red": 0.9949,
+      "published_eer": null,
+      "seconds": 17.1
+    },
+    {
+      "set": "Hindi dev (FLEURS + IndicSynth)",
+      "condition": "amrnb_12k2",
+      "model": "add-wav2vec-large+add-xls-r-1b",
+      "calibrated": true,
+      "n_bona": 174,
+      "n_spoof": 586,
+      "eer": 0.0009,
+      "threshold": 0.1273,
+      "detect_at_1pct_far": 0.9983,
+      "false_alarm_amber": 0.0,
+      "detect_amber": 0.9949,
+      "false_alarm_red": 0.0,
+      "detect_red": 0.9881,
+      "published_eer": null,
+      "seconds": 28.0
+    },
+    {
+      "set": "Hindi dev (FLEURS + IndicSynth)",
+      "condition": "g711u+loss+noise",
+      "model": "add-wav2vec-large+add-xls-r-1b",
+      "calibrated": true,
+      "n_bona": 174,
+      "n_spoof": 586,
+      "eer": 0.0632,
+      "threshold": 0.0001,
+      "detect_at_1pct_far": 0.5717,
+      "false_alarm_amber": 0.0,
+      "detect_amber": 0.2782,
+      "false_alarm_red": 0.0,
+      "detect_red": 0.1519,
+      "published_eer": null,
+      "seconds": 18.1
+    }
+  ]
+}

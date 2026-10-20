@@ -1,0 +1,62 @@
+{
+  "model": "add-xls-r-1b",
+  "set": "Hindi dev (FLEURS + IndicSynth)",
+  "manifest": "data/manifests/dev.csv",
+  "sources": [
+    "fleurs_hi",
+    "indicsynth"
+  ],
+  "results": [
+    {
+      "set": "Hindi dev (FLEURS + IndicSynth)",
+      "condition": "g711u",
+      "model": "add-xls-r-1b",
+      "calibrated": true,
+      "n_bona": 174,
+      "n_spoof": 586,
+      "eer": 0.0,
+      "threshold": 0.5046,
+      "detect_at_1pct_far": 1.0,
+      "false_alarm_amber": 0.0,
+      "detect_amber": 1.0,
+      "false_alarm_red": 0.0,
+      "detect_red": 0.9983,
+      "published_eer": null,
+      "seconds": 12.3
+    },
+    {
+      "set": "Hindi dev (FLEURS + IndicSynth)",
+      "condition": "amrnb_12k2",
+      "model": "add-xls-r-1b",
+      "calibrated": true,
+      "n_bona": 174,
+      "n_spoof": 586,
+      "eer": 0.0,
+      "threshold": 0.7417,
+      "detect_at_1pct_far": 1.0,
+      "false_alarm_amber": 0.0057,
+      "detect_amber": 1.0,
+      "false_alarm_red": 0.0,
+      "detect_red": 1.0,
+      "published_eer": null,
+      "seconds": 24.1
+    },
+    {
+      "set": "Hindi dev (FLEURS + IndicSynth)",
+      "condition": "g711u+loss+noise",
+      "model": "add-xls-r-1b",
+      "calibrated": true,
+      "n_bona": 174,
+      "n_spoof": 586,
+      "eer": 0.1498,
+      "threshold": 0.0046,
+      "detect_at_1pct_far": 0.5188,
+      "false_alarm_amber": 0.0,
+      "detect_amber": 0.4471,
+      "false_alarm_red": 0.0,
+      "detect_red": 0.273,
+      "published_eer": null,
+      "seconds": 12.9
+    }
+  ]
+}

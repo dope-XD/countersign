@@ -1,0 +1,62 @@
+{
+  "model": "add-mms-300m",
+  "set": "Hindi dev (FLEURS + IndicSynth)",
+  "manifest": "data/manifests/dev.csv",
+  "sources": [
+    "fleurs_hi",
+    "indicsynth"
+  ],
+  "results": [
+    {
+      "set": "Hindi dev (FLEURS + IndicSynth)",
+      "condition": "g711u",
+      "model": "add-mms-300m",
+      "calibrated": true,
+      "n_bona": 174,
+      "n_spoof": 586,
+      "eer": 0.0046,
+      "threshold": 0.8306,
+      "detect_at_1pct_far": 1.0,
+      "false_alarm_amber": 0.0115,
+      "detect_amber": 1.0,
+      "false_alarm_red": 0.0057,
+      "detect_red": 0.9966,
+      "published_eer": null,
+      "seconds": 6.9
+    },
+    {
+      "set": "Hindi dev (FLEURS + IndicSynth)",
+      "condition": "amrnb_12k2",
+      "model": "add-mms-300m",
+      "calibrated": true,
+      "n_bona": 174,
+      "n_spoof": 586,
+      "eer": 0.0172,
+      "threshold": 0.717,
+      "detect_at_1pct_far": 0.9693,
+      "false_alarm_amber": 0.0517,
+      "detect_amber": 0.9983,
+      "false_alarm_red": 0.0172,
+      "detect_red": 0.9863,
+      "published_eer": null,
+      "seconds": 19.9
+    },
+    {
+      "set": "Hindi dev (FLEURS + IndicSynth)",
+      "condition": "g711u+loss+noise",
+      "model": "add-mms-300m",
+      "calibrated": true,
+      "n_bona": 174,
+      "n_spoof": 586,
+      "eer": 0.0812,
+      "threshold": 0.0145,
+      "detect_at_1pct_far": 0.3788,
+      "false_alarm_amber": 0.0172,
+      "detect_amber": 0.5222,
+      "false_alarm_red": 0.0,
+      "detect_red": 0.3191,
+      "published_eer": null,
+      "seconds": 6.7
+    }
+  ]
+}

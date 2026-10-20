@@ -2,14 +2,23 @@
 
 **What it does:** gives the probability that a 4 s window of phone audio is machine-generated (TTS or voice conversion). It is one of four signals, and it never refuses or blocks anything by itself.
 
-**Architecture:** XLS-R 300M (Meta, wav2vec 2.0) + SLS layer-weighting classifier, about 316M parameters, input 16 kHz raw audio, 64,600 samples.
+**Architecture (since 20 Oct 2026):** a score-level ensemble of two NII AntiDeepfake models, Wav2Vec2-Large (317M) and XLS-R-1B (965M). Each is a wav2vec 2.0 backbone, mean-pooled, with one linear layer. Each model's spoof log-odds is combined by a logistic regression fitted on our phone-channel dev split. Input is 16 kHz raw audio, a 64,600-sample window, layer-normed per window.
 
-**Training data:** ASVspoof 2019 LA, IndicSynth Hindi, FLEURS Hindi, and optionally Kathbath Hindi and MLAAD Hindi, all through simulated phone channels. No customer, bank or platform data. No IndiaCall speaker is in training.
+Earlier versions used XLS-R 300M + SLS (the published checkpoint, then our phone/Indic fine-tune). The ensemble replaced it after the phone-channel comparison in docs/ML.md. The old checkpoints still load.
+
+**Training data:**
+- AntiDeepfake was post-trained by NII on 56k hours of real and 18k hours of fake speech from 29 corpora in 100+ languages. These include ASVspoof 2019/2021/5, MLAAD, FLEURS and FLEURS-R, but not In-the-Wild or IndicSynth.
+- We fitted only the two-model combination and its calibration. That used our dev split: ASVspoof 2019 LA, IndicSynth Hindi and FLEURS Hindi, through simulated phone channels.
+- No customer, bank or platform data. No IndiaCall speaker is in training.
+
+**Licence:** the AntiDeepfake weights are CC BY-NC-SA 4.0 (NII; research and education only) and the code is BSD-3-Clause. A commercial pilot would need a licence from NII or a model trained on licensable data.
 
 **Intended use:** risk signal in a bank contact centre and in an app's voice-note check, feeding a policy that steps up verification. It is not for identifying people, and not as sole evidence for any adverse decision.
 
 **Known limits**
-- Generators it has never seen, and heavy codecs, raise error. Open-source detectors exceed 30% EER on codec-compressed fakes (Speech DF Arena).
+- Generators it has never seen, and heavy codecs, raise error. Open-source detectors exceed 30% EER on codec-compressed fakes (Speech DF Arena). On In-the-Wild through AMR-NB with 3% packet loss and 15 dB noise, the ensemble's EER is 9.3%.
+- AntiDeepfake's training treated codec-compressed speech as "speech with artifacts". One member on its own (MMS-300M) flagged 26% of genuine Opus calls. The chosen ensemble flags ≤1% of genuine In-the-Wild audio at AMBER on every channel we test, but we keep measuring this on real calls.
+- FLEURS (real and resynthesised) is in AntiDeepfake's training data, so our FLEURS Hindi false-alarm numbers are optimistic. IndiaCall is the clean Indian-speech test.
 - Live voice conversion by a skilled attacker can pass S1. The passkey step-up is what stops it.
 - Noisy rooms, cheap microphones and 2G calls can raise false alarms. We measure false alarms per language and speaker and report them on `/metrics`.
 

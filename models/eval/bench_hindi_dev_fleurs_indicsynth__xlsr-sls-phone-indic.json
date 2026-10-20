@@ -1,0 +1,62 @@
+{
+  "model": "xlsr-sls-phone-indic",
+  "set": "Hindi dev (FLEURS + IndicSynth)",
+  "manifest": "data/manifests/dev.csv",
+  "sources": [
+    "fleurs_hi",
+    "indicsynth"
+  ],
+  "results": [
+    {
+      "set": "Hindi dev (FLEURS + IndicSynth)",
+      "condition": "g711u",
+      "model": "xlsr-sls-phone-indic",
+      "calibrated": true,
+      "n_bona": 174,
+      "n_spoof": 586,
+      "eer": 0.2644,
+      "threshold": 0.2231,
+      "detect_at_1pct_far": 0.3276,
+      "false_alarm_amber": 0.1552,
+      "detect_amber": 0.6809,
+      "false_alarm_red": 0.0345,
+      "detect_red": 0.4147,
+      "published_eer": null,
+      "seconds": 5.8
+    },
+    {
+      "set": "Hindi dev (FLEURS + IndicSynth)",
+      "condition": "amrnb_12k2",
+      "model": "xlsr-sls-phone-indic",
+      "calibrated": true,
+      "n_bona": 174,
+      "n_spoof": 586,
+      "eer": 0.2644,
+      "threshold": 0.3323,
+      "detect_at_1pct_far": 0.273,
+      "false_alarm_amber": 0.3333,
+      "detect_amber": 0.7594,
+      "false_alarm_red": 0.0747,
+      "detect_red": 0.5085,
+      "published_eer": null,
+      "seconds": 18.8
+    },
+    {
+      "set": "Hindi dev (FLEURS + IndicSynth)",
+      "condition": "g711u+loss+noise",
+      "model": "xlsr-sls-phone-indic",
+      "calibrated": true,
+      "n_bona": 174,
+      "n_spoof": 586,
+      "eer": 0.2247,
+      "threshold": 0.8773,
+      "detect_at_1pct_far": 0.1945,
+      "false_alarm_amber": 0.7759,
+      "detect_amber": 0.9915,
+      "false_alarm_red": 0.4138,
+      "detect_red": 0.9096,
+      "published_eer": null,
+      "seconds": 6.4
+    }
+  ]
+}

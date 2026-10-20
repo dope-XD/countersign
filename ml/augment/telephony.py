@@ -29,6 +29,8 @@ CODECS: dict[str, tuple[list[str], str, int]] = {
 
 ALL_CHANNELS = ["clean", "g711u", *CODECS.keys()]
 EVAL_CHANNELS = ["clean", "g711u", "amrnb_12k2", "opus_12k"]
+# what a cheap phone in a noisy room on a lossy network sounds like
+HARD_CHANNELS = ["g711u+loss+noise", "amrnb_12k2+loss+noise"]
 
 
 def _ffmpeg(x: np.ndarray, args: list[str], fmt: str, rate: int) -> np.ndarray:
@@ -51,13 +53,24 @@ def _ffmpeg(x: np.ndarray, args: list[str], fmt: str, rate: int) -> np.ndarray:
     return np.pad(y, (0, len(x) - len(y)))
 
 
-def channel(x: np.ndarray, name: str) -> np.ndarray:
-    if name == "clean":
-        return x.astype(np.float32)
-    if name == "g711u":
-        return phone_line(x)
-    args, fmt, rate = CODECS[name]
-    return _ffmpeg(x, args, fmt, rate)
+def channel(x: np.ndarray, name: str, seed: int = 0) -> np.ndarray:
+    """A fixed phone path. `name` is a codec, optionally with "+noise" (15 dB coloured room
+    noise before the codec) and/or "+loss" (3% of 20 ms packets lost after it, concealed),
+    e.g. "g711u+loss+noise". Deterministic for a given seed, so benchmarks repeat."""
+    codec, *extras = name.split("+")
+    rng = random.Random(seed)
+    if "noise" in extras:
+        x = coloured_noise(x, 15.0, rng)
+    if codec == "clean":
+        y = x.astype(np.float32)
+    elif codec == "g711u":
+        y = phone_line(x)
+    else:
+        args, fmt, rate = CODECS[codec]
+        y = _ffmpeg(x, args, fmt, rate)
+    if "loss" in extras:
+        y = packet_loss(y, 0.03, rng)
+    return y
 
 
 def band_limit(x: np.ndarray, lo: float = 300, hi: float = 3400, sr: int = 16000) -> np.ndarray:

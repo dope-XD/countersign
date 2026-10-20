@@ -1,7 +1,11 @@
 """Fit S1's score calibration (Platt scaling) on the dev split through phone channels.
 
     python -m ml.calibrate_s1 [--checkpoint models/s1_sls_phone.pt]
-    -> models/s1_calibration.json (keyed to the checkpoint's version)
+    python -m ml.calibrate_s1 --checkpoint models/s1_add_mms300m.pt,models/s1_sls_phone.pt   (ensemble)
+    -> models/s1_calibration.json (keyed to the checkpoint's version, "v1+v2" for an ensemble)
+
+For an ensemble the same logistic regression takes one log-odds column per model, so it
+learns how much to trust each one on phone audio.
 
 The raw XLS-R+SLS output is very overconfident (real speech often gets P(fake) > 0.9),
 so the GREEN/AMBER/RED cut-offs only mean something after this step. Dev clips are
@@ -53,17 +57,17 @@ def main():
         for i in tqdm(range(0, len(rows), 16), desc="dev scoring"):
             chunk = list(enumerate(rows[i : i + 16], i))
             wav = list(pool.map(prep, chunk))
-            z += det.log_odds(wav)
+            z.append(det.features(wav))
             y += [0 if r["label"] == "bonafide" else 1 for _, r in chunk]
-    z, y = np.array(z), np.array(y)
-    z = np.clip(z, -60, 60)
-    clf = LogisticRegression(C=10.0).fit(z.reshape(-1, 1), y)
-    A, B = float(clf.coef_[0][0]), float(clf.intercept_[0])
-    p = 1 / (1 + np.exp(-(A * z + B)))
+    z, y = np.clip(np.concatenate(z), -60, 60), np.array(y)
+    clf = LogisticRegression(C=10.0).fit(z, y)
+    W, B = [float(w) for w in clf.coef_[0]], float(clf.intercept_[0])
+    p = 1 / (1 + np.exp(-(z @ np.array(W) + B)))
     e, _ = eer(p[y == 0], p[y == 1])
     out = {
         "version": det.version,
-        "a": A,
+        "w": W,
+        "a": W[0],  # single-model files written before ensembles read "a"
         "b": B,
         "n": int(len(y)),
         "dev_eer": round(e, 4),
