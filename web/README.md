@@ -1,54 +1,18 @@
-# React + TypeScript + Vite
+# web
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+The browser side of Countersign: the caller softphone, the agent console, the bank app, the fraud desk, the demo panel, the metrics page and the IndiaCall recorder. React 19, Vite and Tailwind. There's no state library: each page polls or subscribes to the engine's `/ws/events` topics.
 
-Currently, two official plugins are available:
-
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
-
-## Expanding the ESLint configuration
-
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
-
-```js
-export default tseslint.config({
-  extends: [
-    // Remove ...tseslint.configs.recommended and replace with this
-    ...tseslint.configs.recommendedTypeChecked,
-    // Alternatively, use this for stricter rules
-    ...tseslint.configs.strictTypeChecked,
-    // Optionally, add this for stylistic rules
-    ...tseslint.configs.stylisticTypeChecked,
-  ],
-  languageOptions: {
-    // other options...
-    parserOptions: {
-      project: ['./tsconfig.node.json', './tsconfig.app.json'],
-      tsconfigRootDir: import.meta.dirname,
-    },
-  },
-})
+```powershell
+npm install
+npm run dev      # http://localhost:5173, proxies /api and /ws to the engine on :8000
+npm run build    # web/dist, which the engine serves in production
+npm run lint
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+The engine has to be running for anything to work (`..\run.ps1`, or `..\run.ps1 -Dummy` without a GPU).
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+Points that aren't obvious from the code:
 
-export default tseslint.config({
-  plugins: {
-    // Add the react-x and react-dom plugins
-    'react-x': reactX,
-    'react-dom': reactDom,
-  },
-  rules: {
-    // other rules...
-    // Enable its recommended typescript rules
-    ...reactX.configs['recommended-typescript'].rules,
-    ...reactDom.configs.recommended.rules,
-  },
-})
-```
+- Call audio is G.711 μ-law at 8 kHz in 20 ms frames, both ways. `public/worklets/capture.js` downsamples the mic from the AudioContext rate. `public/worklets/playback.js` is a small jitter buffer. Both are plain JS AudioWorklets so Vite doesn't bundle them.
+- Passkeys use `@simplewebauthn/browser`. The engine builds the WebAuthn options and checks the result, so the client only passes JSON through. Passkeys need HTTPS (or localhost) and a stable hostname. See `docs/RUNBOOK.md`.
+- Staff pages sit behind `components/StaffGate.tsx`, which swaps the PIN for an HttpOnly cookie.
