@@ -6,11 +6,13 @@ import Demo from './pages/Demo'
 import FraudDesk from './pages/FraudDesk'
 import Metrics from './pages/Metrics'
 import Record from './pages/Record'
+import Try from './pages/Try'
 import StaffGate from './components/StaffGate'
 import { Signature } from './components/ui'
 
 function Home() {
   const links = [
+    { to: '/try', title: 'Try it yourself', sub: 'Your own demo account: call the bank as yourself or as a clone, and answer on your phone.' },
     { to: '/call', title: 'Call the bank', sub: 'Softphone for any phone browser. Audio goes out as 8 kHz G.711.' },
     { to: '/agent', title: 'Agent console', sub: 'Voice Trust Card, policy steps, liveness check.' },
     { to: '/bank/rahul', title: "Rahul's bank app", sub: 'Passkey approvals, Family Circle replies.' },
@@ -43,10 +45,11 @@ export default function App() {
     <Routes>
       <Route path="/" element={<Home />} />
       <Route path="/call" element={<Caller />} />
+      <Route path="/try" element={<Try />} />
       <Route path="/agent" element={<StaffGate><Agent /></StaffGate>} />
       <Route path="/bank/:customer" element={<Bank />} />
       <Route path="/fraud" element={<StaffGate><FraudDesk /></StaffGate>} />
-      <Route path="/metrics" element={<StaffGate><Metrics /></StaffGate>} />
+      <Route path="/metrics" element={<Metrics />} />
       <Route path="/demo" element={<StaffGate><Demo /></StaffGate>} />
       <Route path="/record" element={<StaffGate><Record /></StaffGate>} />
       <Route path="*" element={<Home />} />

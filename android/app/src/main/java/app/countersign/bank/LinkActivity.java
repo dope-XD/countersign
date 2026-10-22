@@ -27,12 +27,12 @@ public class LinkActivity extends Activity {
         String token = u == null ? null : u.getQueryParameter("token");
         String customer = u == null ? null : u.getQueryParameter("customer");
         String base = u == null ? null : Prefs.normalise(u.getQueryParameter("base"));
-        if (token == null || token.isEmpty() || !prefs.customer().equals(customer) || !prefs.server().equals(base)) {
+        if (token == null || token.isEmpty() || !prefs.accepts(customer) || !prefs.server().equals(base)) {
             Toast.makeText(this, "This link is for a different bank server or account. Open the bank from the CS Bank app.", Toast.LENGTH_LONG).show();
             finish();
             return;
         }
-        prefs.link(token);
+        prefs.link(customer, token);
 
         List<String> ask = new ArrayList<>();
         if (checkSelfPermission(Manifest.permission.READ_PHONE_STATE) != PackageManager.PERMISSION_GRANTED) ask.add(Manifest.permission.READ_PHONE_STATE);

@@ -6,6 +6,7 @@ import { useEvents } from '../lib/events'
 import { inr, type Approval, type Customer } from '../lib/types'
 import { Dot, Signature } from '../components/ui'
 import { useToast } from '../lib/useToast'
+import { APP_PACKAGE, deviceLabel, inAndroidApp } from '../lib/device'
 
 type Home = {
   customer: Customer
@@ -26,24 +27,6 @@ type Report = { id: string; helpline: string; portal: string; category: string; 
 type Alert = { title: string; body: string }
 
 type Screen = 'home' | 'pay' | 'paused' | 'waiting' | 'done' | 'voice' | 'security'
-
-const APP_PACKAGE = 'app.countersign.bank'
-
-/** Opened inside the CS Bank Android app (its start URL carries ?app=android). Remembered for the session. */
-function inAndroidApp(): boolean {
-  try {
-    if (new URLSearchParams(window.location.search).get('app') === 'android') sessionStorage.setItem('cs.app', 'android')
-    return sessionStorage.getItem('cs.app') === 'android'
-  } catch {
-    return new URLSearchParams(window.location.search).get('app') === 'android'
-  }
-}
-
-function deviceLabel() {
-  const ua = navigator.userAgent
-  const m = ua.match(/Android [\d.]+; ([^)]+)\)/) || ua.match(/(iPhone|iPad|Macintosh|Windows NT [\d.]+)/)
-  return m ? m[1].trim() : 'this device'
-}
 
 export default function Bank() {
   const { customer = 'rahul' } = useParams()
@@ -420,7 +403,7 @@ function Security({ customer, home, reload, onBack, toast }: { customer: string;
 }
 
 /** Hands this customer's device token to the app's native side, which then reports calls and shows approval notifications. */
-function CallAlerts({ customer, toast }: { customer: string; toast: (m: string, t?: 'info' | 'error') => void }) {
+export function CallAlerts({ customer, toast }: { customer: string; toast: (m: string, t?: 'info' | 'error') => void }) {
   const link = async () => {
     try {
       const { token } = await api.post<{ token: string }>(`/api/app/${customer}/device`)
@@ -442,7 +425,7 @@ function CallAlerts({ customer, toast }: { customer: string; toast: (m: string, 
   )
 }
 
-function ApprovalSheet({ a, busy, onDecide, hasPasskey }: { a: Approval; busy: boolean; onDecide: (d: 'approve' | 'decline') => void; hasPasskey: boolean }) {
+export function ApprovalSheet({ a, busy, onDecide, hasPasskey }: { a: Approval; busy: boolean; onDecide: (d: 'approve' | 'decline') => void; hasPasskey: boolean }) {
   const family = a.kind === 'family_ping'
   return (
     <div className="fixed inset-0 z-40 flex items-end bg-ink/40 sm:items-center sm:justify-center">

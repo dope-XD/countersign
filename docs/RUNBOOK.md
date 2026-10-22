@@ -58,6 +58,15 @@ For real call detection and notifications, install the CS Bank app on the demo p
 
 ngrok's free tier shows an interstitial page on first visit from each browser; tap "Visit Site" once per phone before the demo.
 
+## Judges trying it themselves
+
+1. Copy two or three consented clone clips (10–16 s each, someone asking to change their number) to `data/try/samples/`, with labels in `data/try/samples/labels.json`, e.g. `{"reshaan_f5.wav": "Reshaan's voice, cloned with F5-TTS"}`.
+2. Build the app (`android/README.md`) and copy `android/app/build/outputs/apk/debug/app-debug.apk` to `data/try/cs-bank.apk`.
+3. On the pod, put both in `/workspace/countersign/data/try/`: upload them in the RunPod file browser or with `runpodctl send`.
+4. Put the `/try` QR from `/demo` on the closing slide and at the table.
+
+Each scan makes a new private account, so judges never see each other's approvals. Accounts survive **Reset demo world**.
+
 ## Venue checklist
 
 - Run the tunnel over a phone hotspot, not venue Wi-Fi.

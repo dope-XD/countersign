@@ -73,12 +73,13 @@ Models load in a background thread after startup, and the Engine card on `/demo`
 
 | Page | Who uses it | PIN |
 |---|---|---|
+| `/try` | **judges**: their own demo account, a call answered by a virtual agent, approvals on the same phone | no |
 | `/call` | the caller: browser softphone, mic or a recorded file | no |
 | `/bank/rahul`, `/bank/sunita` | the customers' bank app (log a phone in with its one-time QR on `/demo`) | no |
 | `/agent` | contact-centre agent: Voice Trust Card, requests, liveness | yes |
 | `/fraud` | fraud analyst: cases, evidence clip, outcome | yes |
 | `/demo` | demo operator: QR codes, scenario switches, what's stored | yes |
-| `/metrics` | benchmark and IndiaCall results | yes |
+| `/metrics` | benchmark and IndiaCall results | no |
 | `/record` | consented speakers recording the IndiaCall script | yes |
 
 For front-end work, run the engine and then `npm run dev` in `web/`. Vite proxies `/api` and `/ws` to port 8000, so the page and the API share an origin.
@@ -95,6 +96,10 @@ $env:COUNTERSIGN_ORIGINS = "https://countersign-demo.ngrok-free.app,http://local
 ```
 
 `docs/RUNBOOK.md` covers the tunnel, binding the demo phones, the venue checklist and the failure modes we've hit. `docs/DEMO_SCRIPT.md` is the four-scene demo.
+
+### Judges on their own phones
+
+`/try` needs no install, PIN or teammate. Each phone that opens it gets a private demo account (`engine/tryout.py`). A virtual agent answers the call, logs a request to change the registered mobile number and works the real policy: liveness when the tier asks for it, and the app approval on that same phone. The judge can call as themselves or play a cloned voice from `data/try/samples/`. Put consented clones there before the event (`docs/CLONES.md`); they are gitignored. The `/demo` page has the QR code. On Android, `/try` also offers the CS Bank app (`data/try/cs-bank.apk`), which opens straight into `/try` and adds real call alerts.
 
 ## Configuration
 
@@ -113,6 +118,7 @@ Every setting is an environment variable with a `COUNTERSIGN_` prefix, read once
 | `MAX_CALLS` | `4` | live calls at once; the softphone needs no login, so further callers hear "all our lines are busy" |
 | `CONNECT_SECRET` | empty (off) | the Amazon Connect Lambda's `CONNECT_HMAC_SECRET`; turns on `/api/ingest/connect/start` |
 | `CONNECT_AWS_PROFILE` | default credentials | AWS profile allowed `kinesisvideo:GetDataEndpoint` and `GetMedia` on the Connect streams |
+| `TRY_DIR` | `data/try` | for `/try`: cloned-voice clips judges can play (`samples/*.wav`, labels in `samples/labels.json`) and the CS Bank APK (`cs-bank.apk`). Gitignored. |
 | `ANDROID_CERT_SHA256` | empty | the CS Bank app's signing fingerprint, served in `/.well-known/assetlinks.json` so the app shows the bank pages full screen (`android/README.md`) |
 | `EVIDENCE_KEY` | generated | 32-byte hex AES key for evidence clips (stands in for a KMS) |
 | `EVAL` | `0` | simulator mode, as `-Eval` |

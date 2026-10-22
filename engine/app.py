@@ -19,7 +19,7 @@ from contextlib import asynccontextmanager
 from fastapi import APIRouter, Depends, FastAPI, File, Form, HTTPException, Request, Response, UploadFile, WebSocket, WebSocketDisconnect
 from fastapi.responses import FileResponse, JSONResponse
 
-from engine import auth, cases, guard, indiacall, policy, schemas, voicenote
+from engine import approvals, auth, cases, guard, indiacall, policy, schemas, tryout, voicenote
 from engine.config import settings
 from engine.db import db
 from engine.fingerprint import replay_index
@@ -179,18 +179,29 @@ async def staff_logout(response: Response):
 
 # ============================================================== caller softphone (public)
 @app.websocket("/ws/caller")
-async def ws_caller(ws: WebSocket, cli: str = "", lang: str = "unknown"):
+async def ws_caller(ws: WebSocket, cli: str = "", lang: str = "unknown", sandbox: str = ""):
     await ws.accept()
     if calls.live_count() >= settings.max_live_calls:
         await _send(ws, json.dumps({"type": "busy", "message": "All our lines are busy. Please try again in a few minutes."}))
         await ws.close(code=1013)  # try again later
         return
-    cli = cli.strip()
-    if cli and cli[0].isdigit():
-        cli = "+" + cli  # a raw "+" in a query string arrives as a space
-    cs = calls.create(cli or "+910000000000", lang if lang in ("en", "hi", "hinglish") else "unknown")
+    lang = lang if lang in ("en", "hi", "hinglish") else "unknown"
+    if sandbox:
+        # /try: a judge calling from their own sandbox account, answered by the virtual agent
+        cust = world.customer(sandbox)
+        if not tryout.is_sandbox(sandbox) or cust is None or not auth.is_customer(ws, sandbox):
+            await _send(ws, json.dumps({"type": "error", "message": "Open /try again to get your demo account."}))
+            await ws.close(code=4401)
+            return
+        cs = calls.create(cust.registered_mobile, lang, source="try")
+    else:
+        cli = cli.strip()
+        if cli and cli[0].isdigit():
+            cli = "+" + cli  # a raw "+" in a query string arrives as a space
+        cs = calls.create(cli or "+910000000000", lang)
     cs.caller_ws = ws
     await _send(ws, json.dumps({"type": "call", "id": cs.id}))
+    agent = tryout.start_virtual_agent(cs, lambda m: _send(ws, json.dumps(m))) if sandbox else None
 
     async def pinger():
         while not cs.ended and await _send(ws, json.dumps({"type": "ping", "t": time.time()})):
@@ -217,10 +228,14 @@ async def ws_caller(ws: WebSocket, cli: str = "", lang: str = "unknown"):
                     cs.caller_rtt = 0.8 * cs.caller_rtt + 0.2 * rtt if cs.caller_rtt else rtt
                 elif data.get("type") == "hangup":
                     break
+                elif data.get("type") == "read_done" and agent:
+                    cs.agent_done_reading()  # the judge's phone finished speaking the virtual agent's challenge
     except WebSocketDisconnect:
         pass
     finally:
         ping_task.cancel()
+        if agent:
+            agent.cancel()
         cs.end()
 
 
@@ -369,33 +384,9 @@ async def get_request(rid: str):
 @staff.post("/api/requests/{rid}/send-approval")
 async def send_approval(rid: str):
     r = policy.get(rid)
-    if r["status"] != "open":
-        raise HTTPException(409, f"request is {r['status']}")
-    st = r["policy"]["reqs"].get("app_approval")
-    if st is None:
+    if "app_approval" not in r["policy"]["reqs"]:
         raise HTTPException(400, "this request doesn't need an app approval")
-    if st["status"] == "sent":
-        if passkeys.is_open(st["approval_id"]):
-            raise HTTPException(409, "already waiting for the customer to answer")
-        passkeys.expire(st["approval_id"])  # resend after the old one timed out
-    elif st["status"] != "pending":
-        raise HTTPException(409, f"app approval is already {st['status']}")
-    if not passkeys.credentials(r["customer_id"]):
-        raise HTTPException(409, "No passkey on this account. The customer must approve at a branch or by video-KYC.")
-    cust = world.customer(r["customer_id"])
-    label = policy.ACTIONS[r["action"]]["label"]
-    detail = ", ".join(f"{k.replace('_', ' ')}: {v}" for k, v in (r["details"] or {}).items())
-    summary = {
-        "question": f"Did you ask us to: {label}?",
-        "detail": detail,
-        "action": r["action"],
-        "channel": "phone call to the bank",
-        "customer": cust.name if cust else r["customer_id"],
-    }
-    a = passkeys.request_approval(rid, r["customer_id"], "app_approval", summary)
-    pol = r["policy"]
-    pol["reqs"]["app_approval"] = {"status": "sent", "approval_id": a["id"], "at": time.time()}
-    db.update("requests", rid, {"policy": pol, "updated_at": time.time()})
+    a = approvals.send_app_approval(rid)
     _publish_call(r["call_id"])
     return a
 
@@ -432,7 +423,7 @@ def _record_human_lag(call_id: str | None) -> None:
     """A passkey-approved request means the caller was the real customer, so their
     liveness reply delay is a genuine human sample for the IndiaCall simulator."""
     cs = calls.get(call_id) if call_id else None
-    if not cs or not cs.liveness or cs.liveness.get("lag_s") is None or settings.eval_mode:
+    if not cs or cs.source == "try" or not cs.liveness or cs.liveness.get("lag_s") is None or settings.eval_mode:
         return
     p = indiacall.ROOT / "human_lags.json"
     p.parent.mkdir(parents=True, exist_ok=True)
@@ -759,8 +750,8 @@ async def demo_audit(limit: int = 200):
     return db.query("SELECT * FROM audit ORDER BY id DESC LIMIT ?", [min(max(limit, 1), 1000)])
 
 
-# ============================================================== metrics (staff)
-@staff.get("/api/metrics")
+# ============================================================== metrics (public: the numbers are for judges too)
+@public.get("/api/metrics")
 async def metrics():
     p = settings.models_dir / "metrics.json"
     lat = sorted(detector.latencies_ms)
@@ -843,6 +834,7 @@ async def ws_events(ws: WebSocket, topics: str = "calls"):
 
 app.include_router(public)
 app.include_router(connect_ingest.router)
+app.include_router(tryout.router)
 app.include_router(staff)
 
 

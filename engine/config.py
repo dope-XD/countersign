@@ -78,6 +78,10 @@ class Settings:
     # full screen inside the app. Empty = no association (the app still works, with a URL bar).
     android_package: str = _env("ANDROID_PACKAGE", "app.countersign.bank")
     android_cert_sha256: str = _env("ANDROID_CERT_SHA256", "")
+
+    # /try (engine/tryout.py): cloned-voice samples judges can play into a call (try/samples/*.wav,
+    # consented clones only) and the CS Bank APK offered for download (try/cs-bank.apk).
+    try_dir: Path = Path(_env("TRY_DIR", str(ROOT / "data" / "try")))
     eval_mode: bool = _env("EVAL", "0") == "1"
 
     # Mock KMS: a 32-byte hex key. Generated on first run if absent.

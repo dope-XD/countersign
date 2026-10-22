@@ -94,7 +94,7 @@ class CallSession:
     id: str
     caller_cli: str
     language: str = "unknown"
-    source: str = "softphone"  # softphone | connect
+    source: str = "softphone"  # softphone | connect | try (a judge's sandbox call, answered by engine/tryout.py)
     customer_id: str | None = None
     started: float = field(default_factory=time.time)
     status: str = "ringing"  # ringing | live | ended
@@ -274,6 +274,8 @@ class CallSession:
         if c is None or c.done:
             return
         if kind == "onset" and c.reply_onset_wall is None:
+            if self.source == "try" and c.agent_end_wall is None:
+                return  # the judge's phone is still speaking the virtual agent's phrase (its mic is muted meanwhile)
             if self._agent_mic_live() and (self.agent.vad.in_speech or c.agent_end_wall is None):
                 return  # the agent is still reading the challenge (or this is its echo)
             wall = self.caller.wall_at(pos)

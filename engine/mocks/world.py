@@ -61,6 +61,8 @@ SEED: dict[str, Customer] = {
     ),
 }
 
+SANDBOX_PREFIX = "judge-"  # customer ids created by /try (engine/tryout.py)
+
 # Numbers the demo and the IndiaCall simulator use besides the registered ones.
 FRAUD_PHONE = "+917000012345"  # rated High on FRI: an attacker calling from their own number
 SPARE_PHONE = "+919886045120"  # unregistered and unrated: a genuine customer on a family member's phone
@@ -78,7 +80,10 @@ class World:
         self.reset()
 
     def reset(self) -> None:
+        # judges' /try sandboxes survive a reset: the team resets before every scripted run
+        sandboxes = {k: c for k, c in getattr(self, "customers", {}).items() if k.startswith(SANDBOX_PREFIX)}
         self.customers = copy.deepcopy(SEED)
+        self.customers.update(sandboxes)
         self.fri = dict(FRI_SEED)
         self.sim_swaps: dict[str, float] = {}  # mobile -> unix time of last swap
         self.app_sessions: dict[str, float] = {}  # customer id -> last seen in app

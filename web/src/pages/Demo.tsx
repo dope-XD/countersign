@@ -98,6 +98,19 @@ export default function Demo() {
             This page is on plain HTTP over the network, so phones can't use passkeys or the mic here. Open it through the HTTPS tunnel (see docs/RUNBOOK.md).
           </p>
         )}
+        <section className="card flex flex-wrap items-center gap-4 p-4">
+          <div className="w-40">
+            <QR path="/try" label="Judges: try it yourself" />
+          </div>
+          <div className="max-w-xl text-sm">
+            <div className="text-lg font-bold">For judges</div>
+            <p className="mt-1">
+              Scan, and the phone gets its own demo account. Call the bank as yourself or play a cloned voice; a virtual agent answers, and the approval arrives on the same
+              phone. Nothing to install, no PIN, no teammate needed. Android phones can also download the CS Bank app from that page for real call alerts.
+            </p>
+          </div>
+        </section>
+
         <section>
           <h2 className="text-xl font-bold">Open on the phones</h2>
           <div className="mt-3 grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-6">

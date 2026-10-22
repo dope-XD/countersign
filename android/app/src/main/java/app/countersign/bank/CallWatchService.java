@@ -161,7 +161,7 @@ public class CallWatchService extends Service {
 
     private void report(String state, String kind) {
         String body = "{\"state\":\"" + state + "\",\"kind\":\"" + kind + "\"}";
-        Request req = authed(prefs.server() + "/api/app/" + prefs.customer() + "/call-state").post(RequestBody.create(body, JSON)).build();
+        Request req = authed(prefs.server() + "/api/app/" + prefs.linkedCustomer() + "/call-state").post(RequestBody.create(body, JSON)).build();
         http.newCall(req).enqueue(new Callback() {
             @Override
             public void onFailure(Call call, IOException e) {
@@ -180,7 +180,7 @@ public class CallWatchService extends Service {
 
     private void connect() {
         if (stopped || !prefs.linked()) return;
-        String ws = prefs.server().replaceFirst("^http", "ws") + "/ws/events?topics=app:" + prefs.customer();
+        String ws = prefs.server().replaceFirst("^http", "ws") + "/ws/events?topics=app:" + prefs.linkedCustomer();
         events = http.newWebSocket(authed(ws).build(), new WebSocketListener() {
             @Override
             public void onOpen(WebSocket s, Response r) {

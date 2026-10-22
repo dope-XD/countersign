@@ -18,9 +18,11 @@ import android.widget.TextView;
 import com.google.androidbrowserhelper.trusted.TwaLauncher;
 
 /**
- * Setup and status. Picks the bank server and whose phone this is, then opens the bank pages in
- * Chrome as a Trusted Web Activity, so passkeys work exactly as in the browser. Notifications
- * open this activity with {@link #EXTRA_OPEN}, which goes straight to the bank pages.
+ * Opens the bank pages in Chrome as a Trusted Web Activity (so passkeys work exactly as in the
+ * browser) straight away on launch: on a judge's phone that is /try, which sets up a private demo
+ * account by itself. Back from the pages shows this screen: the server, whose phone this is
+ * (a judge, or Rahul / Sunita for the team's scripted demo) and whether call alerts are on.
+ * Notifications open this activity with {@link #EXTRA_OPEN}, which also goes straight to the pages.
  */
 public class MainActivity extends Activity {
     static final String EXTRA_OPEN = "open_bank";
@@ -39,7 +41,9 @@ public class MainActivity extends Activity {
         prefs = new Prefs(this);
         setContentView(buildUi());
         if (prefs.linked()) CallWatchService.start(this);
-        handle(getIntent());
+        Intent i = getIntent();
+        if (state == null && i != null && Intent.ACTION_MAIN.equals(i.getAction())) openBank(); // launched from the home screen
+        else handle(i);
     }
 
     @Override
@@ -68,8 +72,9 @@ public class MainActivity extends Activity {
     }
 
     private void openBank() {
-        String customer = who.getCheckedRadioButtonId() == R.id.rahul ? "rahul" : "sunita";
-        prefs.setup(server.getText().toString(), customer);
+        int id = who.getCheckedRadioButtonId();
+        String mode = id == R.id.rahul ? "rahul" : id == R.id.sunita ? "sunita" : Prefs.TRY;
+        prefs.setup(server.getText().toString(), mode);
         if (!prefs.linked()) CallWatchService.stop(this);
         if (launcher != null) launcher.destroy();
         launcher = new TwaLauncher(this);
@@ -78,10 +83,11 @@ public class MainActivity extends Activity {
 
     private void refresh() {
         boolean on = prefs.linked();
-        String name = "rahul".equals(prefs.customer()) ? "Rahul" : "Sunita";
         status.setText(on
-                ? "Call alerts are on for " + name + ". When this phone is on a call, normal or WhatsApp, the bank is told that a call is happening. Never the number, never the audio."
-                : "Call alerts are off. Open the bank, go to Security and tap \"Turn on call alerts\".");
+                ? "Call alerts are on. When this phone is on a call, normal or WhatsApp, the bank is told that a call is happening. Never the number, never the audio."
+                : Prefs.TRY.equals(prefs.mode())
+                        ? "Call alerts are off. Open the bank and tap \"Turn on call alerts\"."
+                        : "Call alerts are off. Open the bank, go to Security and tap \"Turn on call alerts\".");
         alertsOff.setVisibility(on ? View.VISIBLE : View.GONE);
     }
 
@@ -95,7 +101,7 @@ public class MainActivity extends Activity {
         title.setTypeface(Typeface.DEFAULT_BOLD);
         title.setTextColor(BRAND);
         col.addView(title);
-        col.addView(text("Countersign demo bank app", 14));
+        col.addView(text("Countersign demo bank app. It opens the bank straight away; this screen is for settings.", 14));
 
         col.addView(label("Bank server"));
         server = new EditText(this);
@@ -106,9 +112,10 @@ public class MainActivity extends Activity {
 
         col.addView(label("This phone belongs to"));
         who = new RadioGroup(this);
-        who.addView(radio(R.id.rahul, "Rahul Sharma"));
-        who.addView(radio(R.id.sunita, "Sunita Sharma"));
-        who.check("rahul".equals(prefs.customer()) ? R.id.rahul : R.id.sunita);
+        who.addView(radio(R.id.judge, "A judge (try it yourself)"));
+        who.addView(radio(R.id.rahul, "Rahul Sharma (team demo)"));
+        who.addView(radio(R.id.sunita, "Sunita Sharma (team demo)"));
+        who.check("rahul".equals(prefs.mode()) ? R.id.rahul : "sunita".equals(prefs.mode()) ? R.id.sunita : R.id.judge);
         col.addView(who);
 
         Button open = new Button(this);

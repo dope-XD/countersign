@@ -42,6 +42,7 @@ This starts tmux session `cs` with two windows, the engine and the tunnel, each 
 
 ## Before the judges arrive
 
+- Put the clone clips and the APK in `/workspace/countersign/data/try/` (`docs/RUNBOOK.md`, "Judges trying it themselves"). Then check that `/try` lists the clips and offers the app on an Android phone.
 - Log in to `/agent`, `/fraud` and `/demo` on every staff device. Issued cookies keep working through the PIN lockout, so a stranger guessing PINs can't lock you out.
 - Press **Reset demo world** on `/demo`. It keeps the bound passkeys.
 - From the laptop: `python -m ml.eval.first_tier --base https://<domain> --calls 5`. The p95 first tier should stay under 8 s.
