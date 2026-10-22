@@ -110,6 +110,7 @@ Every setting is an environment variable with a `COUNTERSIGN_` prefix, read once
 | `AMBER_AT`, `RED_AT` | `0.30`, `0.70` | tier cut-offs. Override the fitted values in `models/fusion.json` when set. |
 | `RP_ID`, `ORIGINS` | `auto`, localhost | WebAuthn relying-party ID and allowed origins |
 | `STAFF_PIN` | generated | staff PIN |
+| `MAX_CALLS` | `4` | live calls at once; the softphone needs no login, so further callers hear "all our lines are busy" |
 | `EVIDENCE_KEY` | generated | 32-byte hex AES key for evidence clips (stands in for a KMS) |
 | `EVAL` | `0` | simulator mode, as `-Eval` |
 | `DATA`, `MODELS`, `RUNTIME` | `data`, `models`, `data/runtime` | where things live |
@@ -157,6 +158,6 @@ docs/              runbook, demo script, ML notes, model card, data sheet, conse
 
 - **Mocked**: core banking, the DoT FRI feed, the telco SIM-swap feed, and NCRP/1930 and DIP submission. Each is one in-memory module or a row in the reports table.
 - **Telephony**: calls reach the engine from the browser softphone. Amazon Connect ingest exists as a spike under `integrations/connect/` and isn't wired into the engine yet.
-- **Deployment**: one process, one GPU, SQLite and a shared staff PIN, sized for a demo laptop and not for a contact centre.
+- **Deployment**: one process, one GPU, SQLite and a shared staff PIN, sized for a demo laptop and not for a contact centre. `deploy/runpod/` runs the same thing on a rented GPU for a few days.
 - **Detection**: S1 will miss generators it hasn't seen and degrades on heavy codecs; `docs/MODEL_CARD.md` has the numbers. The design assumes that will happen, which is why risky changes need the passkey whatever S1 says.
 - **Data**: we use only public, consented or synthetic data. Dataset licences are in `docs/DATA_SHEET.md`.
