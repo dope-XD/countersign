@@ -7,7 +7,7 @@ The engine runs a score-level ensemble of NII's **AntiDeepfake** Wav2Vec2-Large 
 ```powershell
 .venv\Scripts\python -m ml.port_antideepfake nii-yamagishilab/wav2vec-large-anti-deepfake models\s1_add_w2vlarge.pt
 .venv\Scripts\python -m ml.port_antideepfake nii-yamagishilab/xls-r-1b-anti-deepfake models\s1_add_xlsr1b.pt
-.venv\Scripts\python -m ml.calibrate_s1 --checkpoint models\s1_add_w2vlarge.pt,models\s1_add_xlsr1b.pt
+.venv\Scripts\python -m ml.calibrate_s1 --checkpoint models\s1_add_w2vlarge.pt,models\s1_add_xlsr1b.pt --manifest data\manifests	rain.csv --n 3000
 ```
 
 - `engine/signals/antideepfake_model.py` is the released network on `transformers.Wav2Vec2Model`: per-window waveform layer-norm, final hidden states, mean over time, `Linear(D, 2)` with fake in column 0. The port reuses the fairseq key mapping from the SLS port, and fails on any unmapped or missing tensor.
@@ -17,6 +17,7 @@ The engine runs a score-level ensemble of NII's **AntiDeepfake** Wav2Vec2-Large 
   - in the live engine, alongside ECAPA, VAD and Whisper: p95 212 ms.
 
 **Why it replaced XLS-R + SLS.** The figures are EER, then the share of *genuine* clips that reach AMBER (window score ≥ 0.30). Each run used the same 600 + 600 In-the-Wild clips (first 4 s) and the same 174 FLEURS + 586 IndicSynth Hindi dev clips. `+loss+noise` means 15 dB coloured noise before the codec and 3% packet loss after it (`ml.augment.telephony.channel`).
+Each model has its own calibration, fitted on clean codecs as of 20 Oct. The Hindi rows were scored on the clips that calibration was fitted on. [Calibration for noisy lines](#calibration-for-noisy-lines-22-oct) gives the ensemble's current numbers, including how many fakes reach each tier.
 
 | Test set, channel | SLS published | SLS phone/Indic fine-tune | AntiDeepfake W2V-L | **W2V-L + XLS-R-1B** |
 |---|---|---|---|---|
@@ -36,6 +37,33 @@ Reading it honestly:
 - **MMS-300M AntiDeepfake was tested and dropped.** On Opus it had a 17% EER and flagged 26% of genuine clips: the "codec = artifact" bias from its training.
 
 Rerun: `python -m ml.eval.benchmark ... --checkpoint <ckpt[,ckpt]>` (see the docstring). Results land in `models/eval/`, with false-alarm and detection rates at both tier cut-offs.
+
+### Calibration for noisy lines (22 Oct)
+
+EER says how well a model separates real from fake at its best threshold. The engine doesn't get to pick that threshold: it acts at AMBER 0.30 and RED 0.70 on the calibrated score. The first ensemble calibration was fitted on clean codecs only. On a noisy, lossy line it pushed most fakes under AMBER, so the EER above looked fine while the engine missed them. We hadn't reported that column, so the table below does.
+
+The calibration is now fitted on all seven channels, `+loss+noise` included, and on 3000 clips from **train.csv**. The AntiDeepfake models never trained on our train split, so this leaves the whole dev split held out for the Hindi rows below. Before 22 Oct the Hindi numbers were scored on the same clips the calibration was fitted on.
+
+Each cell shows the old calibration → the new one. "Real at AMBER" is the share of genuine 4 s windows the engine would raise to AMBER. "Fakes at AMBER/RED" is the share of fake windows it raises that far. In-the-Wild is 600 + 600 clips; Hindi is 174 FLEURS + 586 IndicSynth (dev).
+
+| Test set, channel | EER | Real at AMBER | Fakes at AMBER | Fakes at RED |
+|---|---|---|---|---|
+| In-the-Wild, clean | 2.3 → 2.5% | 0.2 → 0.7% | 85 → **94%** | 82 → **89%** |
+| In-the-Wild, G.711 | 2.7 → 3.3% | 0.2 → 1.5% | 82 → **92%** | 79 → **85%** |
+| In-the-Wild, AMR-NB 12.2k | 4.2 → 4.0% | 0.3 → 1.5% | 82 → **92%** | 75 → **87%** |
+| In-the-Wild, Opus 12k | 5.7 → 4.5% | 0.8 → **5.7%** | 87 → **96%** | 84 → **91%** |
+| In-the-Wild, G.711 + loss + noise | 6.0 → 5.8% | 0.2 → 2.0% | 60 → **86%** | 46 → **73%** |
+| In-the-Wild, AMR-NB + loss + noise | 9.3 → 9.3% | 0.3 → 3.7% | 56 → **86%** | 39 → **71%** |
+| Hindi dev, G.711 | 0.0 → 0.0% | 0.0 → 0.6% | 100 → 100% | 100 → 100% |
+| Hindi dev, G.711 + loss + noise | 6.3 → 8.0% | 0.0 → 1.7% | 28 → **61%** | 15 → **36%** |
+| Hindi dev, AMR-NB + loss + noise | — → 8.7% | — → 1.1% | — → **66%** | — → **42%** |
+
+Reading it honestly:
+- **The trade is worth it.** On the noisy channels, 25–35 more fakes in every 100 reach AMBER, for 2–3 more real windows in every 100.
+- **Opus is the weak spot: 5.7% of real windows reach AMBER.** That is a VoIP codec. The contact-centre path is G.711 or AMR (1.5%), but voice notes from messaging apps are Opus.
+- **These are per-window numbers.** A call's score is the mean of its top three windows over the last 20 s, so the call-level false-alarm rate depends on call length. Only IndiaCall measures it.
+- **Noisy Hindi is still the hardest case.** About a third of IndicSynth fakes stay GREEN through G.711 with noise and loss, so the passkey stays mandatory for every high-risk request.
+- **Hindi real-speech false alarms are still optimistic,** because FLEURS is in AntiDeepfake's training data.
 
 ## S1 before 20 Oct: XLS-R + SLS
 

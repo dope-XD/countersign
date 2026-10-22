@@ -2,6 +2,7 @@
 
     python -m ml.calibrate_s1 [--checkpoint models/s1_sls_phone.pt]
     python -m ml.calibrate_s1 --checkpoint models/s1_add_mms300m.pt,models/s1_sls_phone.pt   (ensemble)
+    python -m ml.calibrate_s1 --checkpoint models/s1_add_w2vlarge.pt,models/s1_add_xlsr1b.pt --manifest data/manifests/train.csv
     -> models/s1_calibration.json (keyed to the checkpoint's version, "v1+v2" for an ensemble)
 
 For an ensemble the same logistic regression takes one log-odds column per model, so it
@@ -10,6 +11,14 @@ learns how much to trust each one on phone audio.
 The raw XLS-R+SLS output is very overconfident (real speech often gets P(fake) > 0.9),
 so the GREEN/AMBER/RED cut-offs only mean something after this step. Dev clips are
 speaker-disjoint from training and never include IndiaCall or the public test sets.
+
+The channels include the noisy, lossy ones (HARD_CHANNELS). Fitted on clean codecs only, the
+calibration pushed most fakes on a noisy line below AMBER (28% of Hindi fakes reached AMBER
+through G.711 + loss + noise).
+
+Models that never trained on our train split (the AntiDeepfake ports) are calibrated on
+train.csv instead, which leaves the whole dev split as a held-out test. A model fine-tuned on
+train.csv (the SLS phone/Indic checkpoint) must stay on dev.csv.
 """
 
 from __future__ import annotations
@@ -25,17 +34,17 @@ from tqdm import tqdm
 
 from engine.config import settings
 from engine.signals.s1_synth import S1Detector
-from ml.augment.telephony import channel, load_audio
+from ml.augment.telephony import HARD_CHANNELS, channel, load_audio
 from ml.eval.metrics import eer
 from ml.s1_data import read
 
-CHANNELS = ["g711u", "amrnb_12k2", "opus_12k", "gsm", "clean"]
+CHANNELS = ["g711u", "amrnb_12k2", "opus_12k", "gsm", "clean", *HARD_CHANNELS]
 
 
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--checkpoint", default=str(settings.s1_checkpoint))
-    ap.add_argument("--dev", default="data/manifests/dev.csv")
+    ap.add_argument("--dev", "--manifest", dest="dev", default="data/manifests/dev.csv", help="clips to fit on (see the module docstring)")
     ap.add_argument("--n", type=int, default=1500)
     a = ap.parse_args()
     det = S1Detector()
@@ -50,7 +59,7 @@ def main():
     def prep(i_r):
         i, r = i_r
         x = load_audio(r["path"])[: settings.window_samples]
-        return channel(x, CHANNELS[i % len(CHANNELS)])
+        return channel(x, CHANNELS[i % len(CHANNELS)], seed=i)
 
     z, y = [], []
     with ThreadPoolExecutor(8) as pool:
@@ -75,6 +84,7 @@ def main():
         "genuine_above_0.7": round(float(np.mean(p[y == 0] >= 0.7)), 4),
         "spoof_above_0.7": round(float(np.mean(p[y == 1] >= 0.7)), 4),
         "channels": CHANNELS,
+        "fitted_on": a.dev,
     }
     path = settings.models_dir / "s1_calibration.json"
     allc = json.loads(path.read_text()) if path.exists() else {}

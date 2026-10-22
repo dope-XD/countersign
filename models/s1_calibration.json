@@ -90,23 +90,26 @@
   "add-wav2vec-large+add-xls-r-1b": {
     "version": "add-wav2vec-large+add-xls-r-1b",
     "w": [
-      0.7268825941014614,
-      0.5793663756220896
+      0.2447536052047731,
+      0.5171240472522165
     ],
-    "a": 0.7268825941014614,
-    "b": -4.332210176125519,
-    "n": 1315,
-    "dev_eer": 0.0122,
-    "genuine_above_0.3": 0.0177,
-    "genuine_above_0.7": 0.0106,
-    "spoof_above_0.7": 0.988,
+    "a": 0.2447536052047731,
+    "b": -0.35455802636826034,
+    "n": 3000,
+    "dev_eer": 0.0333,
+    "genuine_above_0.3": 0.0433,
+    "genuine_above_0.7": 0.0173,
+    "spoof_above_0.7": 0.9407,
     "channels": [
       "g711u",
       "amrnb_12k2",
       "opus_12k",
       "gsm",
-      "clean"
-    ]
+      "clean",
+      "g711u+loss+noise",
+      "amrnb_12k2+loss+noise"
+    ],
+    "fitted_on": "data/manifests/train.csv"
   },
   "add-wav2vec-large+xlsr-sls-phone-indic": {
     "version": "add-wav2vec-large+xlsr-sls-phone-indic",

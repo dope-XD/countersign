@@ -2,7 +2,19 @@ import { api } from '../lib/api'
 import { usePoll } from '../lib/events'
 import { TopBar } from '../components/ui'
 
-type Bench = { set: string; condition: string; model?: string; detect_at_1pct_far?: number; eer: number; n_bona: number; n_spoof: number; published_eer?: number | null }
+type Bench = {
+  set: string
+  condition: string
+  model?: string
+  detect_at_1pct_far?: number
+  eer: number
+  n_bona: number
+  n_spoof: number
+  published_eer?: number | null
+  false_alarm_amber?: number | null
+  detect_amber?: number | null
+  detect_red?: number | null
+}
 type Target = { name: string; target: string; result: string; pass: boolean | null }
 type Level = { level: string; description: string; calls: number; approved: number; tiers: Record<string, number>; by_cli?: Record<string, number> }
 type Fair = { group: string; n: number; fpr: number; ci: [number, number] }
@@ -28,7 +40,15 @@ type Report = {
 }
 type Metrics = { report: Report | null; live: { s1_backend: string; s1_version: string; windows_scored: number; p50_ms: number | null; p95_ms: number | null } }
 
-const CH: Record<string, string> = { clean: 'clean', g711u: 'G.711 μ-law (PSTN)', amrnb_12k2: 'AMR-NB 12.2k (mobile)', opus_12k: 'Opus 12k (VoIP)' }
+const CH: Record<string, string> = {
+  clean: 'clean',
+  g711u: 'G.711 μ-law (PSTN)',
+  amrnb_12k2: 'AMR-NB 12.2k (mobile)',
+  opus_12k: 'Opus 12k (VoIP)',
+  'g711u+loss+noise': 'G.711 + room noise + 3% loss',
+  'amrnb_12k2+loss+noise': 'AMR-NB + room noise + 3% loss',
+}
+const opt = (x?: number | null) => (x != null ? pct(x) : '—')
 const pct = (x: number) => `${(x * 100).toFixed(x < 0.1 ? 2 : 1)}%`
 const ci = (c: [number, number]) => `[${pct(c[0])}, ${pct(c[1])}]`
 const NUMBER: Record<string, string> = { registered: 'registered number', other: 'another number' }
@@ -162,18 +182,25 @@ export default function Metrics() {
         {r && r.benchmarks.length > 0 && (
           <section>
             <h2 className="text-xl font-bold">Detector (S1) error on public test sets</h2>
-            <p className="text-xs text-muted">Equal error rate, lower is better. S1 alone; the product never acts on S1 alone.</p>
+            <p className="text-xs text-muted">
+              S1 alone, model <span className="font-mono">{r.model.s1}</span>; the product never acts on S1 alone. EER, lower is better. The tier columns
+              are what the engine does with one window: the share of real clips it would raise to AMBER, and of fake clips it raises to AMBER and to RED.
+            </p>
             <table className="mt-3 w-full text-sm">
               <thead>
-                <tr className="border-b border-ink text-left"><th className="py-2">Test set</th><th>Model</th><th>Channel</th><th>EER</th><th>Caught at 1% false alarms</th><th>Published</th><th>n (real / fake)</th></tr>
+                <tr className="border-b border-ink text-left">
+                  <th className="py-2">Test set</th><th>Channel</th><th>EER</th><th>Real raised to AMBER</th><th>Fakes at AMBER</th><th>Fakes at RED</th><th>Caught at 1% false alarms</th><th>Published</th><th>n (real / fake)</th>
+                </tr>
               </thead>
               <tbody>
                 {r.benchmarks.map((b, i) => (
                   <tr key={i} className="border-b border-line">
                     <td className="py-2">{b.set}</td>
-                    <td className="font-mono text-xs">{b.model === 'xlsr-sls-phone-indic' ? 'fine-tuned (phone + Indic)' : b.model ? 'published checkpoint' : '—'}</td>
                     <td>{CH[b.condition] || b.condition}</td>
                     <td className="font-semibold">{pct(b.eer)}</td>
+                    <td>{opt(b.false_alarm_amber)}</td>
+                    <td>{opt(b.detect_amber)}</td>
+                    <td>{opt(b.detect_red)}</td>
                     <td>{b.detect_at_1pct_far != null ? pct(b.detect_at_1pct_far) : '—'}</td>
                     <td className="text-muted">{b.published_eer != null ? pct(b.published_eer) : '—'}</td>
                     <td className="font-mono text-xs">{b.n_bona} / {b.n_spoof}</td>

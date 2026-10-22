@@ -1,6 +1,10 @@
 """Merge benchmark and IndiaCall results into models/metrics.json for the metrics page.
 
-python -m ml.eval.report --indiacall test
+python -m ml.eval.report --indiacall test [--model add-wav2vec-large+add-xls-r-1b]
+
+Only the benchmarks of one S1 version go in: the engine's model, which by default is the one
+benchmarked most recently. models/eval/ keeps older models' runs for docs/ML.md, but the
+metrics page must not show them as the running detector's numbers.
 """
 
 from __future__ import annotations
@@ -234,13 +238,11 @@ def lag_note(ic: dict | None) -> str:
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--indiacall", default="test")
+    ap.add_argument("--model", default=None, help="S1 version to report (default: the most recently benchmarked)")
     a = ap.parse_args()
-    benchmarks = []
-    model = None
-    for p in sorted(EVAL.glob("bench_*.json")):
-        d = json.loads(p.read_text())
-        model = d.get("model", model)
-        benchmarks += d["results"]
+    runs = [json.loads(p.read_text()) for p in sorted(EVAL.glob("bench_*.json"), key=lambda p: p.stat().st_mtime)]
+    model = a.model or (runs[-1].get("model") if runs else None)
+    benchmarks = [r for d in runs if d.get("model") == model for r in d["results"]]
     ic = indiacall_section(a.indiacall)
     fusion = settings.models_dir / "fusion.json"
     notes = [
