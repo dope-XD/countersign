@@ -41,10 +41,16 @@ $env:COUNTERSIGN_ANDROID_CERT_SHA256 = "49:4D:97:51:C6:18:8B:3B:C5:2E:61:41:6C:3
 
 The engine then serves `/.well-known/assetlinks.json`. Without it the app still works, with a thin address bar.
 
-## Using it
+## For judges
+
+Download it from `/try` on the server (Android only), allow the install, and open it. It goes straight to `/try`, which makes a private demo account by itself. Tap **Turn on call alerts** on that page, allow phone access and notifications, and that's the whole setup. Back from the pages shows the settings screen.
+
+## Using it for the team demo
+
+On the settings screen pick **Rahul Sharma** or **Sunita Sharma**, then:
 
 1. **Log the phone in.** On the phone, scan the customer's login QR on `/demo`. It opens Chrome and logs that phone in. The app shares Chrome's login for the site.
-2. **Set up the app.** Open CS Bank, check the server (the tunnel URL) and pick whose phone it is, then tap **Open my bank**.
+2. **Set up the app.** Open CS Bank, press Back to reach the settings, check the server (the tunnel URL), pick whose phone it is, then tap **Open my bank**.
 3. **Turn on call alerts.** In the bank: **Security → Turn on call alerts**. Allow phone access and notifications. CS Bank's ongoing notification shows the alerts are on.
 4. **Bind a passkey** if this phone has none (**Security → Bind this phone**).
 
@@ -54,8 +60,8 @@ Scene 3 with a real call: Sunita's phone takes a real WhatsApp or normal call fr
 
 | File | What it does |
 |---|---|
-| `MainActivity` | Setup and status: server, whose phone, alerts on or off. Opens the bank pages in Chrome. Notifications land here and go straight to the bank. |
-| `LinkActivity` | Receives the device token from the bank page (`intent://link?...#Intent;scheme=countersign`). It accepts it only for the server and customer chosen on the setup screen, so another website can't point the app elsewhere. |
+| `MainActivity` | Opens the pages in Chrome straight away: `/try` on a judge's phone, `/bank/<customer>` on the team's. Back shows settings and status: server, whose phone, alerts on or off. Notifications land here and go straight to the pages. |
+| `LinkActivity` | Receives the device token from the page (`intent://link?...#Intent;scheme=countersign`). It accepts it only for the configured server, and only for the chosen customer (or a `/try` sandbox on a judge's phone), so another website can't point the app elsewhere. |
 | `CallWatchService` | Foreground service. Uses the telephony call state and audio mode to `POST /api/app/<customer>/call-state`, and `/ws/events` to raise notifications. Authenticates with the `X-Device-Token` header. |
 
 The device token can report call state and receive that customer's app events, nothing else. Approving still needs the passkey. Engine side: `engine/app.py` (`/api/app/{cid}/device`, `/call-state`, `/.well-known/assetlinks.json`), `engine/auth.py` (device tokens), and `engine/guard.py` (on a call right now).
