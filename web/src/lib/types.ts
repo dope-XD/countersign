@@ -57,6 +57,8 @@ export type Call = {
   id: string
   caller_cli: string
   language: string
+  source: 'softphone' | 'connect'
+  media_delay_s: number | null
   status: 'ringing' | 'live' | 'ended'
   customer: Customer | null
   started: number

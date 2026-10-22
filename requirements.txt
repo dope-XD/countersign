@@ -14,6 +14,7 @@ speechbrain==1.0.3
 faster-whisper==1.1.1
 soundfile==0.12.1
 huggingface_hub==0.26.5
+boto3>=1.35,<2  # Amazon Connect ingest: GetMedia on Kinesis Video Streams
 # ml / eval
 scikit-learn==1.6.0
 pandas==2.2.3

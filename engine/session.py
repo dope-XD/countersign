@@ -6,6 +6,11 @@ a worker thread, then fused with S3 + S4 into a tier with reasons for the agent 
 (Upsampling each 20 ms frame separately adds periodic clicks that look synthetic, so
 resampling happens per window, never per frame.)
 Agent audio is relayed to the caller and used only to time challenge replies.
+
+Calls arrive from the browser softphone (8 kHz mu-law over a websocket) or from Amazon
+Connect (engine/ingest/connect.py: 8 kHz PCM out of Kinesis Video Streams). Both end up in
+on_caller_pcm / on_agent_pcm. Connect audio arrives a KVS fragment at a time, so its frames
+carry the time they were spoken (`wall`) instead of the time they reached us.
 """
 
 from __future__ import annotations
@@ -66,12 +71,12 @@ class Track:
         self.pos = 0
         self._arrivals: deque[tuple[int, float]] = deque(maxlen=400)  # (abs pos, wall time) per frame, ~8 s
 
-    def push(self, mulaw: bytes) -> list[tuple[str, int]]:
-        x = mulaw_decode(mulaw)
+    def push(self, x: np.ndarray, wall: float | None = None) -> list[tuple[str, int]]:
+        """Line-rate float audio. `wall` is when its last sample was spoken (default: now)."""
         if self.ring is not None:
             self.ring.write(x)
         self.pos += len(x)
-        self._arrivals.append((self.pos, time.time()))
+        self._arrivals.append((self.pos, time.time() if wall is None else wall))
         return self.vad.feed(x)
 
     def wall_at(self, pos: int) -> float:
@@ -89,6 +94,7 @@ class CallSession:
     id: str
     caller_cli: str
     language: str = "unknown"
+    source: str = "softphone"  # softphone | connect
     customer_id: str | None = None
     started: float = field(default_factory=time.time)
     status: str = "ringing"  # ringing | live | ended
@@ -105,6 +111,7 @@ class CallSession:
     case_id: str | None = None
     first_tier_at: float | None = None
     caller_rtt: float = 0.0
+    media_delay_s: float | None = None  # Connect: how far behind the live call its audio reaches us
     replay_match: bool = False
     timeline: list[dict] = field(default_factory=list)
     caller_ws: object = None
@@ -121,9 +128,15 @@ class CallSession:
 
     # ------------------------------------------------------------------ audio in
     async def on_caller_audio(self, mulaw: bytes) -> None:
+        await self.on_caller_pcm(mulaw_decode(mulaw))
+
+    async def on_agent_audio(self, mulaw: bytes) -> None:
+        await self.on_agent_pcm(mulaw_decode(mulaw))
+
+    async def on_caller_pcm(self, x: np.ndarray, wall: float | None = None) -> None:
         if self.status != "live":
             return
-        for kind, pos in self.caller.push(mulaw):
+        for kind, pos in self.caller.push(x, wall):
             self._on_caller_vad(kind, pos)
         if self.caller.pos >= self._next_window_pos and not self._scoring:
             self._next_window_pos = self.caller.pos + HOP
@@ -131,8 +144,8 @@ class CallSession:
                 self._scoring = True
                 asyncio.create_task(self._score(self.caller.ring.last(WINDOW), self.caller.pos / LINE))
 
-    async def on_agent_audio(self, mulaw: bytes) -> None:
-        for kind, pos in self.agent.push(mulaw):
+    async def on_agent_pcm(self, x: np.ndarray, wall: float | None = None) -> None:
+        for kind, pos in self.agent.push(x, wall):
             c = self.challenge
             if kind == "offset" and c and not c.done and c.reply_onset_wall is None:
                 wall = self.agent.wall_at(pos)
@@ -252,6 +265,8 @@ class CallSession:
 
     def _agent_mic_live(self) -> bool:
         last = self.agent.last_wall()
+        if self.source == "connect":
+            return last is not None  # both legs come from one stream, frame by frame in speaking order
         return last is not None and time.time() - last < 2.0
 
     def _on_caller_vad(self, kind: str, pos: int) -> None:
@@ -317,6 +332,10 @@ class CallSession:
         if self.status == "ringing":
             self.status = "live"
             self.started = time.time()
+            cust = world.by_mobile(self.caller_cli)
+            if cust:
+                self.customer_id = cust.id  # the IVR matched the caller ID; the agent can change it
+                world.calls_by_customer.setdefault(cust.id, []).append(time.time())
             hub.publish("calls", {"type": "calls"})
 
     def end(self) -> None:
@@ -356,6 +375,8 @@ class CallSession:
             "id": self.id,
             "caller_cli": self.caller_cli,
             "language": self.language,
+            "source": self.source,
+            "media_delay_s": None if self.media_delay_s is None else round(self.media_delay_s, 2),
             "status": self.status,
             "customer": cust.__dict__ if cust else None,
             "started": self.started,
@@ -377,10 +398,10 @@ class Calls:
     def __init__(self):
         self.calls: dict[str, CallSession] = {}
 
-    def create(self, caller_cli: str, language: str) -> CallSession:
-        cs = CallSession(id=new_id("call"), caller_cli=caller_cli, language=language)
+    def create(self, caller_cli: str, language: str, source: str = "softphone") -> CallSession:
+        cs = CallSession(id=new_id("call"), caller_cli=caller_cli, language=language, source=source)
         self.calls[cs.id] = cs
-        db.audit("engine", "call_started", cs.id, cli=caller_cli)
+        db.audit("engine", "call_started", cs.id, cli=caller_cli, source=source)
         hub.publish("calls", {"type": "calls"})
         return cs
 
@@ -395,12 +416,16 @@ class Calls:
                 "status": c.status,
                 "tier": c.tier,
                 "language": c.language,
+                "source": c.source,
                 "started": c.started,
                 "customer_id": c.customer_id,
             }
             for c in self.calls.values()
             if not c.ended
         ]
+
+    def live_count(self) -> int:
+        return sum(1 for c in self.calls.values() if not c.ended)
 
     def prune(self) -> None:
         now = time.time()

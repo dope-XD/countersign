@@ -24,6 +24,7 @@ from engine.config import settings
 from engine.db import db
 from engine.fingerprint import replay_index
 from engine.hub import hub
+from engine.ingest import connect as connect_ingest
 from engine.mocks.world import world
 from engine.session import LINE, CallSession, calls
 from engine.signals import s3_liveness
@@ -180,7 +181,7 @@ async def staff_logout(response: Response):
 @app.websocket("/ws/caller")
 async def ws_caller(ws: WebSocket, cli: str = "", lang: str = "unknown"):
     await ws.accept()
-    if sum(1 for c in calls.calls.values() if not c.ended) >= settings.max_live_calls:
+    if calls.live_count() >= settings.max_live_calls:
         await _send(ws, json.dumps({"type": "busy", "message": "All our lines are busy. Please try again in a few minutes."}))
         await ws.close(code=1013)  # try again later
         return
@@ -249,7 +250,7 @@ async def ws_agent(ws: WebSocket, call_id: str):
             msg = await ws.receive()
             if msg["type"] == "websocket.disconnect":
                 break
-            if msg.get("bytes") is not None:
+            if msg.get("bytes") is not None and cs.source != "connect":  # a Connect agent talks in the CCP; that leg comes from KVS
                 await cs.on_agent_audio(msg["bytes"])
                 if cs.status == "live":
                     await _send(cs.caller_ws, data=msg["bytes"])
@@ -276,10 +277,6 @@ async def answer(call_id: str):
     cs = _call(call_id)
     if cs.status == "ringing":
         cs.answer()
-        cust = world.by_mobile(cs.caller_cli)
-        if cust:
-            cs.customer_id = cust.id  # the IVR matched the caller ID; the agent can change it
-            world.calls_by_customer.setdefault(cust.id, []).append(time.time())
         await _send(cs.caller_ws, json.dumps({"type": "answered"}))
     return cs.public()
 
@@ -809,6 +806,7 @@ async def ws_events(ws: WebSocket, topics: str = "calls"):
 
 
 app.include_router(public)
+app.include_router(connect_ingest.router)
 app.include_router(staff)
 
 

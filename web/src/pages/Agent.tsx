@@ -6,7 +6,7 @@ import { ACTIONS, REQ_LABEL, clock, inr, maskPhone, type BankRequest, type Call,
 import { Dot, Spark, TierPill, TierText, TopBar } from '../components/ui'
 import { useToast } from '../lib/useToast'
 
-type LiveCall = { id: string; caller_cli: string; status: string; tier: Tier | null; language: string; started: number; customer_id: string | null }
+type LiveCall = { id: string; caller_cli: string; status: string; tier: Tier | null; language: string; source: string; started: number; customer_id: string | null }
 
 const SCRIPT: Record<string, string> = {
   app_approval: "For your security, I've sent an approval request to the phone registered on this account.",
@@ -137,7 +137,10 @@ export default function Agent() {
                   <TierPill tier={c.tier} />
                 </div>
                 <div className="mt-1 flex items-center justify-between text-xs text-muted">
-                  <span>{LANG[c.language] || c.language} · {c.status}</span>
+                  <span>
+                    {LANG[c.language] || c.language} · {c.status}
+                    {c.source === 'connect' && ' · Amazon Connect'}
+                  </span>
                   {c.status === 'ringing' ? (
                     <button className="btn-primary px-3 py-1 text-xs" onClick={() => answer(c.id)}>
                       Answer
@@ -191,17 +194,25 @@ function CallView({ call, raw, act, audioOn, startAudio, stopAudio, onClose }: {
       <div className="card flex flex-wrap items-center justify-between gap-2 bg-[#ECEAE4] px-4 py-2 text-sm">
         <span>
           Call {clock(elapsed)} · <span className="font-mono">{maskPhone(call.caller_cli)}</span> · {LANG[call.language] || call.language}
+          {call.source === 'connect' && (
+            <span className="ml-2 text-xs text-muted">
+              Amazon Connect{call.media_delay_s != null && ` · audio ${call.media_delay_s.toFixed(1)} s behind`}
+            </span>
+          )}
           {call.status === 'ended' && <span className="ml-2 font-semibold text-red">ended</span>}
         </span>
         <span className="flex items-center gap-2">
           {call.status !== 'ended' &&
+            call.source !== 'connect' &&
             (audioOn ? (
               <button className="btn-ghost px-2 py-1 text-xs" onClick={stopAudio}>Headset off</button>
             ) : (
               <button className="btn-outline px-3 py-1 text-xs" onClick={startAudio}>Connect headset</button>
             ))}
           {call.status !== 'ended' ? (
-            <button className="btn-ghost px-2 py-1 text-xs text-red" onClick={() => act(() => api.post(`/api/calls/${call.id}/hangup`))}>End call</button>
+            <button className="btn-ghost px-2 py-1 text-xs text-red" onClick={() => act(() => api.post(`/api/calls/${call.id}/hangup`))}>
+              {call.source === 'connect' ? 'Stop listening' : 'End call'}
+            </button>
           ) : (
             <button className="btn-ghost px-2 py-1 text-xs" onClick={onClose}>Close</button>
           )}

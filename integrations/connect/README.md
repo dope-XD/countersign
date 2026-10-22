@@ -1,6 +1,16 @@
 # Amazon Connect spike (Workstream C, item 1)
 
-This spike is for the RAKSHAM finale. Before the venue, it proves that we can take a real Amazon Connect call, read both audio legs out of Kinesis Video Streams (KVS) as 8 kHz PCM, and measure how far behind the live call that audio reaches the laptop. The engine is not touched. Wiring this into `engine/ingest/` happens at the venue.
+This spike is for the RAKSHAM finale. It proves that we can take a real Amazon Connect call, read both audio legs out of Kinesis Video Streams (KVS) as 8 kHz PCM, and measure how far behind the live call that audio reaches the laptop.
+
+**The engine now takes Connect calls itself** (`engine/ingest/connect.py`). Once the spike below has worked, point the Lambda's `ENGINE_URL` at the engine instead of `receiver.py`, and start the engine with:
+
+```powershell
+$env:COUNTERSIGN_CONNECT_SECRET = "<the Lambda's CONNECT_HMAC_SECRET>"
+$env:COUNTERSIGN_CONNECT_AWS_PROFILE = "countersign-kvs"   # or the usual AWS_* variables
+.un.ps1
+```
+
+Each call shows up on `/agent` tagged "Amazon Connect", with how far behind the call its audio is. The agent talks in the CCP and works the Voice Trust Card, requests and liveness check in `/agent`. For caller-ID matching, add a **Set contact attributes** block that saves the customer's number as user-defined `cli` (`$.CustomerEndpoint.Address`); `lang` (e.g. `hi-IN`) picks the liveness language. Web calling has no number, so set `cli` by hand for the demo.
 
 ```
 caller (web calling widget) ──► Connect (ap-southeast-1) ──► Start media streaming ──► KVS stream (MKV, 2 tracks)

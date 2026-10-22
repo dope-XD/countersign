@@ -226,7 +226,7 @@ def test_line_audio_is_never_resampled_per_frame():
     x = (0.3 * np.sin(2 * np.pi * 440 * np.arange(8000) / 8000)).astype(np.float32)
     frames = [mulaw_encode(x[i : i + 160]) for i in range(0, 8000, 160)]
     for f in frames:
-        cs.caller.push(f)
+        cs.caller.push(mulaw_decode(f))
     stored = cs.caller.ring.last(8000)
     assert np.array_equal(stored, mulaw_decode(b"".join(frames)))  # 8 kHz, bit-exact, no per-frame filtering
 

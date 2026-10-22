@@ -7,6 +7,7 @@ Who plays whom: Pushkar is the attacker and the agent "Meera". Reshaan is "Rahul
 ## Scene 1: the clone calls the bank (2 min)
 
 1. Phone C: Calling from **Unknown number**, Voice source **Microphone** with the laptop's Voicemeeter cable selected, which is fed by Seed-VC converting Pushkar's voice into Reshaan's. (Fallback: **Play a recording** with `data/indiacall/clones/xtts/reshaan/O01.wav`.) Tap **Call**.
+   *Amazon Connect version:* place the call from the Connect web-calling widget instead, and take it in the CCP. The call appears on `/agent` tagged "Amazon Connect" without anyone pressing Answer. Line: *"Amazon retired Voice ID in May 2026. This does the job without storing a single voiceprint."*
 2. Agent console: **Answer**. Pick **Rahul Sharma**, choose **Change registered mobile number**, type a new number, **Log request**.
 3. The clone speaks the opening line. Within about 8 s the card turns **AMBER** with `CLI_MISMATCH` (and usually `SYN_ARTIFACT_MED/HIGH`).
 4. **Start liveness check**. Meera reads the challenge aloud. The clone answers late or in a flat voice, and the card turns **RED** with `RESP_LAG` or `SYN_ARTIFACT_HIGH`.

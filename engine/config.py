@@ -66,6 +66,12 @@ class Settings:
     # The softphone needs no login (the caller may be the attacker) and every call costs GPU
     # time, so a public engine takes at most this many live calls at once.
     max_live_calls: int = int(_env("MAX_CALLS", "4"))
+
+    # Amazon Connect ingest (engine/ingest/connect.py). The secret is the Lambda's
+    # CONNECT_HMAC_SECRET; empty turns the endpoint off. The AWS profile (or the usual AWS_*
+    # variables) needs kinesisvideo:GetDataEndpoint and GetMedia on the Connect streams.
+    connect_secret: str = _env("CONNECT_SECRET", "")
+    connect_aws_profile: str = _env("CONNECT_AWS_PROFILE", "")
     eval_mode: bool = _env("EVAL", "0") == "1"
 
     # Mock KMS: a 32-byte hex key. Generated on first run if absent.
