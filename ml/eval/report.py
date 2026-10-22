@@ -79,6 +79,20 @@ def detection_rows(att: list[dict]) -> list[dict]:
     return out
 
 
+def generator_rows(att: list[dict]) -> list[dict]:
+    """Detection per clone generator, on L1-L3 calls that spoof the registered number: no caller-ID
+    flag, so the tier comes from the voice signals alone. This is the "which clone beat you" table."""
+    out = []
+    voice_only = [r for r in att if r["plan"]["level"] in ("L1", "L2", "L3") and cli_of(r) == "registered"]
+    for g in sorted({r["plan"]["generator"] for r in voice_only}):
+        rs = [r for r in voice_only if r["plan"]["generator"] == g]
+        row = rate_row(rs, lambda r: reached(r) in ("AMBER", "RED"), generator=g, levels=sorted({r["plan"]["level"] for r in rs}))
+        row["red"] = sum(reached(r) == "RED" for r in rs)
+        row["ended_green"] = sum(r["final_tier"] == "GREEN" for r in rs)
+        out.append(row)
+    return out
+
+
 def summarise(results: list[dict]) -> dict:
     rows = [r for r in results if not r.get("error")]
     errors = [r for r in results if r.get("error")]
@@ -202,6 +216,7 @@ def summarise(results: list[dict]) -> dict:
         "levels": levels,
         "genuine": {"calls": len(gen), "stepped_up": sum(stepped_up(r) for r in gen), "rate": overall, "by_cli": by_cli},
         "detection": detection,
+        "by_generator": generator_rows(att),
         "first_tier_s": {"p50": float(np.median(first)), "p95": p95_first} if first else None,
         "fairness": fairness,
         "misses": misses,

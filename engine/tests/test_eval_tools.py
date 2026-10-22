@@ -134,6 +134,21 @@ def test_report_separates_genuine_numbers_and_shows_detection_only():
     assert out["errors"] == 1
 
 
+def test_report_breaks_voice_only_detection_down_by_generator():
+    seedvc = {"generator": "seedvc"}
+    rows = (
+        [_row("L1", REGISTERED, "RED") for _ in range(4)]
+        + [_row("L1", REGISTERED, "GREEN")]
+        + [{**r, "plan": {**r["plan"], **seedvc}} for r in [_row("L3", REGISTERED, "AMBER") for _ in range(2)]]
+        + [_row("L1", ATTACKER_OWN, "GREEN")]  # own number: the caller-ID flag helps, so it is left out
+        + [{**r, "plan": {**r["plan"], **seedvc}} for r in [_row("L4", REGISTERED, "RED")]]  # L4 adds a SIM swap flag
+    )
+    gens = {g["generator"]: g for g in report.summarise(rows)["by_generator"]}
+    assert set(gens) == {"xtts", "seedvc"}
+    assert (gens["xtts"]["n"], gens["xtts"]["k"], gens["xtts"]["red"], gens["xtts"]["ended_green"]) == (5, 4, 4, 1)
+    assert (gens["seedvc"]["n"], gens["seedvc"]["k"], gens["seedvc"]["levels"]) == (2, 2, ["L3"])
+
+
 def test_report_counts_the_highest_tier_reached():
     assert report.reached(_row("L3", REGISTERED, "RED", tiers=["AMBER", "RED"])) == "RED"
     assert report.reached(_row("L3", REGISTERED, None, tiers=[])) == "none"

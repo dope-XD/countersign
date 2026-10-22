@@ -21,6 +21,14 @@ type Fair = { group: string; n: number; fpr: number; ci: [number, number] }
 type Miss = { id: string; level: string; cli_kind?: string; language: string; tier: string; why: string }
 type CliKind = 'registered' | 'other'
 type GenuineRow = { cli_kind: CliKind; label: string; n: number; k: number; rate: number; ci: [number, number]; executed: number }
+type GeneratorRow = { generator: string; levels: string[]; n: number; k: number; rate: number; ci: [number, number]; red: number; ended_green: number }
+const GENERATOR: Record<string, string> = {
+  xtts: 'XTTS v2 (TTS)',
+  f5: 'F5-TTS',
+  indicf5: 'IndicF5 (Indian-language TTS)',
+  chatterbox: 'Chatterbox (TTS)',
+  seedvc: 'Seed-VC (live voice conversion)',
+}
 type Detection = { level: string; cli_kind: CliKind; spoofed_cli: boolean; n: number; k: number; rate: number; ci: [number, number]; red: number; ended_green: number }
 type Report = {
   generated_at: string
@@ -31,6 +39,7 @@ type Report = {
     levels: Level[]
     genuine: { calls: number; stepped_up: number; rate: number; by_cli?: GenuineRow[] }
     detection?: Detection[]
+    by_generator?: GeneratorRow[]
     first_tier_s?: { p50: number; p95: number }
     latency_ms?: { p50: number; p95: number }
     fairness: Fair[]
@@ -172,6 +181,33 @@ export default function Metrics() {
                     <td>{pct(d.rate)} <span className="font-mono text-xs text-muted">{ci(d.ci)}</span></td>
                     <td>{d.red}</td>
                     <td className={d.ended_green ? 'font-semibold text-red' : 'text-green'}>{d.ended_green}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </section>
+        )}
+
+        {ic?.by_generator && ic.by_generator.length > 0 && (
+          <section>
+            <h2 className="text-xl font-bold">Detection by clone generator</h2>
+            <p className="text-xs text-muted">
+              Attacks that spoof the registered number, so only the voice signals can raise the tier. Ended GREEN means the voice signals missed it; app approval still
+              stood in the way.
+            </p>
+            <table className="mt-3 w-full text-sm">
+              <thead>
+                <tr className="border-b border-ink text-left"><th className="py-2">Generator</th><th>Levels</th><th>Calls</th><th>Reached AMBER or RED</th><th>RED</th><th>Ended GREEN</th></tr>
+              </thead>
+              <tbody>
+                {ic.by_generator.map((g) => (
+                  <tr key={g.generator} className="border-b border-line">
+                    <td className="py-2 font-semibold">{GENERATOR[g.generator] || g.generator}</td>
+                    <td>{g.levels.join(', ')}</td>
+                    <td>{g.n}</td>
+                    <td>{pct(g.rate)} <span className="font-mono text-xs text-muted">{ci(g.ci)}</span></td>
+                    <td>{g.red}</td>
+                    <td className={g.ended_green ? 'font-semibold text-red' : 'text-green'}>{g.ended_green}</td>
                   </tr>
                 ))}
               </tbody>
