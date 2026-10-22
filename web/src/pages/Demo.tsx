@@ -6,7 +6,13 @@ import type { Customer } from '../lib/types'
 import { TopBar } from '../components/ui'
 import { useToast } from '../lib/useToast'
 
-type World = { customers: Record<string, Customer>; fri: Record<string, string>; sim_swaps: Record<string, number>; recent_calls: Record<string, number> }
+type World = {
+  customers: Record<string, Customer>
+  fri: Record<string, string>
+  sim_swaps: Record<string, number>
+  recent_calls: Record<string, number>
+  on_call?: Record<string, string>
+}
 type Stored = {
   voiceprints: number
   calls_with_speaker_embeddings_in_memory: number
@@ -16,7 +22,7 @@ type Stored = {
   audit_events: number
   transcripts_stored: number
 }
-type Health = { models: Record<string, string>; s1_version: string; p95_ms: number | null; live_calls: number; rp_id: string }
+type Health = { models: Record<string, string>; s1_version: string; p95_ms: number | null; live_calls: number; rp_id: string; public_url?: string }
 
 function QR({ path, label }: { path: string; label: string }) {
   const [src, setSrc] = useState('')
@@ -30,6 +36,32 @@ function QR({ path, label }: { path: string; label: string }) {
       <div className="mt-2 text-sm font-semibold text-ink">{label}</div>
       <div className="truncate font-mono text-[11px] text-muted">{path}</div>
     </a>
+  )
+}
+
+/** A one-time login link for a customer's bank app, as a QR code. Each scan logs one phone in. */
+function LoginQR({ customer, label, base }: { customer: string; label: string; base: string }) {
+  const [path, setPath] = useState('')
+  const [src, setSrc] = useState('')
+  const [n, setN] = useState(0)
+  useEffect(() => {
+    let live = true
+    api.post<{ path: string }>(`/api/demo/login-link/${customer}`).then((r) => live && setPath(r.path), () => live && setPath(''))
+    const t = window.setTimeout(() => setN((x) => x + 1), 9 * 60 * 1000) // links last 10 minutes
+    return () => {
+      live = false
+      window.clearTimeout(t)
+    }
+  }, [customer, n])
+  useEffect(() => {
+    if (path) QRCode.toDataURL(`${base}${path}`, { margin: 1, width: 180 }).then(setSrc)
+  }, [base, path])
+  return (
+    <button className="card block w-full p-3 text-center" onClick={() => setN((x) => x + 1)} title="New code">
+      {src ? <img src={src} alt={`Login QR code for ${label}`} className="mx-auto h-36 w-36" /> : <div className="mx-auto h-36 w-36" />}
+      <div className="mt-2 text-sm font-semibold text-ink">{label}</div>
+      <div className="text-[11px] text-muted">one phone, 10 min · tap for a new code</div>
+    </button>
   )
 }
 
@@ -54,7 +86,8 @@ export default function Demo() {
 
   const rahul = w?.customers.rahul
   const swapOn = rahul ? rahul.registered_mobile in (w?.sim_swaps || {}) : false
-  const sunitaCall = !!w?.recent_calls.sunita
+  const sunitaCall = !!w?.recent_calls.sunita || !!w?.on_call?.sunita
+  const sunitaLive = w?.on_call?.sunita
 
   return (
     <div className="min-h-full">
@@ -68,8 +101,8 @@ export default function Demo() {
         <section>
           <h2 className="text-xl font-bold">Open on the phones</h2>
           <div className="mt-3 grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-6">
-            <QR path="/bank/rahul" label="Rahul's bank app" />
-            <QR path="/bank/sunita" label="Sunita's bank app" />
+            <LoginQR customer="rahul" label="Rahul's bank app" base={health.data?.public_url || location.origin} />
+            <LoginQR customer="sunita" label="Sunita's bank app" base={health.data?.public_url || location.origin} />
             <QR path="/call" label="Call the bank" />
             <QR path="/agent" label="Agent console" />
             <QR path="/fraud" label="Fraud desk" />
@@ -86,6 +119,11 @@ export default function Demo() {
             <button className="btn-outline w-full" onClick={() => call('/api/demo/recent-call', { customer_id: 'sunita', on: !sunitaCall, minutes_ago: 2 }, sunitaCall ? 'Cleared' : 'Sunita was on a call 2 min ago')}>
               {sunitaCall ? 'Clear' : 'Set'} “Sunita was on a call 2 min ago”
             </button>
+            {sunitaLive && (
+              <p className="text-xs text-muted">
+                Sunita’s phone reports {sunitaLive === 'internet' ? 'an internet call (WhatsApp or similar)' : 'a phone call'} in progress (CS Bank app).
+              </p>
+            )}
             <button className="btn-outline w-full" onClick={() => call('/api/demo/sim-swap', { customer_id: 'rahul', on: !swapOn, hours_ago: 5 }, swapOn ? 'SIM swap cleared' : 'SIM swap on Rahul’s number 5 h ago')}>
               {swapOn ? 'Clear' : 'Simulate'} SIM swap on Rahul’s number
             </button>

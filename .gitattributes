@@ -5,3 +5,6 @@
 *.pth binary
 *.flac binary
 *.wav binary
+*.bat text eol=crlf
+*.jar binary
+*.keystore binary

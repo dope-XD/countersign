@@ -28,11 +28,11 @@ Line: *"Genuine customers get one tap on their own phone. That's the whole cost.
 
 ## Scene 3: Sunita and the WhatsApp call (1.5 min)
 
-1. `/demo`: **Set "Sunita was on a call 2 min ago"**.
+1. With the CS Bank app on Sunita's phone (call alerts on), Pushkar calls Phone B on WhatsApp from the clone set-up and asks for money. The app's notification switches to "On an internet call". Without the app: `/demo` → **Set "Sunita was on a call 2 min ago"**.
 2. Phone B: **Pay by UPI** → `quickhelp.relief@okaxis` → ₹50000 → **Pay**.
 3. The pause screen appears: "We've paused this ₹50,000 payment for a moment". Read out the reasons.
 4. Optional: **Check a voice note**, then pick the clone voice note (V01). The result says "strong signs of a computer-made voice".
-5. **Ask Rahul on his phone**. Phone A shows "Did you ask Mum for ₹50,000?". Reshaan taps **No, I didn't ask**.
+5. **Ask Rahul on his phone**. Phone A shows "Did you ask Mum for ₹50,000?", as a notification when Rahul's phone has the app. Reshaan taps **No, I didn't ask**.
 6. Phone B: **Payment cancelled**, with a pre-filled 1930 report and a **Call 1930** button. The fraud desk gets the case.
 
 Line: *"Sunita trusts Rahul more than any warning. So the check goes to Rahul."*
@@ -47,5 +47,6 @@ Then `/demo` → **What Countersign holds right now**: 0 voiceprints, 0 transcri
 
 - *"What if the attacker SIM-swaps?"* → `/demo` **Simulate SIM swap**, then try to bind a new phone on `/bank/rahul`. Enrolment is refused for 7 days, and calls show `SIM_SWAP_RECENT`.
 - *"What if the detector is wrong?"* → It only changes how much checking happens. Risky changes always need the passkey, even on GREEN.
+- *"How does the app know she was on a call?"* → The CS Bank app reads the phone's call state and audio mode (normal and WhatsApp calls) and tells the bank only that a call is happening. Never the number, never the audio. In production this is an SDK inside the bank's existing app.
 - *"Speech impairment?"* → In the request card: **Customer declines voice check** swaps liveness for app approval and never fails anyone.
 - *"Is the detector any good on phone audio?"* → `/metrics` benchmark table across G.711 / AMR-NB / Opus, compared with the published numbers.

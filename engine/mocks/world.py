@@ -83,6 +83,7 @@ class World:
         self.sim_swaps: dict[str, float] = {}  # mobile -> unix time of last swap
         self.app_sessions: dict[str, float] = {}  # customer id -> last seen in app
         self.recent_calls: dict[str, float] = {}  # customer id -> time a phone call ended (guard trigger)
+        self.on_call: dict[str, str] = {}  # customer id -> "phone" | "internet", while the CS Bank app sees a call
         self.calls_by_customer: dict[str, list[float]] = {}
 
     # ---- core banking
@@ -107,6 +108,7 @@ class World:
             "fri": self.fri,
             "sim_swaps": self.sim_swaps,
             "recent_calls": self.recent_calls,
+            "on_call": self.on_call,
         }
 
 

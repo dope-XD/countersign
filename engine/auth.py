@@ -12,6 +12,11 @@ operator shows as a QR code on /demo (single use, 10 minutes). That sets a signe
 that customer only. Everything a customer can do (bind a passkey, approve or decline, pay,
 check a voice note, receive app events) needs it. The softphone needs nothing: it is the
 caller's phone, and the caller may be the attacker.
+
+Devices: the CS Bank Android app's native side (android/) can't see Chrome's cookies, so a
+logged-in bank page hands it a device token for that customer (`X-Device-Token`). The token
+can only report the phone's call state and receive that customer's app events, so the app
+can raise notifications. Approving anything still takes the passkey.
 """
 
 from __future__ import annotations
@@ -160,6 +165,17 @@ def is_customer(conn: Request | WebSocket, customer_id: str) -> bool:
     """This phone is logged in to `customer_id`'s app. Staff count too (laptop-only fallback,
     the IndiaCall simulator and tests act for customers with the staff PIN)."""
     return cookie_ok(conn.cookies.get(customer_cookie_name(customer_id)), f"customer:{customer_id}") or is_staff(conn)
+
+
+DEVICE_HEADER = "x-device-token"
+
+
+def make_device_token(customer_id: str) -> str:
+    return make_cookie(f"device:{customer_id}")
+
+
+def is_device(conn: Request | WebSocket, customer_id: str) -> bool:
+    return cookie_ok(conn.headers.get(DEVICE_HEADER), f"device:{customer_id}")
 
 
 def require_customer(conn: Request | WebSocket, customer_id: str) -> None:

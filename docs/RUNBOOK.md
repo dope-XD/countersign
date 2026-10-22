@@ -52,7 +52,9 @@ $env:COUNTERSIGN_RP_ID = "countersign-demo.ngrok-free.app"
 $env:COUNTERSIGN_ORIGINS = "https://countersign-demo.ngrok-free.app,http://localhost:8000"
 ```
 
-Bind each demo phone once: open `/bank/rahul` on Rahul's phone → Security → Bind this phone. Passkeys survive engine restarts (`data/runtime/countersign.db`), and **Reset demo world keeps them**.
+Log each demo phone in by scanning its customer's QR on `/demo`. Each code is one-time and lasts 10 minutes; tap it for a new one. Then bind each phone once: Security → Bind this phone. Passkeys survive engine restarts (`data/runtime/countersign.db`), and **Reset demo world keeps them**.
+
+For real call detection and notifications, install the CS Bank app on the demo phones (`android/README.md`): open the bank from the app, then Security → Turn on call alerts.
 
 ngrok's free tier shows an interstitial page on first visit from each browser; tap "Visit Site" once per phone before the demo.
 

@@ -526,6 +526,41 @@ async def approval_decide(aid: str, request: Request, body: schemas.Decide):
     return a
 
 
+# ============================================================== CS Bank Android app (customer phone)
+@public.post("/api/app/{cid}/device")
+async def app_device(cid: str, request: Request):
+    """A device token for the app's native side, asked for by the logged-in bank page."""
+    _customer(cid)
+    auth.require_customer(request, cid)
+    db.audit(cid, "device_linked", None)
+    return {"customer": cid, "token": auth.make_device_token(cid), "expires_in": auth.TTL}
+
+
+@public.post("/api/app/{cid}/call-state")
+async def app_call_state(cid: str, body: schemas.CallState, request: Request):
+    """The phone is on a call, or just finished one. Only the fact of the call: no number, no audio."""
+    _customer(cid)
+    if not auth.is_device(request, cid):
+        raise HTTPException(401, "device token required")
+    if body.state == "active":
+        world.on_call[cid] = body.kind
+    else:
+        world.on_call.pop(cid, None)
+        world.recent_calls[cid] = time.time()
+    db.audit(cid, f"phone_call_{body.state}", None, kind=body.kind)
+    hub.publish("demo", {"type": "call_state", "customer": cid, "state": body.state, "kind": body.kind})
+    return {"ok": True}
+
+
+@public.get("/.well-known/assetlinks.json", include_in_schema=False)
+async def assetlinks():
+    prints = [p.strip().upper() for p in settings.android_cert_sha256.split(",") if p.strip()]
+    if not prints:
+        return []
+    target = {"namespace": "android_app", "package_name": settings.android_package, "sha256_cert_fingerprints": prints}
+    return [{"relation": ["delegate_permission/common.handle_all_urls", "delegate_permission/common.get_login_creds"], "target": target}]
+
+
 # ============================================================== bank app, Entry B (customer phone)
 @public.get("/api/app/{cid}/home")
 async def app_home(cid: str, request: Request):
@@ -693,6 +728,7 @@ async def demo_recent_call(body: schemas.RecentCall):
         world.recent_calls[body.customer_id] = time.time() - 60 * body.minutes_ago
     else:
         world.recent_calls.pop(body.customer_id, None)
+        world.on_call.pop(body.customer_id, None)
     return world.public()
 
 
@@ -778,7 +814,7 @@ def _event_topics(conn: Request | WebSocket, topics: str) -> list[str]:
     names = [t for t in topics.split(",") if t][:10]
     if auth.is_staff(conn):
         return names
-    return [t for t in names if t.startswith("app:") and auth.is_customer(conn, t.split(":", 1)[1])]
+    return [t for t in names if t.startswith("app:") and (auth.is_customer(conn, t.split(":", 1)[1]) or auth.is_device(conn, t.split(":", 1)[1]))]
 
 
 @app.websocket("/ws/events")

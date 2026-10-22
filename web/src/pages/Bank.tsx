@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useState } from 'react'
 import { useParams } from 'react-router-dom'
 import { browserSupportsWebAuthn, startAuthentication, startRegistration } from '@simplewebauthn/browser'
-import { api } from '../lib/api'
+import { ApiError, api } from '../lib/api'
 import { useEvents } from '../lib/events'
 import { inr, type Approval, type Customer } from '../lib/types'
 import { Dot, Signature } from '../components/ui'
@@ -27,6 +27,18 @@ type Alert = { title: string; body: string }
 
 type Screen = 'home' | 'pay' | 'paused' | 'waiting' | 'done' | 'voice' | 'security'
 
+const APP_PACKAGE = 'app.countersign.bank'
+
+/** Opened inside the CS Bank Android app (its start URL carries ?app=android). Remembered for the session. */
+function inAndroidApp(): boolean {
+  try {
+    if (new URLSearchParams(window.location.search).get('app') === 'android') sessionStorage.setItem('cs.app', 'android')
+    return sessionStorage.getItem('cs.app') === 'android'
+  } catch {
+    return new URLSearchParams(window.location.search).get('app') === 'android'
+  }
+}
+
 function deviceLabel() {
   const ua = navigator.userAgent
   const m = ua.match(/Android [\d.]+; ([^)]+)\)/) || ua.match(/(iPhone|iPad|Macintosh|Windows NT [\d.]+)/)
@@ -42,14 +54,23 @@ export default function Bank() {
   const [pay, setPay] = useState<PayResult | null>(null)
   const [outcome, setOutcome] = useState<{ status: string; message: string; report?: Report } | null>(null)
   const [busy, setBusy] = useState(false)
+  const [loggedOut, setLoggedOut] = useState(false)
   const { show, node: toast } = useToast()
 
   const load = useCallback(async () => {
     try {
+      // a login link from the /demo QR code: /bank/<customer>#login=<one-time token>
+      const token = new URLSearchParams(window.location.hash.slice(1)).get('login')
+      if (token) {
+        history.replaceState(null, '', window.location.pathname + window.location.search) // the token is single use; don't keep it around
+        await api.post(`/api/app/${customer}/login`, { token })
+      }
       const h = await api.get<Home>(`/api/app/${customer}/home`)
       setHome(h)
+      setLoggedOut(false)
       setApproval((cur) => cur ?? h.pending[0] ?? null)
     } catch (e) {
+      if (e instanceof ApiError && e.status === 401) setLoggedOut(true)
       show((e as Error).message, 'error')
     }
   }, [customer, show])
@@ -91,6 +112,16 @@ export default function Bank() {
     }
   }
 
+  if (!home && loggedOut)
+    return (
+      <div className="grid h-full place-items-center p-6 text-center">
+        <div className="max-w-sm space-y-2">
+          <div className="text-lg font-semibold">This phone isn't logged in to this bank account</div>
+          <p className="text-sm text-muted">Scan the login code for this customer on the demo screen. Each code works once, for 10 minutes.</p>
+          {toast}
+        </div>
+      </div>
+    )
   if (!home) return <div className="grid h-full place-items-center text-muted">Loading…</div>
   const c = home.customer
   const first = c.name.split(' ')[0]
@@ -383,7 +414,31 @@ function Security({ customer, home, reload, onBack, toast }: { customer: string;
         ))}
       </ul>
       <button className="btn-primary w-full py-3" disabled={!supported} onClick={enrol}>Bind this phone (create passkey)</button>
+      {inAndroidApp() && <CallAlerts customer={customer} toast={toast} />}
     </section>
+  )
+}
+
+/** Hands this customer's device token to the app's native side, which then reports calls and shows approval notifications. */
+function CallAlerts({ customer, toast }: { customer: string; toast: (m: string, t?: 'info' | 'error') => void }) {
+  const link = async () => {
+    try {
+      const { token } = await api.post<{ token: string }>(`/api/app/${customer}/device`)
+      const q = new URLSearchParams({ customer, token, base: window.location.origin })
+      window.location.href = `intent://link?${q}#Intent;scheme=countersign;package=${APP_PACKAGE};end`
+    } catch (e) {
+      toast((e as Error).message, 'error')
+    }
+  }
+  return (
+    <div className="space-y-2 rounded-lg border border-line bg-card p-3">
+      <div className="font-semibold">Call alerts</div>
+      <p className="text-sm text-muted">
+        Let the app tell the bank when you're on a call, so a payment to someone new can be paused while a caller might be pressuring you. Only the fact of the call is
+        shared: never the number, never the audio. Approval requests then arrive as notifications.
+      </p>
+      <button className="btn-outline w-full py-3" onClick={link}>Turn on call alerts</button>
+    </div>
   )
 }
 

@@ -72,6 +72,12 @@ class Settings:
     # variables) needs kinesisvideo:GetDataEndpoint and GetMedia on the Connect streams.
     connect_secret: str = _env("CONNECT_SECRET", "")
     connect_aws_profile: str = _env("CONNECT_AWS_PROFILE", "")
+
+    # CS Bank Android app (android/): the signing certificate's SHA-256 fingerprint(s), comma
+    # separated, published in /.well-known/assetlinks.json so Chrome shows the bank pages
+    # full screen inside the app. Empty = no association (the app still works, with a URL bar).
+    android_package: str = _env("ANDROID_PACKAGE", "app.countersign.bank")
+    android_cert_sha256: str = _env("ANDROID_CERT_SHA256", "")
     eval_mode: bool = _env("EVAL", "0") == "1"
 
     # Mock KMS: a 32-byte hex key. Generated on first run if absent.

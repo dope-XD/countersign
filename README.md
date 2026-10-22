@@ -2,7 +2,7 @@
 
 Countersign sits next to a bank's contact centre and listens to calls for cloned voices. It doesn't try to prove who is speaking. It decides how much checking a request needs. A balance enquiry goes through whatever the score says. A change of registered mobile number, a new payee or a raised transfer limit needs a passkey signature from the customer's own phone, and a RED call also gets a 24-hour cool-off and the fraud desk. A cloned voice can carry a convincing call. It can't sign on a phone the attacker doesn't hold.
 
-The same engine backs a second path in the bank app. A UPI payment to a new payee right after a phone call is paused, and a family member is asked on their own phone whether they really asked for the money.
+The same engine backs a second path in the bank app. A UPI payment to a new payee during or right after a phone call is paused, and a family member is asked on their own phone whether they really asked for the money. The CS Bank Android app (`android/`) tells the engine when the phone is on a call, normal or WhatsApp, without the number or the audio, and turns approval requests into notifications.
 
 Built for RAKSHAM 2026 (IIT Delhi, problem statement 01) by team losers: Pushkar Joshi, Sarah Mittal and Reshaan Nadar. This is a working prototype, not a product. What's mocked is listed under [Limits](#limits).
 
@@ -74,7 +74,7 @@ Models load in a background thread after startup, and the Engine card on `/demo`
 | Page | Who uses it | PIN |
 |---|---|---|
 | `/call` | the caller: browser softphone, mic or a recorded file | no |
-| `/bank/rahul`, `/bank/sunita` | the customers' bank app | no |
+| `/bank/rahul`, `/bank/sunita` | the customers' bank app (log a phone in with its one-time QR on `/demo`) | no |
 | `/agent` | contact-centre agent: Voice Trust Card, requests, liveness | yes |
 | `/fraud` | fraud analyst: cases, evidence clip, outcome | yes |
 | `/demo` | demo operator: QR codes, scenario switches, what's stored | yes |
@@ -113,6 +113,7 @@ Every setting is an environment variable with a `COUNTERSIGN_` prefix, read once
 | `MAX_CALLS` | `4` | live calls at once; the softphone needs no login, so further callers hear "all our lines are busy" |
 | `CONNECT_SECRET` | empty (off) | the Amazon Connect Lambda's `CONNECT_HMAC_SECRET`; turns on `/api/ingest/connect/start` |
 | `CONNECT_AWS_PROFILE` | default credentials | AWS profile allowed `kinesisvideo:GetDataEndpoint` and `GetMedia` on the Connect streams |
+| `ANDROID_CERT_SHA256` | empty | the CS Bank app's signing fingerprint, served in `/.well-known/assetlinks.json` so the app shows the bank pages full screen (`android/README.md`) |
 | `EVIDENCE_KEY` | generated | 32-byte hex AES key for evidence clips (stands in for a KMS) |
 | `EVAL` | `0` | simulator mode, as `-Eval` |
 | `DATA`, `MODELS`, `RUNTIME` | `data`, `models`, `data/runtime` | where things live |
@@ -150,6 +151,7 @@ engine/            FastAPI app, call sessions, signals, fusion, policy, passkeys
   mocks/world.py   customers, FRI ratings, SIM swaps: the parts a bank would supply
   tests/           API and unit tests
 web/               React app: softphone, agent console, bank app, fraud desk, demo, metrics
+android/           CS Bank Android app: the bank pages in Chrome, plus call alerts and notifications
 ml/                data, checkpoint ports, calibration, training, benchmarks, IndiaCall
 integrations/      Amazon Connect live-media spike (Kinesis Video Streams reader, Lambda)
 models/            calibration, benchmark results, metrics (checkpoints are gitignored)

@@ -17,6 +17,11 @@ class AppLogin(BaseModel):
     token: str = Field(min_length=8, max_length=64)
 
 
+class CallState(BaseModel):
+    state: Literal["active", "ended"]
+    kind: Literal["phone", "internet"] = "phone"
+
+
 class CustomerRef(BaseModel):
     customer_id: str = Id
 

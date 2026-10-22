@@ -1,7 +1,9 @@
 """Entry B: the 'paying under pressure' guard in the bank app, plus Family Circle.
 
 The app cannot hear calls (Android/iOS block it), so the guard uses call state, payee and
-amount. It pauses, never blocks: the customer can always continue.
+amount. The CS Bank Android app reports call state (a phone call, or an internet call such as
+WhatsApp, seen through the audio mode); /demo can also set it by hand. It pauses, never
+blocks: the customer can always continue.
 """
 
 from __future__ import annotations
@@ -53,12 +55,15 @@ def _inr(x: float) -> str:
 def evaluate(customer_id: str, payee: str, amount: float) -> dict:
     cust = world.customer(customer_id)
     call_t = world.recent_calls.get(customer_id)
-    call_seen = bool(call_t and time.time() - call_t < CALL_WINDOW)
+    on_call = world.on_call.get(customer_id)
+    call_seen = bool(on_call) or bool(call_t and time.time() - call_t < CALL_WINDOW)
     new_payee = payee not in cust.known_payees
     big = amount > cust.usual_upi_max
     fri = world.fri_rating(payee)
     reasons = []
-    if call_seen:
+    if on_call:
+        reasons.append("You're on a call right now" if on_call == "phone" else "You're on an internet call (like WhatsApp) right now")
+    elif call_seen:
         mins = max(1, int((time.time() - call_t) // 60))
         reasons.append(f"You were on a call {mins} minute{'s' if mins != 1 else ''} ago")
     if new_payee:
