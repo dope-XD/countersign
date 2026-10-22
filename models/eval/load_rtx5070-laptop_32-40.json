@@ -1,0 +1,77 @@
+{
+ "tag": "rtx5070-laptop_32-40",
+ "s1_version": "add-wav2vec-large+add-xls-r-1b",
+ "models": {
+  "s1": "antideepfake+antideepfake",
+  "s2": "ecapa",
+  "asr": "small"
+ },
+ "health_p95_ms_after": 350.68935500044057,
+ "budget_ms": 300.0,
+ "capacity_calls": 32,
+ "usd_per_hour": 0.0,
+ "usd_per_call_hour": null,
+ "seconds_per_call": 20.0,
+ "stagger_s": 2.0,
+ "runs": [
+  {
+   "n": 32,
+   "wall_s": 28.8,
+   "window_ms": {
+    "p50": 110.8,
+    "p95": 196.5,
+    "max": 356.0
+   },
+   "lag_ms": {
+    "p50": 166.3,
+    "p95": 328.2,
+    "max": 442.3
+   },
+   "first_tier_s": {
+    "p50": 6.2,
+    "p95": 6.4,
+    "calls_with_tier": 32
+   },
+   "windows": {
+    "scored": 256,
+    "expected": 256,
+    "min_per_call": 8
+   },
+   "feed_speed_min": 1.0,
+   "gpu": {
+    "util_mean": 23.4,
+    "mem_max_mib": 7095.0
+   }
+  },
+  {
+   "n": 40,
+   "wall_s": 29.7,
+   "window_ms": {
+    "p50": 162.9,
+    "p95": 397.4,
+    "max": 522.4
+   },
+   "lag_ms": {
+    "p50": 277.6,
+    "p95": 541.0,
+    "max": 605.8
+   },
+   "first_tier_s": {
+    "p50": 6.5,
+    "p95": 6.6,
+    "calls_with_tier": 40
+   },
+   "windows": {
+    "scored": 320,
+    "expected": 320,
+    "min_per_call": 8
+   },
+   "feed_speed_min": 0.999,
+   "gpu": {
+    "util_mean": 20.7,
+    "mem_max_mib": 7097.0
+   }
+  }
+ ],
+ "calls": null
+}

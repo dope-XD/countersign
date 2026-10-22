@@ -163,6 +163,57 @@ def test_content_match():
     assert s3_liveness.content_match(ch, "hello I lost my phone") < 0.6
 
 
+# ------------------------------------------------------------------ S1 batching
+def _stub_s1(monkeypatch, forward):
+    """An S1Detector whose 'network' is `forward` (windows -> (N, 1) log-odds), on the model path."""
+    from engine.signals.s1_synth import S1Detector
+
+    det = S1Detector()
+    det.models = [object()]
+    sizes: list[int] = []
+
+    def features(ws):
+        sizes.append(len(ws))
+        return forward(ws)
+
+    monkeypatch.setattr(det, "_features", features)
+    return det, sizes
+
+
+def test_s1_batches_concurrent_calls_and_returns_each_its_own_score(monkeypatch):
+    from concurrent.futures import ThreadPoolExecutor
+
+    def slow_forward(ws):
+        time.sleep(0.05)  # a busy GPU: windows queue up behind the running batch
+        return np.array([[float(w[0])] for w in ws])  # each window's log-odds is its first sample
+
+    det, sizes = _stub_s1(monkeypatch, slow_forward)
+    det.batcher.max_batch = 8
+    z = np.linspace(-3, 3, 20)
+    with ThreadPoolExecutor(20) as pool:
+        got = list(pool.map(lambda v: det.score([np.full(16000, v, dtype=np.float32)])[0], z))
+    assert [r.p_synthetic for r in got] == pytest.approx(1 / (1 + np.exp(-z)))
+    assert sum(sizes) == 20 and max(sizes) > 1 and max(sizes) <= 8
+    assert len(sizes) < 20
+    # a multi-window call (the benchmark, the calibration) gets its rows back in order
+    assert det.log_odds([np.full(100, v, dtype=np.float32) for v in (1, 2, 3)]) == [1.0, 2.0, 3.0]
+
+
+def test_s1_worker_error_reaches_the_caller_and_the_worker_survives(monkeypatch):
+    calls = []
+
+    def flaky_forward(ws):
+        calls.append(len(ws))
+        if len(calls) == 1:
+            raise RuntimeError("CUDA out of memory")
+        return np.zeros((len(ws), 1))
+
+    det, _ = _stub_s1(monkeypatch, flaky_forward)
+    with pytest.raises(RuntimeError, match="out of memory"):
+        det.score([np.zeros(100, dtype=np.float32)])
+    assert det.score([np.zeros(100, dtype=np.float32)])[0].p_synthetic == pytest.approx(0.5)
+
+
 def test_judge_lag():
     ch = s3_liveness.Challenge("x", "digits", "say", expect_digits="1234")
     assert s3_liveness.judge(ch, 0.6, 1.0, 0.05).passed

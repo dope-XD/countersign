@@ -1,0 +1,194 @@
+{
+ "tag": "rtx5070-laptop_lock",
+ "s1_version": "add-wav2vec-large+add-xls-r-1b",
+ "models": {
+  "s1": "antideepfake+antideepfake",
+  "s2": "ecapa",
+  "asr": "small"
+ },
+ "health_p95_ms_after": 2091.901070000108,
+ "budget_ms": 300.0,
+ "capacity_calls": 16,
+ "usd_per_hour": 0.0,
+ "usd_per_call_hour": null,
+ "seconds_per_call": 20.0,
+ "stagger_s": 2.0,
+ "runs": [
+  {
+   "n": 1,
+   "wall_s": 26.3,
+   "window_ms": {
+    "p50": 47.0,
+    "p95": 116.8,
+    "max": 149.7
+   },
+   "lag_ms": {
+    "p50": 47.5,
+    "p95": 108.4,
+    "max": 131.3
+   },
+   "first_tier_s": {
+    "p50": 6.1,
+    "p95": 6.1,
+    "calls_with_tier": 1
+   },
+   "windows": {
+    "scored": 8,
+    "expected": 8,
+    "min_per_call": 8
+   },
+   "feed_speed_min": 1.001,
+   "gpu": {
+    "util_mean": 1.1,
+    "mem_max_mib": 6727.0
+   }
+  },
+  {
+   "n": 4,
+   "wall_s": 26.8,
+   "window_ms": {
+    "p50": 46.0,
+    "p95": 75.1,
+    "max": 256.6
+   },
+   "lag_ms": {
+    "p50": 40.0,
+    "p95": 79.0,
+    "max": 266.9
+   },
+   "first_tier_s": {
+    "p50": 6.1,
+    "p95": 6.1,
+    "calls_with_tier": 4
+   },
+   "windows": {
+    "scored": 32,
+    "expected": 32,
+    "min_per_call": 8
+   },
+   "feed_speed_min": 0.999,
+   "gpu": {
+    "util_mean": 3.0,
+    "mem_max_mib": 6727.0
+   }
+  },
+  {
+   "n": 8,
+   "wall_s": 28.1,
+   "window_ms": {
+    "p50": 49.5,
+    "p95": 110.3,
+    "max": 206.5
+   },
+   "lag_ms": {
+    "p50": 53.7,
+    "p95": 109.6,
+    "max": 208.1
+   },
+   "first_tier_s": {
+    "p50": 6.1,
+    "p95": 6.1,
+    "calls_with_tier": 8
+   },
+   "windows": {
+    "scored": 64,
+    "expected": 64,
+    "min_per_call": 8
+   },
+   "feed_speed_min": 0.999,
+   "gpu": {
+    "util_mean": 6.8,
+    "mem_max_mib": 6729.0
+   }
+  },
+  {
+   "n": 16,
+   "wall_s": 28.0,
+   "window_ms": {
+    "p50": 54.7,
+    "p95": 125.6,
+    "max": 178.1
+   },
+   "lag_ms": {
+    "p50": 63.5,
+    "p95": 126.1,
+    "max": 182.6
+   },
+   "first_tier_s": {
+    "p50": 6.1,
+    "p95": 6.2,
+    "calls_with_tier": 16
+   },
+   "windows": {
+    "scored": 128,
+    "expected": 128,
+    "min_per_call": 8
+   },
+   "feed_speed_min": 0.999,
+   "gpu": {
+    "util_mean": 20.2,
+    "mem_max_mib": 6722.0
+   }
+  },
+  {
+   "n": 24,
+   "wall_s": 28.5,
+   "window_ms": {
+    "p50": 138.6,
+    "p95": 399.2,
+    "max": 591.7
+   },
+   "lag_ms": {
+    "p50": 154.8,
+    "p95": 417.4,
+    "max": 594.4
+   },
+   "first_tier_s": {
+    "p50": 6.2,
+    "p95": 6.6,
+    "calls_with_tier": 24
+   },
+   "windows": {
+    "scored": 192,
+    "expected": 192,
+    "min_per_call": 8
+   },
+   "feed_speed_min": 0.999,
+   "gpu": {
+    "util_mean": 26.0,
+    "mem_max_mib": 6744.0
+   }
+  },
+  {
+   "n": 32,
+   "wall_s": 30.2,
+   "window_ms": {
+    "p50": 1503.4,
+    "p95": 2306.5,
+    "max": 2401.6
+   },
+   "lag_ms": {
+    "p50": 1523.7,
+    "p95": 2328.4,
+    "max": 2422.0
+   },
+   "first_tier_s": {
+    "p50": 7.1,
+    "p95": 7.5,
+    "calls_with_tier": 32
+   },
+   "windows": {
+    "scored": 256,
+    "expected": 256,
+    "min_per_call": 8
+   },
+   "feed_speed_min": 0.999,
+   "gpu": {
+    "util_mean": 28.5,
+    "mem_max_mib": 7091.0
+   }
+  }
+ ],
+ "calls": null,
+ "note": "Before the batcher (one lock, one window per pass). Run with an earlier load_test.py whose expected-window count assumed a 4.00 s window; expected corrected to 8 per call (20 s of audio, first window at 4.04 s)."
+}

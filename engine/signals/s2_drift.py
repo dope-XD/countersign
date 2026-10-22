@@ -4,16 +4,19 @@ An ECAPA-TDNN embedding per window is compared with the running mean of the earl
 windows of the same call. A jump suggests a hand-over to a TTS voice or a conversion
 glitch. Embeddings live only in the CallDrift object and are dropped when the call ends.
 No voiceprint is enrolled or stored anywhere.
+
+Live calls share one GPU worker, batched like S1: ECAPA takes ~10 ms for one window and
+~2.5 ms per window in a batch of 8, so batching keeps it from queueing calls behind S1.
 """
 
 from __future__ import annotations
 
 import logging
-import threading
 
 import numpy as np
 
 from engine.config import settings
+from engine.signals.s1_synth import MicroBatcher
 
 log = logging.getLogger(__name__)
 
@@ -22,7 +25,7 @@ class SpeakerEmbedder:
     def __init__(self):
         self.model = None
         self.available = False
-        self._lock = threading.Lock()
+        self._batcher = MicroBatcher(self._embed, "s2-gpu")
 
     def load(self) -> None:
         if not settings.s2_enabled:
@@ -45,16 +48,28 @@ class SpeakerEmbedder:
             log.warning("S2 unavailable: %s", e)
 
     def embed(self, windows: list[np.ndarray]) -> list[np.ndarray | None]:
+        """Unit-length embeddings, one per window. Safe from any thread."""
         if not self.available or not windows:
             return [None] * len(windows)
+        return list(self._batcher(windows))
+
+    def _embed(self, windows: list[np.ndarray]) -> np.ndarray:
+        """One ECAPA pass per window length in the batch (live windows all share one length)."""
         import torch
 
-        n = min(len(w) for w in windows)
-        x = torch.from_numpy(np.stack([w[:n] for w in windows]))
-        with self._lock, torch.inference_mode():
-            e = self.model.encode_batch(x).squeeze(1).float().cpu().numpy()
+        by_len: dict[int, list[int]] = {}
+        for i, w in enumerate(windows):
+            by_len.setdefault(len(w), []).append(i)
+        rows: list[np.ndarray | None] = [None] * len(windows)
+        for idx in by_len.values():
+            x = torch.from_numpy(np.stack([windows[i] for i in idx]))
+            with torch.inference_mode():
+                e = self.model.encode_batch(x).squeeze(1).float().cpu().numpy()
+            for i, row in zip(idx, e, strict=True):
+                rows[i] = row
+        e = np.stack(rows)
         e /= np.linalg.norm(e, axis=1, keepdims=True) + 1e-9
-        return list(e)
+        return e
 
 
 embedder = SpeakerEmbedder()
