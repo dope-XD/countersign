@@ -31,6 +31,11 @@ def _payment(payment_id: str) -> dict:
     return p
 
 
+def payment_customer(payment_id: str) -> str:
+    """Whose payment this is (for the app's login check)."""
+    return _payment(payment_id)["customer_id"]
+
+
 def _inr(x: float) -> str:
     s = f"{int(round(x)):d}"
     if len(s) <= 3:

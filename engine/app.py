@@ -138,17 +138,31 @@ async def _send(ws: WebSocket | None, text: str | None = None, data: bytes | Non
 # ============================================================== health & staff login
 @public.get("/api/health")
 async def health():
-    return {"ok": True, "models": MODEL_STATE, "s1_version": detector.version, "p95_ms": detector.p95_ms(), "rp_id": settings.rp_id}
+    return {
+        "ok": True,
+        "models": MODEL_STATE,
+        "s1_version": detector.version,
+        "p95_ms": detector.p95_ms(),
+        "rp_id": settings.rp_id,
+        "public_url": settings.public_url,
+        "live_calls": sum(1 for c in calls.calls.values() if c.status != "ended"),
+    }
 
 
 @public.post("/api/staff/login")
 async def staff_login(body: schemas.StaffLogin, request: Request, response: Response):
-    if not auth.pin_ok(body.pin):
-        await asyncio.sleep(1.0)  # slow down guessing
+    client = auth.client_key(request)
+    if not auth.pin_ok(body.pin, client):
+        await asyncio.sleep(1.0)  # slow down guessing (the lockout in auth.py is the real limit)
+        if auth.pin_locked(client):
+            raise HTTPException(429, "Too many wrong PINs. PIN sign-in is locked for a few minutes.")
         raise HTTPException(401, "wrong PIN")
-    secure = request.url.scheme == "https" or request.headers.get("x-forwarded-proto") == "https"
-    response.set_cookie(auth.COOKIE, auth.make_cookie(), max_age=auth.TTL, httponly=True, samesite="lax", secure=secure)
+    response.set_cookie(auth.COOKIE, auth.make_cookie(), max_age=auth.TTL, httponly=True, samesite="lax", secure=_secure(request))
     return {"staff": True}
+
+
+def _secure(request: Request) -> bool:
+    return request.url.scheme == "https" or request.headers.get("x-forwarded-proto") == "https"
 
 
 @public.get("/api/staff/me")
@@ -166,6 +180,10 @@ async def staff_logout(response: Response):
 @app.websocket("/ws/caller")
 async def ws_caller(ws: WebSocket, cli: str = "", lang: str = "unknown"):
     await ws.accept()
+    if sum(1 for c in calls.calls.values() if not c.ended) >= settings.max_live_calls:
+        await _send(ws, json.dumps({"type": "busy", "message": "All our lines are busy. Please try again in a few minutes."}))
+        await ws.close(code=1013)  # try again later
+        return
     cli = cli.strip()
     if cli and cli[0].isdigit():
         cli = "+" + cli  # a raw "+" in a query string arrives as a space
@@ -427,15 +445,29 @@ def _record_human_lag(call_id: str | None) -> None:
 
 
 # ============================================================== passkeys & approvals (customer phone)
+@public.post("/api/app/{cid}/login")
+async def app_login(cid: str, body: schemas.AppLogin, request: Request, response: Response):
+    _customer(cid)
+    if not auth.redeem_login(cid, body.token):
+        raise HTTPException(401, "This login code has been used or has expired. Ask for a new one on the demo screen.")
+    response.set_cookie(
+        auth.customer_cookie_name(cid), auth.make_cookie(f"customer:{cid}"), max_age=auth.TTL, httponly=True, samesite="lax", secure=_secure(request)
+    )
+    db.audit(cid, "app_login", None)
+    return {"customer": cid}
+
+
 @public.post("/api/app/{cid}/passkey/options")
 async def passkey_options(cid: str, request: Request):
     _customer(cid)
+    auth.require_customer(request, cid)
     return Response(passkeys.registration_options(cid, _host(request)), media_type="application/json")
 
 
 @public.post("/api/app/{cid}/passkey/verify")
 async def passkey_verify(cid: str, request: Request, body: schemas.PasskeyVerify):
     _customer(cid)
+    auth.require_customer(request, cid)
     return passkeys.verify_registration(cid, body.credential, body.device, _host(request))
 
 
@@ -446,18 +478,31 @@ async def passkey_remove(cid: str):
     return {"ok": True}
 
 
+def _own_approval(aid: str, request: Request) -> dict:
+    a = passkeys.public_approval(aid)
+    auth.require_customer(request, a["target_customer"])
+    return a
+
+
 @public.get("/api/approvals/{aid}")
-async def approval(aid: str):
-    return passkeys.public_approval(aid)
+async def approval(aid: str, request: Request):
+    return _own_approval(aid, request)
 
 
 @public.post("/api/approvals/{aid}/options")
 async def approval_options(aid: str, request: Request):
+    _own_approval(aid, request)
     return Response(passkeys.assertion_options(aid, _host(request)), media_type="application/json")
+
+
+@staff.get("/api/approvals/{aid}/evidence")
+async def approval_evidence(aid: str):
+    return passkeys.binding_evidence(aid)
 
 
 @public.post("/api/approvals/{aid}/decide")
 async def approval_decide(aid: str, request: Request, body: schemas.Decide):
+    _own_approval(aid, request)
     a = passkeys.decide(aid, body.decision, body.credential, _host(request))
     if a["kind"] == "family_ping":
         guard.on_family_decision(a)
@@ -486,8 +531,9 @@ async def approval_decide(aid: str, request: Request, body: schemas.Decide):
 
 # ============================================================== bank app, Entry B (customer phone)
 @public.get("/api/app/{cid}/home")
-async def app_home(cid: str):
+async def app_home(cid: str, request: Request):
     cust = _customer(cid)
+    auth.require_customer(request, cid)
     world.app_sessions[cid] = time.time()
     pays = db.query(
         "SELECT id, details, status, created_at FROM requests WHERE customer_id=? AND channel='app' ORDER BY created_at DESC LIMIT 10",
@@ -503,33 +549,44 @@ async def app_home(cid: str):
 
 
 @public.post("/api/app/{cid}/pay")
-async def app_pay(cid: str, body: schemas.Pay):
+async def app_pay(cid: str, body: schemas.Pay, request: Request):
     _customer(cid)
+    auth.require_customer(request, cid)
     return guard.start_payment(cid, body.payee, body.amount, body.note)
 
 
+def _own_payment(pid: str, request: Request) -> None:
+    auth.require_customer(request, guard.payment_customer(pid))
+
+
 @public.post("/api/payments/{pid}/ask-family")
-async def pay_ask_family(pid: str, body: schemas.AskFamily):
+async def pay_ask_family(pid: str, body: schemas.AskFamily, request: Request):
+    _own_payment(pid, request)
     return guard.ask_family(pid, body.family_id)
 
 
 @public.post("/api/payments/{pid}/continue")
-async def pay_continue(pid: str):
+async def pay_continue(pid: str, request: Request):
+    _own_payment(pid, request)
     return guard.continue_anyway(pid)
 
 
 @public.post("/api/payments/{pid}/cancel")
-async def pay_cancel(pid: str):
+async def pay_cancel(pid: str, request: Request):
+    _own_payment(pid, request)
     return guard.cancel(pid)
 
 
 @public.post("/api/payments/{pid}/report")
-async def pay_report(pid: str):
+async def pay_report(pid: str, request: Request):
+    _own_payment(pid, request)
     return guard.prefill_1930(pid)
 
 
-@public.post("/api/voice-note")
-async def voice_note(file: UploadFile = File(...)):
+@public.post("/api/app/{cid}/voice-note")
+async def voice_note(cid: str, request: Request, file: UploadFile = File(...)):
+    _customer(cid)
+    auth.require_customer(request, cid)
     data = await file.read()
     if len(data) > 20 * 1024 * 1024:
         raise HTTPException(413, "file too large")
@@ -537,7 +594,7 @@ async def voice_note(file: UploadFile = File(...)):
         res = await asyncio.to_thread(voicenote.check, data)
     except voicenote.VoiceNoteError as e:
         raise HTTPException(400, str(e)) from e
-    db.audit("app", "voice_note_checked", None, verdict=res["verdict"], seconds=res.get("seconds"))
+    db.audit(cid, "voice_note_checked", None, verdict=res["verdict"], seconds=res.get("seconds"))
     return res
 
 
@@ -587,6 +644,14 @@ async def case_resolve(case_id: str, body: schemas.Resolve):
 @staff.get("/api/demo/world")
 async def demo_world():
     return world.public()
+
+
+@staff.post("/api/demo/login-link/{cid}")
+async def demo_login_link(cid: str):
+    """A one-time link that logs a phone in to this customer's bank app (shown as a QR code)."""
+    _customer(cid)
+    token = auth.mint_login(cid)
+    return {"path": f"/bank/{cid}#login={token}", "expires_in": auth.LOGIN_TTL}
 
 
 @staff.post("/api/demo/reset")
@@ -711,11 +776,17 @@ async def ic_upload(speaker: str = Form(...), item: str = Form(...), file: Uploa
 
 
 # ============================================================== event stream for UIs
+def _event_topics(conn: Request | WebSocket, topics: str) -> list[str]:
+    """Staff get what they ask for; a phone only gets the app events of the customer it is logged in as."""
+    names = [t for t in topics.split(",") if t][:10]
+    if auth.is_staff(conn):
+        return names
+    return [t for t in names if t.startswith("app:") and auth.is_customer(conn, t.split(":", 1)[1])]
+
+
 @app.websocket("/ws/events")
 async def ws_events(ws: WebSocket, topics: str = "calls"):
-    names = [t for t in topics.split(",") if t][:10]
-    if not auth.is_staff(ws):
-        names = [t for t in names if t.startswith("app:")]  # customers only get their own app events
+    names = _event_topics(ws, topics)
     await ws.accept()
     q = hub.subscribe(*names)
     app_customers = [t.split(":", 1)[1] for t in names if t.startswith("app:")]

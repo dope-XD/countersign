@@ -19,3 +19,13 @@ def _hand_set_fusion(monkeypatch):
     from engine import fusion
 
     monkeypatch.setattr(fusion, "weights", fusion.FusionWeights())
+
+
+@pytest.fixture(autouse=True)
+def _no_pin_lockout():
+    """Wrong-PIN tests must not lock the PIN for the tests after them."""
+    from engine import auth
+
+    auth.reset_pin_lockout()
+    yield
+    auth.reset_pin_lockout()

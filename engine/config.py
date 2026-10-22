@@ -53,6 +53,9 @@ class Settings:
     # WebAuthn. RP ID must be the hostname the phones load the app from.
     rp_id: str = _env("RP_ID", "auto")  # "auto" = the Host the page was loaded from
     rp_name: str = "Countersign Bank"
+    # Where phones reach this engine (the HTTPS tunnel), for the QR codes on /demo. Empty =
+    # the address the demo page itself was opened on.
+    public_url: str = _env("PUBLIC_URL", "")
     origins: tuple[str, ...] = field(
         default_factory=lambda: tuple(o.strip() for o in _env("ORIGINS", "http://localhost:8000,http://localhost:5173").split(",") if o.strip())
     )
@@ -60,6 +63,9 @@ class Settings:
     # Staff PIN for the agent console, fraud desk, demo panel and metrics. Generated and
     # printed on first run if unset (kept in runtime/staff_pin.txt).
     staff_pin: str = _env("STAFF_PIN", "")
+    # The softphone needs no login (the caller may be the attacker) and every call costs GPU
+    # time, so a public engine takes at most this many live calls at once.
+    max_live_calls: int = int(_env("MAX_CALLS", "4"))
     eval_mode: bool = _env("EVAL", "0") == "1"
 
     # Mock KMS: a 32-byte hex key. Generated on first run if absent.

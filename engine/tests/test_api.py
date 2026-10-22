@@ -6,7 +6,7 @@ signatures from the simulator's software authenticator.
 
 import asyncio
 import time
-from contextlib import contextmanager
+from contextlib import ExitStack, contextmanager
 
 import numpy as np
 import pytest
@@ -15,6 +15,7 @@ from fastapi.testclient import TestClient
 from engine import auth
 from engine.app import app
 from engine.audio.codec import mulaw_encode
+from engine.config import settings
 from engine.db import db
 from engine.mocks.world import world
 from engine.session import calls
@@ -187,7 +188,7 @@ def test_staff_pin_required_for_staff_routes():
     with TestClient(app, base_url="https://testserver") as c:
         assert c.get("/api/calls").status_code == 401
         assert c.get("/api/demo/stored").status_code == 401
-        assert c.get("/api/app/rahul/home").status_code == 200  # customer surface stays open
+        assert c.get("/api/app/rahul/home").status_code == 401  # a phone must log in first (test_access.py)
         assert c.post("/api/staff/login", json={"pin": "0000"}).status_code == 401
         assert c.post("/api/staff/login", json={"pin": "4321"}).status_code == 200
         assert c.get("/api/calls").status_code == 200  # cookie now set
@@ -252,6 +253,35 @@ def test_scoring_reaches_red_and_attaches_8k_evidence(monkeypatch):
     assert c["clip_path"] and c["tier"] == "RED"
 
 
+def test_first_tier_within_8s_of_answer_on_continuous_speech(client, monkeypatch):
+    """Deck: the first tier is on the agent's screen within 8 s when the caller talks from the moment
+    the agent answers. The engine's call clock is made to follow the caller audio it has received, as a
+    phone line delivers it in real time (a test client can't pace frames reliably: on Windows a plain
+    asyncio.sleep(0.02) takes ~31 ms, and a feed at 0.64x real time is what produced 9.5 s on 20 Oct).
+    S1's live p95 per window is budgeted on top."""
+    from types import SimpleNamespace
+
+    from engine import session
+    from engine.audio import vad
+
+    s1_p95 = 0.3  # 212 ms measured for the AntiDeepfake ensemble on the demo laptop
+    monkeypatch.setattr(vad, "_silero_factory", False)  # energy VAD: every loud chunk is speech
+    speech = mulaw_encode((np.random.default_rng(0).standard_normal(14 * 8000) * 0.1).astype(np.float32))
+    with client.websocket_connect(f"/ws/caller?cli={RAHUL_CLI}&lang=en") as ws:
+        cs = calls.get(ws.receive_json()["id"])
+        monkeypatch.setattr(session, "time", SimpleNamespace(time=lambda: 1000.0 + cs.caller.pos / 8000))
+        client.post(f"/api/calls/{cs.id}/answer")
+        for i in range(0, len(speech), 160):
+            ws.send_bytes(speech[i : i + 160])
+            deadline = time.time() + 5
+            while (cs.caller.pos < i + 160 or cs._scoring) and time.time() < deadline:
+                time.sleep(0.001)  # let the engine take this frame (and finish any window) first
+            if cs.first_tier_at is not None:
+                break
+    assert cs.first_tier_at is not None, "no tier after 14 s of continuous speech"
+    assert cs.first_tier_at + s1_p95 < 8.0, f"first tier at {cs.first_tier_at:.2f} s of audio"
+
+
 def test_no_scoring_after_hangup(monkeypatch):
     from engine.signals.s1_synth import S1Result, detector
 
@@ -268,3 +298,15 @@ def test_stale_challenge_timer_does_not_end_the_new_challenge():
     second = cs.issue_challenge()
     asyncio.run(cs.challenge_timeout(first, seconds=0))
     assert not second.done and cs.liveness is None
+
+
+def test_softphone_is_turned_away_when_all_lines_are_busy(client):
+    with ExitStack() as stack:
+        for _ in range(settings.max_live_calls):
+            ws = stack.enter_context(client.websocket_connect(f"/ws/caller?cli={RAHUL_CLI}&lang=en"))
+            assert ws.receive_json()["type"] == "call"
+        with client.websocket_connect(f"/ws/caller?cli={RAHUL_CLI}&lang=en") as extra:
+            assert extra.receive_json()["type"] == "busy"
+    # the lines free up when those calls end
+    with client.websocket_connect(f"/ws/caller?cli={RAHUL_CLI}&lang=en") as ws:
+        assert ws.receive_json()["type"] == "call"

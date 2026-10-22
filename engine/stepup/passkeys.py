@@ -171,6 +171,7 @@ def request_approval(request_id: str, target_customer: str, kind: str, summary: 
             "created_at": time.time(),
             "decided_at": None,
             "credential_id": None,
+            "nonce": bytes_to_base64url(nonce),  # kept so the binding can be re-checked later
         },
     )
     db.audit("stepup", "approval_requested", aid, request_id=request_id, kind=kind, target=target_customer)
@@ -245,12 +246,72 @@ def decide(aid: str, decision: str, credential: dict | None, host: str | None) -
             raise StepUpError(f"signature could not be verified: {e}") from e
         db.execute("UPDATE credentials SET sign_count=? WHERE id=?", [v.new_sign_count, cred_id])
         status = "approved"
+        resp = credential.get("response") or {}
+        signed = {
+            "credential_id": cred_id,
+            "authenticator_data": resp.get("authenticatorData"),
+            "client_data_json": resp.get("clientDataJSON"),
+            "signature": resp.get("signature"),
+            "user_handle": resp.get("userHandle"),
+            "rp_id": _rp_id(host),
+            "origins": _origins(host),
+            "verified_at": time.time(),
+        }
     elif decision == "decline":
         status = "declined"
+        signed = None
     else:
         raise StepUpError("decision must be approve or decline")
-    db.update("approvals", aid, {"status": status, "decided_at": time.time(), "credential_id": cred_id})
+    db.update("approvals", aid, {"status": status, "decided_at": time.time(), "credential_id": cred_id, "assertion": signed})
     db.audit(a["target_customer"], f"approval_{status}", aid, request_id=a["request_id"], credential=cred_id)
     result = public_approval(aid)
     hub.publish("stepup", {"type": "approval_decided", "approval": result})
     return result
+
+
+def binding_evidence(aid: str) -> dict:
+    """Re-check, after the fact, that an approval's signature covers exactly the request the
+    customer was shown: the challenge is sha256(summary + nonce), the signed clientDataJSON
+    carries that challenge, and the stored signature still verifies against the passkey."""
+    a = db.get("approvals", aid)
+    if a is None:
+        raise StepUpError("no such approval")
+    out = {"approval_id": aid, "status": a["status"], "summary": a["summary"], "checks": {}}
+    if not a.get("nonce"):
+        out["checks"]["binding"] = "not recorded (approval made before nonces were kept)"
+        return out
+    challenge = _bind(a["summary"], base64url_to_bytes(a["nonce"]))
+    out["checks"]["challenge_is_hash_of_summary"] = bytes_to_base64url(challenge) == a["challenge"]
+    signed = a.get("assertion")
+    if a["status"] != "approved" or not signed:
+        return out
+    client = json.loads(base64url_to_bytes(signed["client_data_json"]))
+    out["checks"]["signed_challenge_matches"] = client.get("challenge") == a["challenge"]
+    row = db.get("credentials", signed["credential_id"])
+    if row is None:
+        out["checks"]["signature_verifies"] = "passkey since removed"
+        return out
+    try:
+        verify_authentication_response(
+            credential={
+                "id": signed["credential_id"],
+                "rawId": signed["credential_id"],
+                "type": "public-key",
+                "response": {
+                    "authenticatorData": signed["authenticator_data"],
+                    "clientDataJSON": signed["client_data_json"],
+                    "signature": signed["signature"],
+                    "userHandle": signed.get("user_handle"),
+                },
+            },
+            expected_challenge=challenge,
+            expected_rp_id=signed["rp_id"],
+            expected_origin=signed["origins"],
+            credential_public_key=row["public_key"],
+            credential_current_sign_count=0,
+            require_user_verification=True,
+        )
+        out["checks"]["signature_verifies"] = True
+    except WebAuthnException as e:
+        out["checks"]["signature_verifies"] = f"no: {e}"
+    return out

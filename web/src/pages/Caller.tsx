@@ -82,6 +82,7 @@ export default function Caller() {
         if (mode === 'file' && file) await a.setSource({ kind: 'file', file })
       }
       if (e.type === 'ended') hangup()
+      if (e.type === 'busy') setErr(e.message)
     }
     sock.onerror = () => setErr('Could not reach the bank. Check the connection and try again.')
     sock.onclose = () => {

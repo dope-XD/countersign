@@ -28,7 +28,7 @@ CREATE TABLE IF NOT EXISTS requests (
 CREATE TABLE IF NOT EXISTS approvals (
   id TEXT PRIMARY KEY, request_id TEXT NOT NULL, kind TEXT NOT NULL, target_customer TEXT NOT NULL,
   challenge TEXT NOT NULL, summary TEXT NOT NULL, status TEXT NOT NULL,
-  created_at REAL NOT NULL, decided_at REAL, credential_id TEXT
+  created_at REAL NOT NULL, decided_at REAL, credential_id TEXT, nonce TEXT, assertion TEXT
 );
 CREATE TABLE IF NOT EXISTS cases (
   id TEXT PRIMARY KEY, call_id TEXT, request_id TEXT, customer_id TEXT, channel TEXT NOT NULL,
@@ -53,7 +53,10 @@ CREATE INDEX IF NOT EXISTS ix_cases_request ON cases(request_id, status);
 CREATE INDEX IF NOT EXISTS ix_audit_ref ON audit(ref);
 """
 
-_JSON_COLS = {"details", "policy", "reasons", "scores", "timeline", "detail", "payload", "summary", "transports"}
+_JSON_COLS = {"details", "policy", "reasons", "scores", "timeline", "detail", "payload", "summary", "transports", "assertion"}
+
+# columns added after the first release: (table, column, type), applied to older databases
+_ADDED = [("approvals", "nonce", "TEXT"), ("approvals", "assertion", "TEXT")]
 
 
 class DB:
@@ -65,6 +68,9 @@ class DB:
         self._lock = threading.RLock()
         with self._lock:
             self._conn.executescript(_SCHEMA)
+            for table, col, typ in _ADDED:
+                if col not in {r[1] for r in self._conn.execute(f"PRAGMA table_info({table})")}:
+                    self._conn.execute(f"ALTER TABLE {table} ADD COLUMN {col} {typ}")
 
     def _row(self, r: sqlite3.Row | None) -> dict | None:
         if r is None:

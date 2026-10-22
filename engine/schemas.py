@@ -13,6 +13,10 @@ class StaffLogin(BaseModel):
     pin: str = Field(min_length=1, max_length=32)
 
 
+class AppLogin(BaseModel):
+    token: str = Field(min_length=8, max_length=64)
+
+
 class CustomerRef(BaseModel):
     customer_id: str = Id
 
