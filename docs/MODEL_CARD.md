@@ -1,29 +1,39 @@
-# Model card: Countersign S1 (synthetic-speech detector)
+# Model cards: what runs on the phone
 
-**What it does:** gives the probability that a 4 s window of phone audio is machine-generated (TTS or voice conversion). It is one of four signals, and it never refuses or blocks anything by itself.
+Three models and one rule set run on the phone; none of them sends anything off it. Every number below is from
+`docs/RESULTS.md` (`python -m ml.eval.run_all`), on data the model never trained on.
 
-**Architecture (since 20 Oct 2026):** a score-level ensemble of two NII AntiDeepfake models, Wav2Vec2-Large (317M) and XLS-R-1B (965M). Each is a wav2vec 2.0 backbone, mean-pooled, with one linear layer. Each model's spoof log-odds is combined by a logistic regression fitted on our phone-channel dev split. Input is 16 kHz raw audio, a 64,600-sample window, layer-normed per window.
+## 1. Our scam classifier (`ScamClassifier.kt`, `ml/listener_clf.py`)
 
-Earlier versions used XLS-R 300M + SLS (the published checkpoint, then our phone/Indic fine-tune). The ensemble replaced it after the phone-channel comparison in docs/ML.md. The old checkpoints still load.
+- **What it does:** p_scam for a call transcript or a message. It fills fusion's classifier slot; it never makes the red card on its own.
+- **Model:** hashed character 2–5-grams and word 1–2-grams (2^18 features, Devanagari folded to Latin), logistic regression, 1 MB of weights. Pure Kotlin; identical to the Python twin on 30 shared vectors.
+- **Data:** train/dev from the Indian Hinglish call set, BothBosu, the india14 SMS set (en/hi/Hinglish) and our template calls; all de-duplicated, no test text in train or dev. Licences: Apache-2.0, MIT, ours.
+- **Measured:** Indian held-out sets pooled, fused with the cues: 95.5% of scams at amber, 2.7% of harmless at amber, 0% at red. Leave-one-dataset-out: 67–94% of scams at amber, but up to 56% false amber on a style it never saw (US sales calls).
+- **Limits:** short phishing SMS without call words; scams with no cue words get amber at most; it abstains for the first ~25 words of a call.
 
-**Training data:**
-- AntiDeepfake was post-trained by NII on 56k hours of real and 18k hours of fake speech from 29 corpora in 100+ languages. These include ASVspoof 2019/2021/5, MLAAD, FLEURS and FLEURS-R, but not In-the-Wild or IndicSynth.
-- We fitted only the two-model combination and its calibration. That used 3000 clips of our train split (ASVspoof 2019 LA, IndicSynth Hindi and FLEURS Hindi) through seven simulated phone channels, noisy and lossy ones included. The dev split is held out.
-- No customer, bank or platform data. No IndiaCall speaker is in training.
+## 2. The voice-clone check (`VoiceCheck.kt`, `ml/voice_clone.py`)
 
-**Licence:** the AntiDeepfake weights are CC BY-NC-SA 4.0 (NII; research and education only) and the code is BSD-3-Clause. A commercial pilot would need a licence from NII or a model trained on licensable data.
+- **What it does:** P(AI voice) from the first ~20 s of speech. It is **one piece of evidence**: it needs a scam cue to reach amber and never makes red.
+- **Model:** the first 6 transformer layers of NII's AntiDeepfake wav2vec 2.0 Large (frozen) + our logistic head, ONNX with int8 matrix multiplies (127 MB; within 0.003 of fp32). The depth (4/6/8) was picked on dev.
+- **Data:** our head is trained on ASVspoof 2019 LA train, IndicSynth Hindi and FLEURS Hindi train, through phone channels. Threshold: the equal-error point on a separate calibration set (gTTS vs unseen FLEURS speakers).
+- **Measured (EER):** In-the-Wild 23–25%, ReplayDF (played through loudspeakers) 35%, stock Indian TTS vs real Hindi 10.5% clean, 17.5% on a phone line, 19.3% over a speakerphone. At the threshold, 11–14% of real voices on a phone line are flagged: too many to act on alone, which is why it is only evidence.
+- **Licence:** CC BY-NC-SA 4.0 (derived from AntiDeepfake). Research and demo only; a commercial pilot retrains the head on a licensable backbone.
 
-**Intended use:** risk signal in a bank contact centre and in an app's voice-note check, feeding a policy that steps up verification. It is not for identifying people, and not as sole evidence for any adverse decision.
+## 3. Speech-to-text (`Speech.kt`)
 
-**Known limits**
-- Generators it has never seen, and heavy codecs, raise error. Open-source detectors exceed 30% EER on codec-compressed fakes (Speech DF Arena). On In-the-Wild through AMR-NB with 3% packet loss and 15 dB noise, the ensemble's EER is 9.3%. At the engine's AMBER cut-off it catches 86% of those fakes, and 61–66% of IndicSynth Hindi fakes on the same noisy channels.
-- AntiDeepfake's training treated codec-compressed speech as "speech with artifacts". One member on its own (MMS-300M) flagged 26% of genuine Opus calls. The ensemble raises 0.7–3.7% of genuine In-the-Wild windows to AMBER on clean, G.711, AMR-NB and noisy channels, and 5.7% on Opus. These are per-window rates; the per-call rate comes from IndiaCall.
-- FLEURS (real and resynthesised) is in AntiDeepfake's training data, so our FLEURS Hindi false-alarm numbers are optimistic. IndiaCall is the clean Indian-speech test.
-- Live voice conversion by a skilled attacker can pass S1, and so can an AI voice played from a speaker into a phone mic. The app code and the signed approval on the owner's phone are what stop them.
-- Noisy rooms, cheap microphones and 2G calls can raise false alarms. We measure false alarms per language and speaker and report them on `/metrics`.
+- Off the shelf: Meta's Omnilingual ASR 300M CTC (int8, Apache-2.0) and Silero VAD (MIT) on sherpa-onnx. Chosen by our bake-off on Indian-English and Hindi calls (`ml/eval/asr_bakeoff.py`): WER 28% clean and on G.711, 57% over a speakerphone.
 
-**Metrics:** see `/metrics` (`models/metrics.json`). Every figure includes its test set, channel and sample size, and misses are listed.
+## Rules and fusion (`scam_patterns.json`, `fusion.json`)
 
-**Fairness target:** no language, age, gender or network group above 2× the overall false-alarm rate. Measured per language and speaker at the finale; age, gender and network groups are for the pilot.
+- 15 cue categories, 12 scam types, negation handling, English/Hindi/Hinglish. Red needs two kinds of evidence (what was said plus what the phone saw, or a known scam pattern of at least four categories with a request), or the user's own "Alert family". Talk about scams can't reach red. Thresholds fitted on dev and frozen.
 
-**Updates:** retrain when score drift appears or a monthly red-team with new generators finds misses. Versions are tracked in the case store (`model_version` on every case).
+## Responsible use
+
+- **Intended use:** warn a person and their family during a call, and let them check a recording or message. Not for identifying people, and not as evidence against anyone.
+- **Human in the loop:** the family member and the user decide; "Not a scam" clears any card in one tap, tells the family, and keeps one ids-only record for weekly human review (`/api/metrics`).
+- **Privacy:** audio and words stay on the phone and are dropped after scoring; only levels, scam types and cue ids are sent.
+- **Fairness:** false positives reported per language (en, hi, Hinglish) in RESULTS.md; target no language above 2× the overall false-positive rate. Other Indian languages are out of scope (4% recall) and said so.
+
+## Legacy: the laptop voice model (S1), cut on site
+
+The Round 1 bank-side detector (an AntiDeepfake W2V-Large + XLS-R-1B ensemble on a laptop GPU) is no longer in the demo path. Its benchmarks stay in `models/metrics.json` under `laptop_s1_legacy` and in `docs/ML.md`.

@@ -94,4 +94,4 @@ The app now also listens to calls and warns about scams (`CONTRACT.md`, "Call li
   - Write one headline and one advice line per `ScamType`, in English and Hindi.
 - **`FamilyAlarmScreen(state: FamilyAlarmUi, onCall, onMessage, onDismiss)`**, full screen: the face, "Mummy may be on a scam call", the type in plain words, then **Call Mummy** (big, green), **Message Mummy**, **OK**. The message text (a string resource): "Mummy, cut that call now. It's a scam. Call me." in English and Hindi.
 - **Onboarding**: new permission cards for the microphone, the call listener (accessibility; on Android 13+ show the "App info → ⋮ → Allow restricted settings" steps with pictures), and SMS ("Text family if their app is off"). Then a model download card with progress (`repo.modelState`, `repo.downloadModels()`).
-- **Settings**: "Listen to calls for scams", "Stronger check (uses the bank's server)", "Text family if their app is off" (`repo.setListening`).
+- **Settings**: "Listen to calls for scams", "Text family if their app is off", and the one model-pack download (`repo.setListening`).

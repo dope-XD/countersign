@@ -24,7 +24,9 @@ class CallRisk(analyzer: Analyzer, private val clock: () -> Long = System::curre
         private set
 
     fun heard(text: String) {
-        call.feed(text)
+        val v = call.feed(text)
+        // debug builds only, and only ids and counts: never the words
+        if (BuildConfig.DEBUG) Log.d(TAG, "heard ${text.split(' ').size} words; ${call.transcript.split(' ').size} so far; cues ${v.cues}; level ${v.level}")
     }
 
     fun context(now: Set<String>) {

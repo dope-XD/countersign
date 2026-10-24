@@ -101,7 +101,7 @@ The app listens to its own calls and warns about scams (`CONTRACT.md`, "Call lis
 
 **Analysis.**
 - **On the phone:** speech-to-text (on-phone model, chosen by A's bake-off) → `data/listen/ScamScorer.kt` (A writes it; pure Kotlin, reads `assets/scam_patterns.json`) → `Fusion.kt` with the context signals → `LiveCall.risk`.
-- **Stronger check:** in parallel, stream the PCM to `/ws/listen` when `stronger_check` is on and the server is reachable. The server's `listen_verdict` goes into the fusion.
+- **Stronger check:** cut on 24 Oct (everything runs on the phone; PLAN_VS_BUILT.md). The on-phone pipeline is `CallListener` → `Speech` → `CallRisk` (the Analyzer).
 - **Context signals** are yours to detect: unknown number, international number, WhatsApp video from an unknown number, a remote-access app or payment app opened during the call, a long call.
 
 **At `scam`:**

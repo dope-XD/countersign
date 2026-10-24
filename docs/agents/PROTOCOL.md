@@ -86,4 +86,4 @@ A Claude Code session only acts when it receives a message. Nothing on GitHub ca
 
 ## Dev server
 
-A runs the engine and a free ngrok tunnel on the GPU laptop. The URL is in `CONTRACT.md`. A posts on Standup when it's down or restarted.
+Since 24 Oct the app talks to the relay (`engine/relay.py`, Render; `docs/DEPLOY.md`), not a laptop. Before that, A ran the engine and a free ngrok tunnel on the GPU laptop. A posts on Standup when it's down or restarted.
