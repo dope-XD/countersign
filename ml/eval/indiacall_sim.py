@@ -37,14 +37,13 @@ from urllib.parse import quote
 import httpx
 import numpy as np
 import websockets
-from webauthn.helpers import bytes_to_base64url
 
 from engine.audio.codec import mulaw_encode, resample
 from engine.auth import HEADER as STAFF_HEADER
 from engine.auth import staff_pin
 from engine.indiacall import OPENINGS, challenges
 from engine.mocks.world import FRAUD_PHONE, FRI_SEED, SEED, SPARE_PHONE
-from ml.eval.soft_authenticator import SoftAuthenticator
+from ml.eval.soft_device import SoftDevice
 
 DATA = Path(__file__).resolve().parents[2] / "data" / "indiacall"
 REC = DATA / "recordings"
@@ -249,7 +248,7 @@ async def silence(ws, seconds: float) -> None:
     await stream(ws, np.zeros(int(seconds * 16000), dtype=np.float32) + np.random.default_rng().normal(0, 1e-4, int(seconds * 16000)).astype(np.float32))
 
 
-async def run_call(base: str, plan: Plan, auth: SoftAuthenticator) -> Result:
+async def run_call(base: str, plan: Plan, device: SoftDevice) -> Result:
     lang = next(o[1] for o in OPENINGS if o[0] == plan.opening)
     res = Result(plan=asdict(plan), language=lang)
     wsbase = base.replace("http", "ws", 1)
@@ -303,12 +302,12 @@ async def run_call(base: str, plan: Plan, auth: SoftAuthenticator) -> Result:
                     resp = await http.post(f"/api/requests/{req['id']}/send-approval")
                     if resp.status_code == 200:
                         apr = resp.json()
+                        phone = {"X-Device-Token": device.token}
                         if plan.level == "genuine":
-                            opts = (await http.post(f"/api/approvals/{apr['id']}/options")).json()
-                            cred = auth.assert_(opts, b"rahul")
-                            await http.post(f"/api/approvals/{apr['id']}/decide", json={"decision": "approve", "credential": cred})
+                            body = {"decision": "approve", "signature": device.sign(apr)}
                         else:
-                            await http.post(f"/api/approvals/{apr['id']}/decide", json={"decision": "decline"})
+                            body = {"decision": "decline"}
+                        await http.post(f"/api/m/approvals/{apr['id']}/decide", json=body, headers=phone)
                 ex = await http.post(f"/api/requests/{req['id']}/execute")
                 res.executed = ex.status_code == 200
                 call = (await http.get(f"/api/calls/{cid}")).json()
@@ -333,16 +332,14 @@ async def run_call(base: str, plan: Plan, auth: SoftAuthenticator) -> Result:
     return res
 
 
-async def enrol(base: str, origin: str, rp_id: str, run: str) -> SoftAuthenticator:
-    """Add the simulator's own passkey next to Rahul's demo passkeys (never removes them)."""
-    auth = SoftAuthenticator(rp_id, origin)
+async def enrol(base: str, run: str) -> SoftDevice:
+    """Add the simulator's own phone key to Rahul's account, next to the team phone's (never removes it)."""
+    device = SoftDevice()
     async with httpx.AsyncClient(base_url=base, timeout=30, headers={STAFF_HEADER: staff_pin()}) as http:
-        opts = (await http.post("/api/app/rahul/passkey/options")).json()
-        assert opts["user"]["id"] == bytes_to_base64url(b"rahul")
-        cred = auth.register(opts)
-        r = await http.post("/api/app/rahul/passkey/verify", json={"credential": cred, "device": f"IndiaCall simulator ({run})"})
+        r = await http.post("/api/m/claim", json={"customer_id": "rahul", "public_key": device.public_key, "device": f"IndiaCall simulator ({run})"})
         r.raise_for_status()
-    return auth
+        device.token = r.json()["token"]
+    return device
 
 
 async def reset_numbers(base: str) -> None:
@@ -360,16 +357,14 @@ async def main_async(a) -> None:
     print(f"{len(plans)} calls planned:", json.dumps(plan_summary(plans), indent=1))
     if a.dry_run:
         return
-    origin = a.base
-    rp_id = httpx.URL(a.base).host
     await reset_numbers(a.base)
-    auth = await enrol(a.base, origin, rp_id, a.run)
+    device = await enrol(a.base, a.run)
     sem = asyncio.Semaphore(a.concurrency)
     results: list[Result] = []
 
     async def one(p: Plan):
         async with sem:
-            r = await run_call(a.base, p, auth)
+            r = await run_call(a.base, p, device)
             results.append(r)
             print(f"{p.id:8} {p.level:7} {p.cli_kind:10} {p.speaker:8} tier={r.final_tier} executed={r.executed} {r.reasons} {r.error or ''}", flush=True)
 

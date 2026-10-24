@@ -19,7 +19,8 @@ from contextlib import asynccontextmanager
 from fastapi import APIRouter, Depends, FastAPI, File, Form, HTTPException, Request, Response, UploadFile, WebSocket, WebSocketDisconnect
 from fastapi.responses import FileResponse, JSONResponse
 
-from engine import approvals, auth, cases, guard, indiacall, policy, schemas, tryout, voicenote
+from engine import approvals, auth, cases, guard, indiacall, mobile, policy, schemas
+from engine.agent import dialog
 from engine.config import settings
 from engine.db import db
 from engine.fingerprint import replay_index
@@ -30,7 +31,7 @@ from engine.session import LINE, CallSession, calls
 from engine.signals import s3_liveness
 from engine.signals.s1_synth import detector
 from engine.signals.s2_drift import embedder
-from engine.stepup import passkeys
+from engine.stepup import devicekeys
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(name)s: %(message)s")
 log = logging.getLogger("countersign")
@@ -56,10 +57,14 @@ def _load_models() -> None:
 
 
 async def _housekeeping() -> None:
+    n = 0
     while True:
-        await asyncio.sleep(600)
-        cases.purge_expired()
-        calls.prune()
+        await asyncio.sleep(5)
+        guard.tick()  # payment holds, unanswered family checks, kill switches
+        n += 1
+        if n % 120 == 0:
+            cases.purge_expired()
+            calls.prune()
 
 
 @asynccontextmanager
@@ -83,7 +88,7 @@ async def _policy_err(_r, e):
     return JSONResponse({"error": str(e)}, status_code=404 if str(e).startswith("no such") else 409)
 
 
-@app.exception_handler(passkeys.StepUpError)
+@app.exception_handler(devicekeys.StepUpError)
 async def _stepup_err(_r, e):
     return JSONResponse({"error": str(e)}, status_code=404 if str(e).startswith("no such") else 400)
 
@@ -144,7 +149,6 @@ async def health():
         "models": MODEL_STATE,
         "s1_version": detector.version,
         "p95_ms": detector.p95_ms(),
-        "rp_id": settings.rp_id,
         "public_url": settings.public_url,
         "live_calls": sum(1 for c in calls.calls.values() if c.status != "ended"),
     }
@@ -171,37 +175,25 @@ async def staff_me(request: Request):
     return {"staff": auth.is_staff(request)}
 
 
-@public.post("/api/staff/logout")
-async def staff_logout(response: Response):
-    response.delete_cookie(auth.COOKIE)
-    return {"staff": False}
-
-
 # ============================================================== caller softphone (public)
 @app.websocket("/ws/caller")
-async def ws_caller(ws: WebSocket, cli: str = "", lang: str = "unknown", sandbox: str = ""):
+async def ws_caller(ws: WebSocket, cli: str = "", lang: str = "unknown", agent: str = ""):
+    """A caller's phone line. `agent=1` (the CS Bank app) is answered by the virtual agent; otherwise
+    a human agent answers on /agent. The calling number is whatever the caller claims, as on a
+    real line: an attacker can spoof it, which is why nothing risky rests on it."""
     await ws.accept()
     if calls.live_count() >= settings.max_live_calls:
         await _send(ws, json.dumps({"type": "busy", "message": "All our lines are busy. Please try again in a few minutes."}))
         await ws.close(code=1013)  # try again later
         return
     lang = lang if lang in ("en", "hi", "hinglish") else "unknown"
-    if sandbox:
-        # /try: a judge calling from their own sandbox account, answered by the virtual agent
-        cust = world.customer(sandbox)
-        if not tryout.is_sandbox(sandbox) or cust is None or not auth.is_customer(ws, sandbox):
-            await _send(ws, json.dumps({"type": "error", "message": "Open /try again to get your demo account."}))
-            await ws.close(code=4401)
-            return
-        cs = calls.create(cust.registered_mobile, lang, source="try")
-    else:
-        cli = cli.strip()
-        if cli and cli[0].isdigit():
-            cli = "+" + cli  # a raw "+" in a query string arrives as a space
-        cs = calls.create(cli or "+910000000000", lang)
+    cli = cli.strip()
+    if cli and cli[0].isdigit():
+        cli = "+" + cli  # a raw "+" in a query string arrives as a space
+    cs = calls.create(cli or "+910000000000", lang, source="app" if agent == "1" else "softphone")
     cs.caller_ws = ws
     await _send(ws, json.dumps({"type": "call", "id": cs.id}))
-    agent = tryout.start_virtual_agent(cs, lambda m: _send(ws, json.dumps(m))) if sandbox else None
+    va = dialog.start_virtual_agent(cs, lambda m: _send(ws, json.dumps(m)), lambda b: _send(ws, data=b)) if cs.source == "app" else None
 
     async def pinger():
         while not cs.ended and await _send(ws, json.dumps({"type": "ping", "t": time.time()})):
@@ -228,14 +220,17 @@ async def ws_caller(ws: WebSocket, cli: str = "", lang: str = "unknown", sandbox
                     cs.caller_rtt = 0.8 * cs.caller_rtt + 0.2 * rtt if cs.caller_rtt else rtt
                 elif data.get("type") == "hangup":
                     break
-                elif data.get("type") == "read_done" and agent:
-                    cs.agent_done_reading()  # the judge's phone finished speaking the virtual agent's challenge
+                elif data.get("type") == "typed" and cs.typed_turns is not None and isinstance(data.get("text"), str):
+                    # attack mode: a fraudster types and their voice clone speaks; the clip is the voice, this is the words
+                    cs.typed_turns.put_nowait(data["text"][:300])
+                elif data.get("type") == "read_done" and va:
+                    cs.agent_done_reading()  # the phone finished speaking the virtual agent's challenge
     except WebSocketDisconnect:
         pass
     finally:
         ping_task.cancel()
-        if agent:
-            agent.cancel()
+        if va:
+            va.cancel()
         cs.end()
 
 
@@ -346,6 +341,20 @@ async def challenge(call_id: str, force: str | None = None):
     return {"id": c.ch.id, "say": c.ch.say, "kind": c.ch.kind}
 
 
+@staff.post("/api/calls/{call_id}/code")
+async def ask_code(call_id: str):
+    """Liveness by a fresh code shown in the identified customer's CS Bank app. The agent never sees it."""
+    cs = _call(call_id)
+    if cs.status != "live":
+        raise HTTPException(409, "the call is not live")
+    if not cs.customer_id:
+        raise HTTPException(400, "identify the customer first")
+    c = cs.issue_code()
+    asyncio.create_task(cs.challenge_timeout(c, seconds=20))
+    _publish_call(call_id)
+    return {"id": c.ch.id, "say": policy.SCRIPT["liveness"], "kind": "code"}
+
+
 @staff.post("/api/calls/{call_id}/challenge/done-reading")
 async def done_reading(call_id: str):
     _call(call_id).agent_done_reading()
@@ -386,9 +395,7 @@ async def send_approval(rid: str):
     r = policy.get(rid)
     if "app_approval" not in r["policy"]["reqs"]:
         raise HTTPException(400, "this request doesn't need an app approval")
-    a = approvals.send_app_approval(rid)
-    _publish_call(r["call_id"])
-    return a
+    return approvals.send_app_approval(rid)
 
 
 @staff.post("/api/requests/{rid}/standard-checks")
@@ -419,206 +426,10 @@ async def execute(rid: str):
     return _request_out(r)
 
 
-def _record_human_lag(call_id: str | None) -> None:
-    """A passkey-approved request means the caller was the real customer, so their
-    liveness reply delay is a genuine human sample for the IndiaCall simulator."""
-    cs = calls.get(call_id) if call_id else None
-    if not cs or cs.source == "try" or not cs.liveness or cs.liveness.get("lag_s") is None or settings.eval_mode:
-        return
-    p = indiacall.ROOT / "human_lags.json"
-    p.parent.mkdir(parents=True, exist_ok=True)
-    lags = json.loads(p.read_text()) if p.exists() else []
-    lags.append(cs.liveness["lag_s"])
-    p.write_text(json.dumps(lags))
-
-
-# ============================================================== passkeys & approvals (customer phone)
-@public.post("/api/app/{cid}/login")
-async def app_login(cid: str, body: schemas.AppLogin, request: Request, response: Response):
-    _customer(cid)
-    if not auth.redeem_login(cid, body.token):
-        raise HTTPException(401, "This login code has been used or has expired. Ask for a new one on the demo screen.")
-    response.set_cookie(
-        auth.customer_cookie_name(cid), auth.make_cookie(f"customer:{cid}"), max_age=auth.TTL, httponly=True, samesite="lax", secure=_secure(request)
-    )
-    db.audit(cid, "app_login", None)
-    return {"customer": cid}
-
-
-@public.post("/api/app/{cid}/passkey/options")
-async def passkey_options(cid: str, request: Request):
-    _customer(cid)
-    auth.require_customer(request, cid)
-    return Response(passkeys.registration_options(cid, _host(request)), media_type="application/json")
-
-
-@public.post("/api/app/{cid}/passkey/verify")
-async def passkey_verify(cid: str, request: Request, body: schemas.PasskeyVerify):
-    _customer(cid)
-    auth.require_customer(request, cid)
-    return passkeys.verify_registration(cid, body.credential, body.device, _host(request))
-
-
-@staff.delete("/api/app/{cid}/passkeys")
-async def passkey_remove(cid: str):
-    _customer(cid)
-    passkeys.remove_credentials(cid)
-    return {"ok": True}
-
-
-def _own_approval(aid: str, request: Request) -> dict:
-    a = passkeys.public_approval(aid)
-    auth.require_customer(request, a["target_customer"])
-    return a
-
-
-@public.get("/api/approvals/{aid}")
-async def approval(aid: str, request: Request):
-    return _own_approval(aid, request)
-
-
-@public.post("/api/approvals/{aid}/options")
-async def approval_options(aid: str, request: Request):
-    _own_approval(aid, request)
-    return Response(passkeys.assertion_options(aid, _host(request)), media_type="application/json")
-
-
+# ============================================================== approvals evidence (staff)
 @staff.get("/api/approvals/{aid}/evidence")
 async def approval_evidence(aid: str):
-    return passkeys.binding_evidence(aid)
-
-
-@public.post("/api/approvals/{aid}/decide")
-async def approval_decide(aid: str, request: Request, body: schemas.Decide):
-    _own_approval(aid, request)
-    a = passkeys.decide(aid, body.decision, body.credential, _host(request))
-    if a["kind"] == "family_ping":
-        guard.on_family_decision(a)
-        return a
-    rid = a["request_id"]
-    r = policy.get(rid)
-    if r["status"] != "open":
-        return a  # e.g. already cancelled by the fraud desk: the answer is recorded, nothing changes
-    if a["status"] == "approved":
-        r = policy.mark(rid, "app_approval", "met", by=a["target_customer"], approval_id=aid)
-        _record_human_lag(r.get("call_id"))
-    else:
-        r = policy.mark(rid, "app_approval", "failed", by=a["target_customer"], approval_id=aid)
-        cs = calls.get(r["call_id"]) if r.get("call_id") else None
-        if cs:
-            cs.ensure_case("customer_declined_in_app")
-        else:
-            cases.open_case(channel="contact_centre", customer_id=r["customer_id"], request_id=rid, tier=r["tier"], event="customer_declined_in_app")
-        hub.publish(
-            f"app:{a['target_customer']}",
-            {"type": "alert", "title": "Thanks. Nothing was changed.", "body": "Our fraud team has the case. You can call us on the number on your card."},
-        )
-    _publish_call(r.get("call_id"))
-    return a
-
-
-# ============================================================== CS Bank Android app (customer phone)
-@public.post("/api/app/{cid}/device")
-async def app_device(cid: str, request: Request):
-    """A device token for the app's native side, asked for by the logged-in bank page."""
-    _customer(cid)
-    auth.require_customer(request, cid)
-    db.audit(cid, "device_linked", None)
-    return {"customer": cid, "token": auth.make_device_token(cid), "expires_in": auth.TTL}
-
-
-@public.post("/api/app/{cid}/call-state")
-async def app_call_state(cid: str, body: schemas.CallState, request: Request):
-    """The phone is on a call, or just finished one. Only the fact of the call: no number, no audio."""
-    _customer(cid)
-    if not auth.is_device(request, cid):
-        raise HTTPException(401, "device token required")
-    if body.state == "active":
-        world.on_call[cid] = body.kind
-    else:
-        world.on_call.pop(cid, None)
-        world.recent_calls[cid] = time.time()
-    db.audit(cid, f"phone_call_{body.state}", None, kind=body.kind)
-    hub.publish("demo", {"type": "call_state", "customer": cid, "state": body.state, "kind": body.kind})
-    return {"ok": True}
-
-
-@public.get("/.well-known/assetlinks.json", include_in_schema=False)
-async def assetlinks():
-    prints = [p.strip().upper() for p in settings.android_cert_sha256.split(",") if p.strip()]
-    if not prints:
-        return []
-    target = {"namespace": "android_app", "package_name": settings.android_package, "sha256_cert_fingerprints": prints}
-    return [{"relation": ["delegate_permission/common.handle_all_urls", "delegate_permission/common.get_login_creds"], "target": target}]
-
-
-# ============================================================== bank app, Entry B (customer phone)
-@public.get("/api/app/{cid}/home")
-async def app_home(cid: str, request: Request):
-    cust = _customer(cid)
-    auth.require_customer(request, cid)
-    world.app_sessions[cid] = time.time()
-    pays = db.query(
-        "SELECT id, details, status, created_at FROM requests WHERE customer_id=? AND channel='app' ORDER BY created_at DESC LIMIT 10",
-        [cid],
-    )
-    return {
-        "customer": cust.__dict__,
-        "passkeys": passkeys.credentials(cid),
-        "pending": passkeys.pending_for(cid),
-        "payments": pays,
-        "family": [f.__dict__ for f in (world.customer(x) for x in cust.family_circle) if f],
-    }
-
-
-@public.post("/api/app/{cid}/pay")
-async def app_pay(cid: str, body: schemas.Pay, request: Request):
-    _customer(cid)
-    auth.require_customer(request, cid)
-    return guard.start_payment(cid, body.payee, body.amount, body.note)
-
-
-def _own_payment(pid: str, request: Request) -> None:
-    auth.require_customer(request, guard.payment_customer(pid))
-
-
-@public.post("/api/payments/{pid}/ask-family")
-async def pay_ask_family(pid: str, body: schemas.AskFamily, request: Request):
-    _own_payment(pid, request)
-    return guard.ask_family(pid, body.family_id)
-
-
-@public.post("/api/payments/{pid}/continue")
-async def pay_continue(pid: str, request: Request):
-    _own_payment(pid, request)
-    return guard.continue_anyway(pid)
-
-
-@public.post("/api/payments/{pid}/cancel")
-async def pay_cancel(pid: str, request: Request):
-    _own_payment(pid, request)
-    return guard.cancel(pid)
-
-
-@public.post("/api/payments/{pid}/report")
-async def pay_report(pid: str, request: Request):
-    _own_payment(pid, request)
-    return guard.prefill_1930(pid)
-
-
-@public.post("/api/app/{cid}/voice-note")
-async def voice_note(cid: str, request: Request, file: UploadFile = File(...)):
-    _customer(cid)
-    auth.require_customer(request, cid)
-    data = await file.read()
-    if len(data) > 20 * 1024 * 1024:
-        raise HTTPException(413, "file too large")
-    try:
-        res = await asyncio.to_thread(voicenote.check, data)
-    except voicenote.VoiceNoteError as e:
-        raise HTTPException(400, str(e)) from e
-    db.audit(cid, "voice_note_checked", None, verdict=res["verdict"], seconds=res.get("seconds"))
-    return res
+    return devicekeys.binding_evidence(aid)
 
 
 # ============================================================== fraud desk (staff)
@@ -667,14 +478,6 @@ async def case_resolve(case_id: str, body: schemas.Resolve):
 @staff.get("/api/demo/world")
 async def demo_world():
     return world.public()
-
-
-@staff.post("/api/demo/login-link/{cid}")
-async def demo_login_link(cid: str):
-    """A one-time link that logs a phone in to this customer's bank app (shown as a QR code)."""
-    _customer(cid)
-    token = auth.mint_login(cid)
-    return {"path": f"/bank/{cid}#login={token}", "expires_in": auth.LOGIN_TTL}
 
 
 @staff.post("/api/demo/reset")
@@ -745,11 +548,6 @@ async def demo_stored():
     }
 
 
-@staff.get("/api/demo/audit")
-async def demo_audit(limit: int = 200):
-    return db.query("SELECT * FROM audit ORDER BY id DESC LIMIT ?", [min(max(limit, 1), 1000)])
-
-
 # ============================================================== metrics (public: the numbers are for judges too)
 @public.get("/api/metrics")
 async def metrics():
@@ -805,7 +603,7 @@ def _event_topics(conn: Request | WebSocket, topics: str) -> list[str]:
     names = [t for t in topics.split(",") if t][:10]
     if auth.is_staff(conn):
         return names
-    return [t for t in names if t.startswith("app:") and (auth.is_customer(conn, t.split(":", 1)[1]) or auth.is_device(conn, t.split(":", 1)[1]))]
+    return [t for t in names if t.startswith("app:") and auth.is_device(conn, t.split(":", 1)[1])]
 
 
 @app.websocket("/ws/events")
@@ -834,7 +632,8 @@ async def ws_events(ws: WebSocket, topics: str = "calls"):
 
 app.include_router(public)
 app.include_router(connect_ingest.router)
-app.include_router(tryout.router)
+app.include_router(mobile.router)
+app.include_router(mobile.files)
 app.include_router(staff)
 
 

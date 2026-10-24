@@ -62,6 +62,7 @@ class ActiveChallenge:
     reply_onset_pos: int | None = None
     reply_end_pos: int | None = None
     done: bool = False
+    relay_risk: bool = False  # the code was shown on a phone that was on a call someone else made to it
 
 
 class Track:
@@ -94,7 +95,7 @@ class CallSession:
     id: str
     caller_cli: str
     language: str = "unknown"
-    source: str = "softphone"  # softphone | connect | try (a judge's sandbox call, answered by engine/tryout.py)
+    source: str = "softphone"  # softphone | connect | app (a call from the CS Bank app, answered by the virtual agent)
     customer_id: str | None = None
     started: float = field(default_factory=time.time)
     status: str = "ringing"  # ringing | live | ended
@@ -116,6 +117,8 @@ class CallSession:
     timeline: list[dict] = field(default_factory=list)
     caller_ws: object = None
     agent_wss: set = field(default_factory=set)
+    vad_listeners: list = field(default_factory=list)  # the virtual agent hears the caller through these
+    typed_turns: object = None  # attack mode: what the "fraudster" types for the clone to say (an asyncio.Queue)
     _next_window_pos: int = WINDOW
     _scoring: bool = False
 
@@ -258,6 +261,17 @@ class CallSession:
         db.audit("agent", "challenge_issued", self.id, kind=ch.kind)
         return self.challenge
 
+    def issue_code(self) -> ActiveChallenge | None:
+        """Liveness by a fresh code shown in the account holder's CS Bank app. Reading it back proves
+        the person on this call holds that phone, and a recording made earlier can't say it."""
+        if not self.customer_id:
+            return None
+        c = self.issue_challenge(s3_liveness.code_challenge())
+        oc = world.on_call.get(self.customer_id)
+        c.relay_risk = bool(oc and oc.get("direction") == "incoming" and oc.get("kind") == "phone")
+        hub.publish(f"app:{self.customer_id}", {"type": "code", "code": c.ch.expect_digits, "call_id": self.id, "expires_in": 60})
+        return c
+
     def agent_done_reading(self) -> None:
         """Manual fallback when the agent's mic isn't connected."""
         if self.challenge and not self.challenge.done:
@@ -270,12 +284,14 @@ class CallSession:
         return last is not None and time.time() - last < 2.0
 
     def _on_caller_vad(self, kind: str, pos: int) -> None:
+        for listen in self.vad_listeners:
+            listen(kind, pos)
         c = self.challenge
         if c is None or c.done:
             return
         if kind == "onset" and c.reply_onset_wall is None:
-            if self.source == "try" and c.agent_end_wall is None:
-                return  # the judge's phone is still speaking the virtual agent's phrase (its mic is muted meanwhile)
+            if self.source == "app" and c.agent_end_wall is None:
+                return  # the virtual agent is still reading the request out (the phone sends silence meanwhile)
             if self._agent_mic_live() and (self.agent.vad.in_speech or c.agent_end_wall is None):
                 return  # the agent is still reading the challenge (or this is its echo)
             wall = self.caller.wall_at(pos)
@@ -312,6 +328,9 @@ class CallSession:
         if self.ended:
             return
         res = s3_liveness.judge(c.ch, lag, match, s1_reply)
+        if c.relay_risk:
+            res.reasons.append("CODE_DURING_INCOMING_CALL")
+            res.passed = False
         self.liveness = {
             "passed": res.passed,
             "lag_s": None if lag is None else round(lag, 2),
@@ -386,7 +405,7 @@ class CallSession:
             "tier": self.tier,
             "verdict": self.verdict,
             "windows": [{"t": round(w.t, 2), "p": round(w.p, 3), "drift": w.drift} for w in self.windows[-30:]],
-            "challenge": {"id": ch.ch.id, "say": ch.ch.say, "done": ch.done} if ch else None,
+            "challenge": {"id": ch.ch.id, "say": ch.ch.say, "kind": ch.ch.kind, "done": ch.done} if ch else None,
             "liveness": self.liveness,
             "requests": reqs,
             "case_id": self.case_id,

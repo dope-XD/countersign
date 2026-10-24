@@ -17,7 +17,7 @@ ml/runs/
 models/src/
 models/*.json.bak
 data/clips/
-data/try/
+data/app/
 data/*.log
 data/indiacall/consent/
 data/indiacall/human_lags.json

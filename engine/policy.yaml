@@ -35,8 +35,8 @@ matrix:
 # Same words for every step-up, so fraudsters can't use us to tune a clone.
 script:
   app_approval: "For your security, I've sent an approval request to the phone registered on this account."
-  liveness: "For your security, please repeat a short phrase after me."
-  standard_checks: "Could you confirm your date of birth and the last four digits of your card?"
+  liveness: "For your security, I've sent a four-digit code to the CS Bank app on the phone registered to this account. Please read it to me."
+  standard_checks: "Could you confirm the last four digits of your debit card?"
   fraud_desk: "I'm transferring you to a colleague who can help with this request."
 
 # Override (agent waives the liveness step with a logged reason) is never available on RED,

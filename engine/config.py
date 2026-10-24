@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 import os
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
@@ -50,15 +50,9 @@ class Settings:
     amber_at: float = float(_env("AMBER_AT", "0.30"))
     red_at: float = float(_env("RED_AT", "0.70"))
 
-    # WebAuthn. RP ID must be the hostname the phones load the app from.
-    rp_id: str = _env("RP_ID", "auto")  # "auto" = the Host the page was loaded from
-    rp_name: str = "Countersign Bank"
     # Where phones reach this engine (the HTTPS tunnel), for the QR codes on /demo. Empty =
     # the address the demo page itself was opened on.
     public_url: str = _env("PUBLIC_URL", "")
-    origins: tuple[str, ...] = field(
-        default_factory=lambda: tuple(o.strip() for o in _env("ORIGINS", "http://localhost:8000,http://localhost:5173").split(",") if o.strip())
-    )
 
     # Staff PIN for the agent console, fraud desk, demo panel and metrics. Generated and
     # printed on first run if unset (kept in runtime/staff_pin.txt).
@@ -73,16 +67,22 @@ class Settings:
     connect_secret: str = _env("CONNECT_SECRET", "")
     connect_aws_profile: str = _env("CONNECT_AWS_PROFILE", "")
 
-    # CS Bank Android app (android/): the signing certificate's SHA-256 fingerprint(s), comma
-    # separated, published in /.well-known/assetlinks.json so Chrome shows the bank pages
-    # full screen inside the app. Empty = no association (the app still works, with a URL bar).
-    android_package: str = _env("ANDROID_PACKAGE", "app.countersign.bank")
-    android_cert_sha256: str = _env("ANDROID_CERT_SHA256", "")
-
-    # /try (engine/tryout.py): cloned-voice samples judges can play into a call (try/samples/*.wav,
-    # consented clones only) and the CS Bank APK offered for download (try/cs-bank.apk).
-    try_dir: Path = Path(_env("TRY_DIR", str(ROOT / "data" / "try")))
+    # CS Bank app files (engine/mobile.py): the APK offered for download (app/cs-bank.apk) and the
+    # cloned-voice clips the app's attack mode can play into a call (app/samples/*.wav, consented
+    # clones only, labelled in app/samples/labels.json).
+    app_dir: Path = Path(_env("APP_DIR", str(ROOT / "data" / "app")))
     eval_mode: bool = _env("EVAL", "0") == "1"
+
+    # The virtual agent that answers calls from the CS Bank app (engine/agent/). Every service is
+    # optional: without ElevenLabs the phone reads the agent's lines itself and faster-whisper
+    # transcribes the caller on our GPU; without an LLM the agent understands callers by keywords.
+    elevenlabs_key: str = os.environ.get("ELEVENLABS_API_KEY", "")
+    tts_voice: str = _env("TTS_VOICE", "")  # an ElevenLabs voice id; pick an Indian English voice in their library
+    tts_model: str = _env("TTS_MODEL", "eleven_flash_v2_5")
+    stt: str = _env("STT", "elevenlabs")  # elevenlabs | local (faster-whisper here: caller audio never leaves our server)
+    # JSON list of OpenAI-compatible chat providers, tried in order: [{"base_url", "model", "key_env"}].
+    # Empty = Groq, Gemini and Mistral, whichever of GROQ_API_KEY, GEMINI_API_KEY, MISTRAL_API_KEY are set.
+    llm_providers: str = _env("LLM_PROVIDERS", "")
 
     # Mock KMS: a 32-byte hex key. Generated on first run if absent.
     evidence_key_hex: str = _env("EVIDENCE_KEY", "")

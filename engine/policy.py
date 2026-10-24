@@ -44,6 +44,9 @@ def _reqs_for(action: str, tier: str, previous: dict | None = None) -> dict:
 
 def create_request(customer_id: str, channel: str, action: str, details: dict, tier: str, call_id: str | None = None) -> dict:
     c = cell(action, tier)
+    cust = world.customer(customer_id)
+    if cust and cust.blocked() and ACTIONS[action]["risk"] != "low":
+        raise PolicyError("The customer's kill switch is on, so account changes are blocked until they turn it off in the app.")
     now = time.time()
     rid = new_id("req")
     policy = {
@@ -107,7 +110,6 @@ def escalate(rid: str, new_tier: str) -> dict:
 def _auto_steps(r: dict) -> None:
     pol = r["policy"]
     if "alert_customer" in pol["reqs"] and pol["reqs"]["alert_customer"]["status"] == "pending":
-        cust = world.customer(r["customer_id"])
         label = ACTIONS[r["action"]]["label"].lower()
         hub.publish(
             f"app:{r['customer_id']}",
@@ -118,7 +120,7 @@ def _auto_steps(r: dict) -> None:
                 "request_id": r["id"],
             },
         )
-        mark(r["id"], "alert_customer", "met", by="system", channel=f"app+sms {cust.registered_mobile if cust else ''}")
+        mark(r["id"], "alert_customer", "met", by="system", channel="app notification")
 
 
 def mark(rid: str, requirement: str, status: str, by: str, **detail) -> dict:
@@ -210,3 +212,4 @@ def _apply(r: dict) -> None:
         cust.usual_upi_max = float(d["limit"])
     elif r["action"] in ("large_transfer", "upi_payment") and d.get("amount"):
         cust.balance -= float(d["amount"])
+    world.save(cust)

@@ -13,7 +13,7 @@ cd $REPO
 bash deploy/runpod/system.sh
 
 set -a; . $W/countersign.env; set +a
-for v in COUNTERSIGN_STAFF_PIN COUNTERSIGN_EVIDENCE_KEY COUNTERSIGN_RP_ID NGROK_DOMAIN NGROK_AUTHTOKEN; do
+for v in COUNTERSIGN_STAFF_PIN COUNTERSIGN_EVIDENCE_KEY NGROK_DOMAIN NGROK_AUTHTOKEN; do
     [ -n "${!v:-}" ] || { echo "$v is empty in $W/countersign.env"; exit 1; }
 done
 [ "${COUNTERSIGN_EVAL:-0}" = "0" ] || { echo "COUNTERSIGN_EVAL must be 0 on a public engine"; exit 1; }

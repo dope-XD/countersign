@@ -1,22 +1,17 @@
 import { Link, Route, Routes } from 'react-router-dom'
 import Agent from './pages/Agent'
-import Bank from './pages/Bank'
 import Caller from './pages/Caller'
 import Demo from './pages/Demo'
 import FraudDesk from './pages/FraudDesk'
 import Metrics from './pages/Metrics'
 import Record from './pages/Record'
-import Try from './pages/Try'
 import StaffGate from './components/StaffGate'
 import { Signature } from './components/ui'
 
 function Home() {
   const links = [
-    { to: '/try', title: 'Try it yourself', sub: 'Your own demo account: call the bank as yourself or as a clone, and answer on your phone.' },
-    { to: '/call', title: 'Call the bank', sub: 'Softphone for any phone browser. Audio goes out as 8 kHz G.711.' },
-    { to: '/agent', title: 'Agent console', sub: 'Voice Trust Card, policy steps, liveness check.' },
-    { to: '/bank/rahul', title: "Rahul's bank app", sub: 'Passkey approvals, Family Circle replies.' },
-    { to: '/bank/sunita', title: "Sunita's bank app", sub: 'UPI payment guard and pause screen.' },
+    { to: '/download/cs-bank.apk', title: 'Get the CS Bank app', sub: 'Android. Sign up, make a family, call the bank, try to break in.', file: true },
+    { to: '/agent', title: 'Agent console', sub: 'Voice Trust Card, policy steps, code check, approvals.' },
     { to: '/fraud', title: 'Fraud desk', sub: 'Case queue, evidence clips, 1930 and DIP reports.' },
     { to: '/metrics', title: 'Metrics', sub: 'IndiaCall and benchmark results, misses included.' },
     { to: '/demo', title: 'Demo operator', sub: 'QR codes, scenario switches, what we store.' },
@@ -28,12 +23,19 @@ function Home() {
       <h1 className="mt-4 text-5xl font-extrabold tracking-tight sm:text-6xl">Countersign</h1>
       <p className="mt-4 max-w-2xl text-lg">A voice can ask the bank for anything. The customer's own phone has to sign before anything risky happens.</p>
       <div className="mt-10 grid gap-3 sm:grid-cols-2">
-        {links.map((l) => (
-          <Link key={l.to} to={l.to} className="card block p-4 no-underline hover:border-brand">
-            <div className="font-display text-lg font-bold text-ink">{l.title}</div>
-            <div className="text-sm text-muted">{l.sub}</div>
-          </Link>
-        ))}
+        {links.map((l) => {
+          const body = (
+            <>
+              <div className="font-display text-lg font-bold text-ink">{l.title}</div>
+              <div className="text-sm text-muted">{l.sub}</div>
+            </>
+          )
+          return 'file' in l ? (
+            <a key={l.to} href={l.to} className="card block p-4 no-underline hover:border-brand">{body}</a>
+          ) : (
+            <Link key={l.to} to={l.to} className="card block p-4 no-underline hover:border-brand">{body}</Link>
+          )
+        })}
       </div>
       <p className="mt-10 text-xs text-muted">RAKSHAM 2026 · Problem statement 01 · Team losers. Prototype with mocked core banking, DoT FRI and SIM-swap feeds.</p>
     </main>
@@ -45,9 +47,7 @@ export default function App() {
     <Routes>
       <Route path="/" element={<Home />} />
       <Route path="/call" element={<Caller />} />
-      <Route path="/try" element={<Try />} />
       <Route path="/agent" element={<StaffGate><Agent /></StaffGate>} />
-      <Route path="/bank/:customer" element={<Bank />} />
       <Route path="/fraud" element={<StaffGate><FraudDesk /></StaffGate>} />
       <Route path="/metrics" element={<Metrics />} />
       <Route path="/demo" element={<StaffGate><Demo /></StaffGate>} />

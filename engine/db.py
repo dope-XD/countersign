@@ -1,5 +1,6 @@
-"""SQLite case store and audit log. Holds scores, tiers, reason codes, decisions and
-passkey public keys. Never raw audio (RED evidence clips are separate encrypted files)."""
+"""SQLite store: customers, case store and audit log. Holds scores, tiers, reason codes,
+decisions and the public keys of customers' phones. Never raw audio (RED evidence clips are
+separate encrypted files)."""
 
 from __future__ import annotations
 
@@ -14,6 +15,9 @@ from typing import Any
 from engine.config import settings
 
 _SCHEMA = """
+CREATE TABLE IF NOT EXISTS customers (
+  id TEXT PRIMARY KEY, data TEXT NOT NULL, created_at REAL NOT NULL
+);
 CREATE TABLE IF NOT EXISTS credentials (
   id TEXT PRIMARY KEY, customer_id TEXT NOT NULL, public_key BLOB NOT NULL,
   sign_count INTEGER NOT NULL DEFAULT 0, transports TEXT, device_label TEXT,
@@ -56,7 +60,7 @@ CREATE INDEX IF NOT EXISTS ix_audit_ref ON audit(ref);
 _JSON_COLS = {"details", "policy", "reasons", "scores", "timeline", "detail", "payload", "summary", "transports", "assertion"}
 
 # columns added after the first release: (table, column, type), applied to older databases
-_ADDED = [("approvals", "nonce", "TEXT"), ("approvals", "assertion", "TEXT")]
+_ADDED = [("approvals", "nonce", "TEXT"), ("approvals", "assertion", "TEXT"), ("credentials", "kind", "TEXT")]
 
 
 class DB:
@@ -118,7 +122,7 @@ class DB:
         self.insert("audit", {"ts": time.time(), "actor": actor, "event": event, "ref": ref, "detail": detail or None})
 
     def wipe_world(self) -> None:
-        """Demo reset: clears requests, cases, reports. Keeps enrolled passkeys."""
+        """Demo reset: clears requests, cases, reports. Keeps customers and their phones' keys."""
         with self._lock:
             for t in ("requests", "approvals", "cases", "reports", "audit", "replay_landmarks"):
                 self._conn.execute(f"DELETE FROM {t}")

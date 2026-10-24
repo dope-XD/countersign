@@ -1,0 +1,128 @@
+package app.countersign.bank
+
+import android.app.Notification
+import android.app.NotificationChannel
+import android.app.NotificationManager
+import android.app.PendingIntent
+import android.content.Context
+import android.content.Intent
+import android.media.AudioAttributes
+import android.media.Ringtone
+import android.media.RingtoneManager
+import android.os.Build
+import android.os.Handler
+import android.os.Looper
+import org.json.JSONObject
+
+/** Notifications: the ongoing "protected" one, family checks and approvals (ring or notify), and news. */
+object Notify {
+    const val WATCH = "watch"
+    const val RING = "checks_ring"
+    const val CHECKS = "checks"
+    const val NEWS = "news"
+    const val WATCH_ID = 1
+
+    fun channels(c: Context) {
+        val nm = c.getSystemService(NotificationManager::class.java)
+        nm.createNotificationChannel(NotificationChannel(WATCH, "Protection status", NotificationManager.IMPORTANCE_LOW))
+        nm.createNotificationChannel(
+            NotificationChannel(RING, "Family checks that ring", NotificationManager.IMPORTANCE_HIGH).apply {
+                description = "A family member or the bank needs your answer now. Rings like a call."
+                setSound(
+                    RingtoneManager.getDefaultUri(RingtoneManager.TYPE_RINGTONE),
+                    AudioAttributes.Builder().setUsage(AudioAttributes.USAGE_NOTIFICATION_RINGTONE).build(),
+                )
+                enableVibration(true)
+                vibrationPattern = longArrayOf(0, 800, 600, 800, 600, 800)
+            },
+        )
+        nm.createNotificationChannel(
+            NotificationChannel(CHECKS, "Family checks and approvals", NotificationManager.IMPORTANCE_HIGH).apply { enableVibration(true) },
+        )
+        nm.createNotificationChannel(NotificationChannel(NEWS, "Payments and alerts", NotificationManager.IMPORTANCE_DEFAULT))
+    }
+
+    fun watch(c: Context, onCall: Boolean): Notification =
+        Notification.Builder(c, WATCH)
+            .setSmallIcon(R.drawable.ic_notify)
+            .setContentTitle(if (onCall) "On a call: payments are protected" else "CS Bank is protecting you")
+            .setContentText("Family checks and bank approvals will reach you here.")
+            .setOngoing(true)
+            .setContentIntent(openApp(c, 0))
+            .build()
+
+    private fun openApp(c: Context, code: Int) =
+        PendingIntent.getActivity(c, code, Intent(c, MainActivity::class.java).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK), PendingIntent.FLAG_IMMUTABLE)
+
+    /** A family check or bank approval. "ring" opens full screen like an incoming call; "notify" is a normal alert. */
+    fun approval(c: Context, raw: JSONObject) {
+        val a = Approval.from(raw)
+        val nm = c.getSystemService(NotificationManager::class.java)
+        val open = Intent(c, ApprovalActivity::class.java)
+            .putExtra(ApprovalActivity.EXTRA, raw.toString())
+            .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP)
+        val pi = PendingIntent.getActivity(c, a.id.hashCode(), open, PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT)
+        val ring = a.deliver == "ring"
+        val title = when (a.kind) {
+            "family_ping" -> "Family check: ${a.question}"
+            "kill_switch_off" -> a.question
+            else -> "CS Bank: ${a.question}"
+        }
+        val b = Notification.Builder(c, if (ring) RING else CHECKS)
+            .setSmallIcon(R.drawable.ic_notify)
+            .setContentTitle(title)
+            .setContentText(a.detail)
+            .setStyle(Notification.BigTextStyle().bigText(a.detail))
+            .setContentIntent(pi)
+            .setAutoCancel(true)
+            .setCategory(if (ring) Notification.CATEGORY_CALL else Notification.CATEGORY_MESSAGE)
+        if (ring && canRing(c)) b.setFullScreenIntent(pi, true)
+        nm.notify(a.id.hashCode(), b.build())
+        if (ring) {
+            // Android only opens a full-screen alert by itself when the phone is locked or asleep, and may
+            // silence the channel; so ring ourselves, and open the check at once if CS Bank is in front.
+            Ringer.start(c)
+            if (App.visible) c.startActivity(open)
+        }
+    }
+
+    fun cancel(c: Context, approvalId: String) = c.getSystemService(NotificationManager::class.java).cancel(approvalId.hashCode())
+
+    fun news(c: Context, title: String, body: String) {
+        val n = Notification.Builder(c, NEWS)
+            .setSmallIcon(R.drawable.ic_notify)
+            .setContentTitle(title)
+            .setContentText(body)
+            .setStyle(Notification.BigTextStyle().bigText(body))
+            .setContentIntent(openApp(c, title.hashCode()))
+            .setAutoCancel(true)
+            .build()
+        c.getSystemService(NotificationManager::class.java).notify(title.hashCode(), n)
+    }
+
+    /** Android 14+ lets the user (or Play) switch full-screen alerts off for an app. */
+    fun canRing(c: Context): Boolean =
+        Build.VERSION.SDK_INT < 34 || c.getSystemService(NotificationManager::class.java).canUseFullScreenIntent()
+}
+
+/** "Ring my phone": the ringtone, looping until the check is answered or opened (30 s at most). */
+object Ringer {
+    private var tone: Ringtone? = null
+    private val main = Handler(Looper.getMainLooper())
+
+    fun start(c: Context) {
+        stop()
+        tone = RingtoneManager.getRingtone(c.applicationContext, RingtoneManager.getDefaultUri(RingtoneManager.TYPE_RINGTONE))?.apply {
+            audioAttributes = AudioAttributes.Builder().setUsage(AudioAttributes.USAGE_NOTIFICATION_RINGTONE).build()
+            isLooping = true
+            play()
+        }
+        main.postDelayed({ stop() }, 30_000)
+    }
+
+    fun stop() {
+        main.removeCallbacksAndMessages(null)
+        tone?.stop()
+        tone = null
+    }
+}

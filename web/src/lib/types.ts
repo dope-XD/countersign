@@ -66,7 +66,7 @@ export type Call = {
   tier: Tier | null
   verdict: Verdict | null
   windows: { t: number; p: number; drift: number | null }[]
-  challenge: { id: string; say: string; done: boolean } | null
+  challenge: { id: string; say: string; kind?: string; done: boolean } | null
   liveness: { passed: boolean; lag_s: number | null; match: number; s1_reply: number | null; reasons: string[]; kind: string } | null
   requests: BankRequest[]
   case_id: string | null
@@ -102,7 +102,7 @@ export const ACTIONS: Record<string, { label: string; risk: 'low' | 'medium' | '
 export const REQ_LABEL: Record<string, string> = {
   standard_checks: 'Standard checks',
   liveness: 'Liveness check',
-  app_approval: 'Approval in the app (passkey)',
+  app_approval: 'Approval in the app (phone key)',
   cooloff_24h: '24 h cool-off',
   fraud_desk: 'Fraud desk review',
   alert_customer: 'Customer alerted',

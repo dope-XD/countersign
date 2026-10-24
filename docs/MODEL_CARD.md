@@ -19,7 +19,7 @@ Earlier versions used XLS-R 300M + SLS (the published checkpoint, then our phone
 - Generators it has never seen, and heavy codecs, raise error. Open-source detectors exceed 30% EER on codec-compressed fakes (Speech DF Arena). On In-the-Wild through AMR-NB with 3% packet loss and 15 dB noise, the ensemble's EER is 9.3%. At the engine's AMBER cut-off it catches 86% of those fakes, and 61–66% of IndicSynth Hindi fakes on the same noisy channels.
 - AntiDeepfake's training treated codec-compressed speech as "speech with artifacts". One member on its own (MMS-300M) flagged 26% of genuine Opus calls. The ensemble raises 0.7–3.7% of genuine In-the-Wild windows to AMBER on clean, G.711, AMR-NB and noisy channels, and 5.7% on Opus. These are per-window rates; the per-call rate comes from IndiaCall.
 - FLEURS (real and resynthesised) is in AntiDeepfake's training data, so our FLEURS Hindi false-alarm numbers are optimistic. IndiaCall is the clean Indian-speech test.
-- Live voice conversion by a skilled attacker can pass S1. The passkey step-up is what stops it.
+- Live voice conversion by a skilled attacker can pass S1, and so can an AI voice played from a speaker into a phone mic. The app code and the signed approval on the owner's phone are what stop them.
 - Noisy rooms, cheap microphones and 2G calls can raise false alarms. We measure false alarms per language and speaker and report them on `/metrics`.
 
 **Metrics:** see `/metrics` (`models/metrics.json`). Every figure includes its test set, channel and sample size, and misses are listed.

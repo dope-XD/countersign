@@ -1,15 +1,15 @@
-"""Who can act as whom: one-time phone login, customer-only routes, the staff-PIN lockout,
-and the after-the-fact check that an approval signed exactly what the customer saw."""
+"""Who can act as whom: app-only routes, device tokens, the staff-PIN lockout, and the
+after-the-fact check that an approval signed exactly what the customer saw."""
 
-import json
+from types import SimpleNamespace
 
 import pytest
 from fastapi.testclient import TestClient
 
 from engine import auth
-from engine.app import app
-from engine.stepup import passkeys
-from ml.eval.soft_authenticator import SoftAuthenticator
+from engine.app import _event_topics, app
+from engine.stepup import devicekeys
+from ml.eval.soft_device import SoftDevice
 
 PIN = {auth.HEADER: "4321"}
 
@@ -22,71 +22,45 @@ def staff():
         yield c
 
 
-def _phone(staff, cid: str) -> TestClient:
-    """A phone (no staff PIN) logged in to `cid` with a fresh one-time code."""
-    path = staff.post(f"/api/demo/login-link/{cid}").json()["path"]
-    token = path.split("#login=", 1)[1]
-    c = TestClient(app, base_url="https://testserver")
-    r = c.post(f"/api/app/{cid}/login", json={"token": token})
-    assert r.status_code == 200, r.text
-    return c
+def _claimed(staff, cid: str) -> SoftDevice:
+    dev = SoftDevice()
+    dev.token = staff.post("/api/m/claim", json={"customer_id": cid, "public_key": dev.public_key}).json()["token"]
+    return dev
 
 
-def test_customer_routes_need_a_logged_in_phone(staff):
+def test_app_routes_need_a_device_token(staff):
     anon = TestClient(app, base_url="https://testserver")
-    assert anon.get("/api/app/rahul/home").status_code == 401
-    assert anon.post("/api/app/rahul/passkey/options").status_code == 401
-    assert anon.post("/api/app/rahul/pay", json={"payee": "x@okaxis", "amount": 10}).status_code == 401
-    assert anon.post("/api/app/rahul/voice-note", files={"file": ("n.ogg", b"x")}).status_code == 401
+    assert anon.get("/api/m/home").status_code == 401
+    assert anon.post("/api/m/pay", json={"payee": "shop@okaxis", "amount": 10}).status_code == 401
+    assert anon.get("/api/m/home", headers={auth.DEVICE_HEADER: "rahul.9999999999.forged"}).status_code == 401
+    rahul = _claimed(staff, "rahul")
+    me = anon.get("/api/m/home", headers={auth.DEVICE_HEADER: rahul.token}).json()
+    assert me["account"]["id"] == "rahul"
 
 
-def test_login_code_works_once_and_only_for_its_customer(staff):
-    path = staff.post("/api/demo/login-link/rahul").json()["path"]
-    token = path.split("#login=", 1)[1]
-    phone = TestClient(app, base_url="https://testserver")
-    assert phone.post("/api/app/sunita/login", json={"token": token}).status_code == 401  # wrong customer burns it
-    assert phone.post("/api/app/rahul/login", json={"token": token}).status_code == 401  # already used
-
-    rahul = _phone(staff, "rahul")
-    assert rahul.get("/api/app/rahul/home").status_code == 200
-    assert rahul.get("/api/app/sunita/home").status_code == 401  # logged in as Rahul, not Sunita
+def test_claiming_a_seeded_account_needs_the_staff_pin(staff):
+    anon = TestClient(app, base_url="https://testserver")
+    assert anon.post("/api/m/claim", json={"customer_id": "rahul", "public_key": SoftDevice().public_key}).status_code == 401
 
 
-def test_expired_login_code_is_refused(staff, monkeypatch):
-    path = staff.post("/api/demo/login-link/rahul").json()["path"]
-    token = path.split("#login=", 1)[1]
-    monkeypatch.setattr(auth, "LOGIN_TTL", 0)
-    key = auth._token_key(token)
-    cid, _ = auth._logins[key]
-    auth._logins[key] = (cid, 0.0)
-    phone = TestClient(app, base_url="https://testserver")
-    assert phone.post("/api/app/rahul/login", json={"token": token}).status_code == 401
+def test_device_token_cannot_be_moved_to_another_customer(staff):
+    rahul = _claimed(staff, "rahul")
+    cid, exp, sig = rahul.token.rsplit(".", 2)
+    forged = f"sunita.{exp}.{sig}"
+    assert auth.device_customer(SimpleNamespace(headers={auth.DEVICE_HEADER: forged})) is None
 
 
 def test_another_customer_cannot_decide_rahuls_approval(staff):
-    a = passkeys.request_approval("req_x", "rahul", "app_approval", {"action": "Change registered mobile number"})
-    sunita = _phone(staff, "sunita")
-    r = sunita.post(f"/api/approvals/{a['id']}/decide", json={"decision": "decline"})
-    assert r.status_code == 401
-    assert passkeys.public_approval(a["id"])["status"] == "pending"
+    a = devicekeys.request_approval("req_x", "rahul", "app_approval", {"action": "Change registered mobile number"})
+    sunita = _claimed(staff, "sunita")
+    r = staff.post(f"/api/m/approvals/{a['id']}/decide", json={"decision": "decline"}, headers={auth.DEVICE_HEADER: sunita.token})
+    assert r.status_code == 403
+    assert devicekeys.public_approval(a["id"])["status"] == "pending"
 
 
-def test_logged_in_phone_binds_a_passkey(staff):
-    staff.delete("/api/app/rahul/passkeys")
-    rahul = _phone(staff, "rahul")
-    soft = SoftAuthenticator("testserver", "https://testserver")
-    opts = rahul.post("/api/app/rahul/passkey/options").json()
-    r = rahul.post("/api/app/rahul/passkey/verify", json={"credential": soft.register(opts), "device": "test phone"})
-    assert r.status_code == 200, r.text
-
-
-def test_events_socket_only_carries_the_logged_in_customer(staff):
-    from types import SimpleNamespace
-
-    from engine.app import _event_topics
-
-    rahul = _phone(staff, "rahul")
-    phone_conn = SimpleNamespace(cookies=dict(rahul.cookies), headers={})
+def test_events_socket_only_carries_the_apps_own_customer(staff):
+    rahul = _claimed(staff, "rahul")
+    phone_conn = SimpleNamespace(cookies={}, headers={auth.DEVICE_HEADER: rahul.token})
     assert _event_topics(phone_conn, "app:rahul,app:sunita,desk,calls") == ["app:rahul"]
     anon_conn = SimpleNamespace(cookies={}, headers={})
     assert _event_topics(anon_conn, "app:rahul,desk") == []
@@ -122,13 +96,8 @@ def test_wrong_pins_from_everyone_lock_pin_checks_for_all(staff):
 
 
 def test_approval_binding_can_be_rechecked(staff):
-    staff.delete("/api/app/rahul/passkeys")
-    soft = SoftAuthenticator("testserver", "https://testserver")
-    opts = json.loads(passkeys.registration_options("rahul", "testserver"))
-    passkeys.verify_registration("rahul", soft.register(opts), "test phone", "testserver")
-    a = passkeys.request_approval("req_y", "rahul", "app_approval", {"action": "Change registered mobile number", "new": "+917777000111"})
-    cred = soft.assert_(json.loads(passkeys.assertion_options(a["id"], "testserver")), b"rahul")
-    passkeys.decide(a["id"], "approve", cred, "testserver")
-
+    rahul = _claimed(staff, "rahul")
+    a = devicekeys.request_approval("req_y", "rahul", "app_approval", {"action": "Change registered mobile number", "new": "+917777000111"})
+    devicekeys.decide(a["id"], "approve", rahul.sign(a))
     ev = staff.get(f"/api/approvals/{a['id']}/evidence").json()
-    assert ev["checks"] == {"challenge_is_hash_of_summary": True, "signed_challenge_matches": True, "signature_verifies": True}
+    assert ev["checks"] == {"challenge_is_hash_of_summary": True, "signature_verifies": True}

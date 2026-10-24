@@ -34,57 +34,46 @@ Windows caveat: in a single Python process, never import `pyarrow` before `trans
 .\run.ps1
 ```
 
-Open http://localhost:8000/demo and enter the staff PIN. The engine log prints it at startup (`Staff PIN for agent console…`); pin your own with `$env:COUNTERSIGN_STAFF_PIN = "…"`. The demo panel shows model status, QR codes for phones, scenario switches and exactly what is stored. Customer pages (`/bank/...`, `/call`) never ask for the PIN.
+Open http://localhost:8000/demo and enter the staff PIN. The engine log prints it at startup (`Staff PIN for agent console…`); pin your own with `$env:COUNTERSIGN_STAFF_PIN = "…"`. The demo panel shows model status, QR codes for phones, scenario switches and exactly what is stored. The CS Bank app and the backup softphone (`/call`) never ask for the PIN.
 
-## Phones (passkeys and mic need HTTPS)
+## Phones
 
-Browsers only allow passkeys and microphone access on HTTPS (or localhost). Use a tunnel with a **fixed** hostname, because passkeys are bound to the hostname they were created on.
+The CS Bank app talks to the engine through a tunnel with a fixed hostname. The app's default server is baked in at build time (`android/README.md`); judges can also change it on the last sign-up screen.
 
 1. Make a free ngrok account and claim the free static domain (Dashboard → Domains), e.g. `countersign-demo.ngrok-free.app`.
 2. `ngrok config add-authtoken <token>` (once).
 3. `ngrok http --url=countersign-demo.ngrok-free.app 8000`
-4. Open `https://countersign-demo.ngrok-free.app/demo` on the laptop and scan the QR codes with the phones.
+4. Build the release APK with that server and copy it to `data/app/cs-bank.apk`. `/demo` shows its QR code.
 
-The engine derives the passkey RP ID from the host by default (`COUNTERSIGN_RP_ID=auto`). For the event, pin it:
-
-```powershell
-$env:COUNTERSIGN_RP_ID = "countersign-demo.ngrok-free.app"
-$env:COUNTERSIGN_ORIGINS = "https://countersign-demo.ngrok-free.app,http://localhost:8000"
-```
-
-Log each demo phone in by scanning its customer's QR on `/demo`. Each code is one-time and lasts 10 minutes; tap it for a new one. Then bind each phone once: Security → Bind this phone. Passkeys survive engine restarts (`data/runtime/countersign.db`), and **Reset demo world keeps them**.
-
-For real call detection and notifications, install the CS Bank app on the demo phones (`android/README.md`): open the bank from the app, then Security → Turn on call alerts.
-
-ngrok's free tier shows an interstitial page on first visit from each browser; tap "Visit Site" once per phone before the demo.
+Team phones: install the app and choose **Team demo account**, then Rahul or Sunita and the staff PIN. Accounts, families and phone keys survive engine restarts (`data/runtime/countersign.db`), and **Reset demo world** keeps them. It only puts Rahul and Sunita back to their seed.
 
 ## Judges trying it themselves
 
-1. Copy two or three consented clone clips (10–16 s each, someone asking to change their number) to `data/try/samples/`, with labels in `data/try/samples/labels.json`, e.g. `{"reshaan_f5.wav": "Reshaan's voice, cloned with F5-TTS"}`.
-2. Build the app (`android/README.md`) and copy `android/app/build/outputs/apk/debug/app-debug.apk` to `data/try/cs-bank.apk`.
-3. On the pod, put both in `/workspace/countersign/data/try/`: upload them in the RunPod file browser or with `runpodctl send`.
-4. Put the `/try` QR from `/demo` on the closing slide and at the table.
+1. Put the APK in `data/app/cs-bank.apk` and the QR code from `/demo` on the closing slide and at the table. `docs/THINGS_TO_TRY.md` is the card to print.
+2. Optional: two or three consented clone clips for attack mode (10–16 s each) in `data/app/samples/`, labelled in `data/app/samples/labels.json`, e.g. `{"reshaan_f5.wav": "Reshaan's voice, cloned with F5-TTS"}`.
+3. On the pod, put both in `/workspace/countersign/data/app/` (RunPod file browser or `runpodctl send`).
+4. For a natural voice, set `ELEVENLABS_API_KEY` and `COUNTERSIGN_TTS_VOICE`, and at least one LLM key (`GROQ_API_KEY`, `GEMINI_API_KEY`, `MISTRAL_API_KEY`). Without them the assistant still works: the phone reads its lines and keywords understand the caller.
 
-Each scan makes a new private account, so judges never see each other's approvals. Accounts survive **Reset demo world**.
+Each sign-up is its own account, so judges only see their own family's checks.
 
 ## Venue checklist
 
 - Run the tunnel over a phone hotspot, not venue Wi-Fi.
 - Laptop on power, `nvidia-smi` shows the RTX 5070, engine log says `S1 loaded ... on cuda`.
 - `/demo` → Engine card shows S1 `sls`, S2 `ecapa`, ASR `small`.
-- Phones: screen lock set (passkeys need it), brightness up, Do Not Disturb off, ngrok page already accepted.
+- Phones: screen lock set (the app's key needs it), brightness up, Do Not Disturb off, CS Bank allowed to run in the background.
 - Press **Reset demo world** before each run.
 
 ## If something breaks
 
 | Symptom | Fix |
 |---|---|
-| Phone shows "doesn't support passkeys" | You opened the LAN IP over http. Use the https tunnel URL. |
-| "The RP ID is invalid for this domain" | `COUNTERSIGN_RP_ID` doesn't match the hostname in the address bar. |
-| Approval sheet never appears on Rahul's phone | Keep `/bank/rahul` open in the foreground; the green dot must be on. |
+| "Can't reach CS Bank" in the app | Wrong server on the sign-up screen, or the tunnel is down. Check `https://<domain>/api/health` in the phone's browser. |
+| A family check doesn't ring | Android 14+: Settings → Apps → CS Bank → allow full-screen alerts; battery set to unrestricted. The check is still on the Home screen. |
+| "This phone's account isn't on the bank server" | The engine's database was replaced. Sign up again. |
 | Agent console never leaves LISTENING | Caller mic muted, or < 4 s of speech so far. Check the level ring on the caller's screen. |
 | Engine slow / p95 above 300 ms | Another GPU app is running; close it. `-Dummy` mode for UI-only work. |
-| No internet at all | Laptop-only: open everything on `http://localhost:8000` in Chrome; passkeys work on localhost with Windows Hello. |
+| No internet at all | Phones on the laptop's hotspot, app server set to `http://<laptop IP>:8000`. |
 | faster-whisper fails on GPU | It falls back to CPU automatically (slower liveness check, still works). |
 
 ## Checks

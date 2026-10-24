@@ -11,7 +11,7 @@ from engine.db import db
 from engine.fusion import fuse
 from engine.mocks.world import world
 from engine.signals import s3_liveness, s4_context
-from engine.stepup import passkeys
+from engine.stepup import devicekeys
 
 
 @pytest.fixture(autouse=True)
@@ -223,17 +223,17 @@ def test_judge_lag():
 
 # ------------------------------------------------------------------ approvals
 def test_approval_challenge_is_bound_to_summary():
-    a = passkeys._bind({"amount": 50000, "payee": "x"}, b"n" * 16)
-    b = passkeys._bind({"amount": 50001, "payee": "x"}, b"n" * 16)
+    a = devicekeys._bind({"amount": 50000, "payee": "x"}, b"n" * 16)
+    b = devicekeys._bind({"amount": 50001, "payee": "x"}, b"n" * 16)
     assert a != b and len(a) == 32
 
 
 def test_approve_requires_signature_decline_does_not():
     r = policy.create_request("rahul", "contact_centre", "add_payee", {}, "GREEN")
-    a = passkeys.request_approval(r["id"], "rahul", "app_approval", {"question": "?"})
-    with pytest.raises(passkeys.StepUpError):
-        passkeys.decide(a["id"], "approve", None, "localhost:8000")
-    assert passkeys.decide(a["id"], "decline", None, None)["status"] == "declined"
+    a = devicekeys.request_approval(r["id"], "rahul", "app_approval", {"question": "?"})
+    with pytest.raises(devicekeys.StepUpError):
+        devicekeys.decide(a["id"], "approve", None)
+    assert devicekeys.decide(a["id"], "decline", None)["status"] == "declined"
 
 
 # ------------------------------------------------------------------ evidence
@@ -269,18 +269,12 @@ def test_guard_quiet_for_usual_payment():
     assert res["status"] == "executed"
 
 
-def test_family_decline_cancels_and_prefills_1930():
-    world.recent_calls["sunita"] = time.time() - 120
-    p = guard.start_payment("sunita", "new.person@ybl", 50000)
-    a = guard.ask_family(p["payment_id"], "rahul")
-    assert "₹50,000" in a["summary"]["question"]
-    decided = passkeys.decide(a["id"], "decline", None, None)
-    guard.on_family_decision(decided)
-    assert db.get("requests", p["payment_id"])["status"] == "cancelled"
-    assert db.query("SELECT 1 FROM reports WHERE kind='ncrp_1930_prefill'")
-    assert world.customer("sunita").balance == 312_900.0
+def test_guard_quiet_without_a_call_but_asks_who_asked():
+    """No call seen: a big first payment to a new payee only asks "did someone ask you for this?" (F8)."""
+    res = guard.start_payment("sunita", "new.person@ybl", 50000)
+    assert res["status"] == "confirm"
 
 
 def test_inr_format():
-    assert guard._inr(50000) == "₹50,000"
-    assert guard._inr(1234567) == "₹12,34,567"
+    assert guard.inr(50000) == "₹50,000"
+    assert guard.inr(1234567) == "₹12,34,567"

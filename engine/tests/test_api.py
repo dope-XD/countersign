@@ -1,7 +1,7 @@
 """End-to-end API regression tests (dummy S1, no GPU, no models).
 
-These walk the real HTTP/websocket surface the web app uses, with real passkey
-signatures from the simulator's software authenticator.
+These walk the real HTTP/websocket surface the web app and the CS Bank app use, with real
+phone-key signatures from the simulator's software device key.
 """
 
 import asyncio
@@ -19,8 +19,8 @@ from engine.config import settings
 from engine.db import db
 from engine.mocks.world import world
 from engine.session import calls
-from engine.stepup import passkeys
-from ml.eval.soft_authenticator import SoftAuthenticator
+from engine.stepup import devicekeys
+from ml.eval.soft_device import SoftDevice
 
 PIN = {auth.HEADER: "4321"}
 RAHUL_CLI = "%2B919845012210"
@@ -36,13 +36,17 @@ def client():
 
 @pytest.fixture()
 def phone(client):
-    """Rahul's phone with a passkey bound to the account."""
-    client.delete("/api/app/rahul/passkeys")
-    auth_ = SoftAuthenticator("testserver", "https://testserver")
-    opts = client.post("/api/app/rahul/passkey/options").json()
-    r = client.post("/api/app/rahul/passkey/verify", json={"credential": auth_.register(opts), "device": "test phone"})
+    """Rahul's phone: the CS Bank app with its key registered to the account."""
+    return claim(client, "rahul")
+
+
+def claim(client, cid: str) -> SoftDevice:
+    devicekeys.remove_devices(cid)
+    dev = SoftDevice()
+    r = client.post("/api/m/claim", json={"customer_id": cid, "public_key": dev.public_key, "device": "test phone"})
     assert r.status_code == 200, r.text
-    return auth_
+    dev.token = r.json()["token"]
+    return dev
 
 
 @contextmanager
@@ -54,14 +58,13 @@ def _answered_call(client, cli=RAHUL_CLI):
         yield call_id
 
 
-def _approve(client, phone, approval_id):
-    opts = client.post(f"/api/approvals/{approval_id}/options").json()
-    cred = phone.assert_(opts, b"rahul")
-    return client.post(f"/api/approvals/{approval_id}/decide", json={"decision": "approve", "credential": cred})
+def _decide(client, phone, approval, decision="approve", signature=None):
+    body = {"decision": decision, "signature": signature or (phone.sign(approval) if decision == "approve" else None)}
+    return client.post(f"/api/m/approvals/{approval['id']}/decide", json=body, headers={"X-Device-Token": phone.token})
 
 
 # ------------------------------------------------------------------ contact centre
-def test_genuine_customer_changes_payee_with_passkey(client, phone):
+def test_genuine_customer_changes_payee_with_app_approval(client, phone):
     with _answered_call(client) as call_id:
         call = client.get(f"/api/calls/{call_id}").json()
         assert call["customer"]["id"] == "rahul"  # matched on the registered caller ID
@@ -70,7 +73,7 @@ def test_genuine_customer_changes_payee_with_passkey(client, phone):
         assert client.post(f"/api/requests/{req['id']}/execute").status_code == 409  # nothing done yet
         client.post(f"/api/requests/{req['id']}/standard-checks", json={"passed": True})
         apr = client.post(f"/api/requests/{req['id']}/send-approval").json()
-        assert _approve(client, phone, apr["id"]).json()["status"] == "approved"
+        assert _decide(client, phone, apr).json()["status"] == "approved"
         out = client.post(f"/api/requests/{req['id']}/execute")
         assert out.status_code == 200 and out.json()["status"] == "executed"
         assert "landlord2@okaxis" in world.customer("rahul").known_payees
@@ -83,7 +86,7 @@ def test_declined_approval_blocks_change_and_opens_case(client, phone):
         client.post(f"/api/calls/{call_id}/identify", json={"customer_id": "rahul"})
         req = client.post(f"/api/calls/{call_id}/request", json={"action": "change_mobile", "details": {"new_mobile": "+917777000111"}}).json()
         apr = client.post(f"/api/requests/{req['id']}/send-approval").json()
-        assert client.post(f"/api/approvals/{apr['id']}/decide", json={"decision": "decline"}).json()["status"] == "declined"
+        assert _decide(client, phone, apr, "decline").json()["status"] == "declined"
         r = client.post(f"/api/requests/{req['id']}/execute")
         assert r.status_code == 409 and "declined" in r.json()["error"]
         assert world.customer("rahul").registered_mobile == "+919845012210"
@@ -104,7 +107,7 @@ def test_approval_can_be_resent_after_expiry(client, phone, monkeypatch):
         req = client.post(f"/api/calls/{call_id}/request", json={"action": "add_payee", "details": {"payee": "x@ybl"}}).json()
         first = client.post(f"/api/requests/{req['id']}/send-approval").json()
         assert client.post(f"/api/requests/{req['id']}/send-approval").status_code == 409  # still waiting
-        monkeypatch.setattr(passkeys, "APPROVAL_TTL", -1)
+        monkeypatch.setattr(devicekeys, "APPROVAL_TTL", -1)
         second = client.post(f"/api/requests/{req['id']}/send-approval")
         assert second.status_code == 200 and second.json()["id"] != first["id"]
         assert db.get("approvals", first["id"])["status"] == "expired"
@@ -119,30 +122,11 @@ def test_fixed_challenge_and_hangup(client):
         assert client.post(f"/api/calls/{call_id}/challenge").status_code == 409
 
 
-# ------------------------------------------------------------------ Entry B
-def test_paused_payment_family_declines(client):
-    client.post("/api/demo/recent-call", json={"customer_id": "sunita", "minutes_ago": 2})
-    pay = client.post("/api/app/sunita/pay", json={"payee": "quickhelp.relief@okaxis", "amount": 50000}).json()
-    assert pay["status"] == "paused"
-    apr = client.post(f"/api/payments/{pay['payment_id']}/ask-family", json={"family_id": "rahul"}).json()
-    assert "a new payee" in apr["summary"]["detail"] and "phone call" in apr["summary"]["detail"]
-    client.post(f"/api/approvals/{apr['id']}/decide", json={"decision": "decline"})
-    assert db.get("requests", pay["payment_id"])["status"] == "cancelled"
-    assert db.query("SELECT 1 FROM reports WHERE kind='ncrp_1930_prefill'")
-    assert client.post(f"/api/payments/{pay['payment_id']}/cancel").status_code == 409  # already cancelled
-    assert client.post(f"/api/payments/{pay['payment_id']}/continue").status_code == 409
-    assert world.customer("sunita").balance == 312_900.0
-
-
 # ------------------------------------------------------------------ validation and errors
 @pytest.mark.parametrize(
     "method,path,body,code",
     [
-        ("post", "/api/app/sunita/pay", {"payee": "x@ybl", "amount": -5}, 422),
-        ("post", "/api/app/sunita/pay", {"payee": "  ", "amount": 10}, 422),
-        ("post", "/api/app/nobody/pay", {"payee": "abc@ybl", "amount": 10}, 404),
-        ("post", "/api/payments/pay_missing/cancel", None, 404),
-        ("get", "/api/approvals/apr_missing", None, 404),
+        ("get", "/api/approvals/apr_missing/evidence", None, 404),
         ("get", "/api/cases/case_missing", None, 404),
         ("post", "/api/calls/call_missing/answer", None, 404),
         ("post", "/api/requests/req_missing/execute", None, 404),
@@ -164,23 +148,21 @@ def test_case_can_only_be_resolved_once(client, phone):
         assert client.post(f"/api/cases/{case_id}/resolve", json={"outcome": "maybe"}).status_code == 422
 
 
-def test_bad_passkey_signature_is_400_not_500(client, phone):
+def test_bad_signature_is_400_not_500(client, phone):
     with _answered_call(client) as call_id:
         req = client.post(f"/api/calls/{call_id}/request", json={"action": "add_payee", "details": {"payee": "x@ybl"}}).json()
         apr = client.post(f"/api/requests/{req['id']}/send-approval").json()
-        opts = client.post(f"/api/approvals/{apr['id']}/options").json()
-        cred = phone.assert_(opts, b"rahul")
-        cred["response"]["signature"] = cred["response"]["signature"][:-4] + "AAAA"
-        r = client.post(f"/api/approvals/{apr['id']}/decide", json={"decision": "approve", "credential": cred})
-        assert r.status_code == 400
+        assert _decide(client, phone, apr, signature=SoftDevice().sign(apr)).status_code == 400  # another phone's key
+        assert _decide(client, phone, apr, signature="not base64!").status_code == 400
+        assert _decide(client, phone, apr).status_code == 200
 
 
-def test_signature_from_another_origin_is_rejected(client):
-    client.delete("/api/app/rahul/passkeys")
-    evil = SoftAuthenticator("testserver", "https://evil.example")
-    opts = client.post("/api/app/rahul/passkey/options", headers={"Origin": "https://evil.example"}).json()
-    r = client.post("/api/app/rahul/passkey/verify", json={"credential": evil.register(opts)}, headers={"Origin": "https://evil.example"})
-    assert r.status_code == 400
+def test_no_app_approval_without_a_registered_phone(client):
+    devicekeys.remove_devices("rahul")
+    with _answered_call(client) as call_id:
+        req = client.post(f"/api/calls/{call_id}/request", json={"action": "add_payee", "details": {"payee": "x@ybl"}}).json()
+        r = client.post(f"/api/requests/{req['id']}/send-approval")
+        assert r.status_code == 409 and "branch" in r.json()["error"]
 
 
 # ------------------------------------------------------------------ access control and static files
@@ -188,7 +170,7 @@ def test_staff_pin_required_for_staff_routes():
     with TestClient(app, base_url="https://testserver") as c:
         assert c.get("/api/calls").status_code == 401
         assert c.get("/api/demo/stored").status_code == 401
-        assert c.get("/api/app/rahul/home").status_code == 401  # a phone must log in first (test_access.py)
+        assert c.get("/api/m/home").status_code == 401  # the app must sign up first (test_mobile.py)
         assert c.post("/api/staff/login", json={"pin": "0000"}).status_code == 401
         assert c.post("/api/staff/login", json={"pin": "4321"}).status_code == 200
         assert c.get("/api/calls").status_code == 200  # cookie now set
@@ -310,3 +292,13 @@ def test_softphone_is_turned_away_when_all_lines_are_busy(client):
     # the lines free up when those calls end
     with client.websocket_connect(f"/ws/caller?cli={RAHUL_CLI}&lang=en") as ws:
         assert ws.receive_json()["type"] == "call"
+
+
+def test_agent_asks_for_the_app_code(client):
+    with _answered_call(client) as call_id:
+        r = client.post(f"/api/calls/{call_id}/code")
+        assert r.status_code == 200 and r.json()["kind"] == "code"
+        ch = client.get(f"/api/calls/{call_id}").json()["challenge"]
+        assert ch["kind"] == "code" and not any(c.isdigit() for c in ch["say"])  # the agent never sees the code
+    with _answered_call(client, "%2B919000000001") as call_id:
+        assert client.post(f"/api/calls/{call_id}/code").status_code == 400  # nobody identified yet

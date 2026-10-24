@@ -26,7 +26,8 @@ Then fill in `/workspace/countersign.env`, which setup copies from `countersign.
 
 - `COUNTERSIGN_STAFF_PIN`: long, because this engine is on the internet.
 - `COUNTERSIGN_EVIDENCE_KEY`: `python -c "import secrets; print(secrets.token_hex(32))"`.
-- `NGROK_AUTHTOKEN` and `NGROK_DOMAIN`: keep the static domain the demo phones already use. Passkeys are bound to the hostname, so the same domain means the phones' existing passkeys keep working. Stop ngrok on the laptop first: one domain, one agent.
+- `NGROK_AUTHTOKEN` and `NGROK_DOMAIN`: the domain the CS Bank app was built with. Stop ngrok on the laptop first: one domain, one agent.
+- Optional: `ELEVENLABS_API_KEY`, `COUNTERSIGN_TTS_VOICE` and one or more of `GROQ_API_KEY`, `GEMINI_API_KEY`, `MISTRAL_API_KEY` for the assistant's voice and understanding.
 
 ## Run
 
@@ -42,11 +43,11 @@ This starts tmux session `cs` with two windows, the engine and the tunnel, each 
 
 ## Before the judges arrive
 
-- Put the clone clips and the APK in `/workspace/countersign/data/try/` (`docs/RUNBOOK.md`, "Judges trying it themselves"). Then check that `/try` lists the clips and offers the app on an Android phone.
+- Put the APK (and any clone clips) in `/workspace/countersign/data/app/` (`docs/RUNBOOK.md`, "Judges trying it themselves"). Then scan the `/demo` QR on a phone, install, sign up and make one call.
 - Log in to `/agent`, `/fraud` and `/demo` on every staff device. Issued cookies keep working through the PIN lockout, so a stranger guessing PINs can't lock you out.
-- Press **Reset demo world** on `/demo`. It keeps the bound passkeys.
+- Press **Reset demo world** on `/demo`. It keeps accounts and phone keys.
 - From the laptop: `python -m ml.eval.first_tier --base https://<domain> --calls 5`. The p95 first tier should stay under 8 s.
-- Make one real call from a phone on mobile data and run the liveness challenge. Reply lag now includes the EU round trip. The engine subtracts the caller's measured round trip, but check that a real person still passes.
+- Make one call from the app on mobile data and read back the app code. Reply lag now includes the EU round trip. The engine subtracts the caller's measured round trip, but check that a real person still passes.
 
 ## What the public internet changes
 

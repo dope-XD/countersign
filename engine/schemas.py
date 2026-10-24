@@ -4,22 +4,13 @@ from __future__ import annotations
 
 from typing import Literal
 
-from pydantic import BaseModel, Field, field_validator
+from pydantic import BaseModel, Field
 
 Id = Field(min_length=1, max_length=64)
 
 
 class StaffLogin(BaseModel):
     pin: str = Field(min_length=1, max_length=32)
-
-
-class AppLogin(BaseModel):
-    token: str = Field(min_length=8, max_length=64)
-
-
-class CallState(BaseModel):
-    state: Literal["active", "ended"]
-    kind: Literal["phone", "internet"] = "phone"
 
 
 class CustomerRef(BaseModel):
@@ -39,34 +30,6 @@ class Override(BaseModel):
     requirement: Literal["liveness", "standard_checks"]
     reason: str = Field(min_length=3, max_length=300)
     agent: str = Field(default="agent", max_length=64)
-
-
-class PasskeyVerify(BaseModel):
-    credential: dict
-    device: str = Field(default="phone", max_length=80)
-
-
-class Decide(BaseModel):
-    decision: Literal["approve", "decline"]
-    credential: dict | None = None
-
-
-class Pay(BaseModel):
-    payee: str = Field(min_length=3, max_length=100)
-    amount: float = Field(gt=0, le=10_000_000)
-    note: str = Field(default="", max_length=200)
-
-    @field_validator("payee")
-    @classmethod
-    def _strip(cls, v: str) -> str:
-        v = v.strip()
-        if len(v) < 3:
-            raise ValueError("payee is too short")
-        return v
-
-
-class AskFamily(BaseModel):
-    family_id: str = Id
 
 
 class Resolve(BaseModel):

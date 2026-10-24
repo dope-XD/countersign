@@ -86,7 +86,7 @@ NUM_WORDS = {
 @dataclass
 class Challenge:
     id: str
-    kind: str  # digits | phrase | whisper
+    kind: str  # digits | phrase | whisper | code
     say: str  # what the agent reads out
     expect_digits: str = ""
     variants: list[str] = field(default_factory=list)
@@ -115,6 +115,13 @@ def new_challenge(rng: random.Random | None = None) -> Challenge:
         expect_digits=d2,
         variants=[f"{c[0]} {t[0]}", f"{c[1]} {t[1]}", f"{c[2]} {t[2]}"],
     )
+
+
+def code_challenge(rng: random.Random | None = None) -> Challenge:
+    """A 4-digit code shown in the account holder's app, read back on the call."""
+    rng = rng or random.SystemRandom()
+    digits = "".join(rng.choice("123456789") for _ in range(4))
+    return Challenge(f"{rng.getrandbits(32):08x}", "code", "Please read me the code shown in your CS Bank app.", expect_digits=digits, short=False)
 
 
 def _norm(s: str) -> str:

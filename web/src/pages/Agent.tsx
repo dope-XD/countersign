@@ -10,8 +10,8 @@ type LiveCall = { id: string; caller_cli: string; status: string; tier: Tier | n
 
 const SCRIPT: Record<string, string> = {
   app_approval: "For your security, I've sent an approval request to the phone registered on this account.",
-  liveness: 'For your security, please repeat a short phrase after me.',
-  standard_checks: 'Could you confirm your date of birth and the last four digits of your card?',
+  liveness: "For your security, I've sent a four-digit code to the CS Bank app on the phone registered to this account. Please read it to me.",
+  standard_checks: 'Could you confirm the last four digits of your debit card?',
   fraud_desk: "I'm transferring you to a colleague who can help with this request.",
 }
 const LANG: Record<string, string> = { hi: 'Hindi', en: 'English', hinglish: 'Hinglish', unknown: '—' }
@@ -20,7 +20,7 @@ const CUSTOMERS = [
   { id: 'sunita', name: 'Sunita Sharma' },
 ]
 
-const APPROVAL_TTL_S = 300 // must match engine/stepup/passkeys.py
+const APPROVAL_TTL_S = 300 // must match engine/stepup/devicekeys.py
 
 /** App approval can be (re)sent: never sent, or the last one expired unanswered. */
 function canSendApproval(r: BankRequest): boolean {
@@ -349,13 +349,24 @@ function LivenessPanel({ call, act }: { call: Call; act: (fn: () => Promise<unkn
     <section className="card p-4">
       <div className="flex items-center justify-between">
         <div className="label">Liveness check</div>
-        <button className="btn-outline px-3 py-1 text-xs" disabled={call.status !== 'live' || (!!ch && !ch.done)} onClick={() => act(() => api.post(`/api/calls/${call.id}/challenge`))}>
-          {ch ? 'New challenge' : 'Start liveness check'}
-        </button>
+        <div className="flex gap-2">
+          <button
+            className="btn-primary px-3 py-1 text-xs"
+            disabled={call.status !== 'live' || !call.customer || (!!ch && !ch.done)}
+            title="A fresh code appears in the customer's CS Bank app; the caller reads it back"
+            onClick={() => act(() => api.post(`/api/calls/${call.id}/code`))}
+          >
+            Ask for app code
+          </button>
+          <button className="btn-outline px-3 py-1 text-xs" disabled={call.status !== 'live' || (!!ch && !ch.done)} onClick={() => act(() => api.post(`/api/calls/${call.id}/challenge`))}>
+            Spoken phrase (no app)
+          </button>
+        </div>
       </div>
       {ch && !ch.done && (
         <div className="mt-3 space-y-2">
-          <p className="rounded-md bg-brand-soft px-3 py-3 text-lg font-semibold text-brand">{ch.say}</p>
+          <p className="rounded-md bg-brand-soft px-3 py-3 text-lg font-semibold text-brand">{ch.kind === 'code' ? SCRIPT.liveness : ch.say}</p>
+          {ch.kind === 'code' && <p className="text-xs text-muted">The code is on the customer's phone only. You'll see whether the reply matched.</p>}
           <p className="text-xs text-muted">Read it aloud now. We time the caller's reply from the moment you stop speaking.</p>
           <button className="btn-ghost px-0 py-0 text-xs underline" onClick={() => act(() => api.post(`/api/calls/${call.id}/challenge/done-reading`))}>
             I’ve finished reading (no headset)

@@ -7,16 +7,12 @@ checks for that client for five minutes, and 100 from everyone together lock the
 (cookies already issued keep working). One stranger can't lock the staff out, and nobody
 can guess the 8-digit PIN at speed.
 
-Customers: a phone becomes "Rahul's phone" by opening a one-time login link that the demo
-operator shows as a QR code on /demo (single use, 10 minutes). That sets a signed cookie for
-that customer only. Everything a customer can do (bind a passkey, approve or decline, pay,
-check a voice note, receive app events) needs it. The softphone needs nothing: it is the
-caller's phone, and the caller may be the attacker.
-
-Devices: the CS Bank Android app's native side (android/) can't see Chrome's cookies, so a
-logged-in bank page hands it a device token for that customer (`X-Device-Token`). The token
-can only report the phone's call state and receive that customer's app events, so the app
-can raise notifications. Approving anything still takes the passkey.
+Customers: the CS Bank Android app signs up (or a team phone claims a seeded account with the
+staff PIN) and gets a device token (`X-Device-Token`) naming its customer. Everything the app
+does needs it: pay, family, receive app events. Saying "Yes" to an approval also needs a
+signature from the phone's Keystore key (engine/stepup/devicekeys.py), so a stolen token alone
+can't approve anything. The softphone needs nothing: it is the caller's phone, and the caller
+may be the attacker.
 """
 
 from __future__ import annotations
@@ -133,51 +129,33 @@ def require_staff(request: Request) -> None:
 
 
 # ---------------------------------------------------------------- customer phones
-LOGIN_TTL = 600.0
-_logins: dict[str, tuple[str, float]] = {}  # sha256(token) -> (customer id, expiry)
-
-
-def customer_cookie_name(customer_id: str) -> str:
-    return f"cs_cust_{customer_id}"
-
-
-def _token_key(token: str) -> str:
-    return hashlib.sha256(token.encode()).hexdigest()
-
-
-def mint_login(customer_id: str) -> str:
-    """A one-time login token for one customer's app (shown as a QR code on /demo)."""
-    now = time.time()
-    for k in [k for k, (_, exp) in _logins.items() if exp < now]:
-        del _logins[k]
-    token = secrets.token_urlsafe(18)
-    _logins[_token_key(token)] = (customer_id, now + LOGIN_TTL)
-    return token
-
-
-def redeem_login(customer_id: str, token: str) -> bool:
-    """True once: the token is consumed even when it was for another customer."""
-    entry = _logins.pop(_token_key(token), None) if token else None
-    return bool(entry) and entry[0] == customer_id and entry[1] > time.time()
-
-
-def is_customer(conn: Request | WebSocket, customer_id: str) -> bool:
-    """This phone is logged in to `customer_id`'s app. Staff count too (laptop-only fallback,
-    the IndiaCall simulator and tests act for customers with the staff PIN)."""
-    return cookie_ok(conn.cookies.get(customer_cookie_name(customer_id)), f"customer:{customer_id}") or is_staff(conn)
-
-
 DEVICE_HEADER = "x-device-token"
 
 
 def make_device_token(customer_id: str) -> str:
-    return make_cookie(f"device:{customer_id}")
+    """`<customer>.<expiry>.<signature>`: the app sends it with every request."""
+    exp = str(int(time.time()) + TTL)
+    return f"{customer_id}.{exp}.{_sign(f'device:{customer_id}:{exp}')}"
+
+
+def device_customer(conn: Request | WebSocket) -> str | None:
+    """The customer whose app sent this request, if its device token is valid."""
+    tok = conn.headers.get(DEVICE_HEADER) or ""
+    parts = tok.rsplit(".", 2)
+    if len(parts) != 3:
+        return None
+    cid, exp, sig = parts
+    if not exp.isdigit() or int(exp) <= time.time():
+        return None
+    return cid if hmac.compare_digest(sig.encode(), _sign(f"device:{cid}:{exp}").encode()) else None
 
 
 def is_device(conn: Request | WebSocket, customer_id: str) -> bool:
-    return cookie_ok(conn.headers.get(DEVICE_HEADER), f"device:{customer_id}")
+    return device_customer(conn) == customer_id
 
 
-def require_customer(conn: Request | WebSocket, customer_id: str) -> None:
-    if not is_customer(conn, customer_id):
-        raise HTTPException(401, "This phone isn't logged in to this bank account. Scan the login code on the demo screen.")
+def require_device(conn: Request | WebSocket) -> str:
+    cid = device_customer(conn)
+    if cid is None:
+        raise HTTPException(401, "This phone isn't signed in to CS Bank. Open the app and sign up again.")
+    return cid
