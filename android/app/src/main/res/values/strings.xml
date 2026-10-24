@@ -54,4 +54,36 @@
     <string name="ring_question">Is it you on %1$s\'s call?</string>
     <string name="ring_detail">Someone on %1$s\'s call says they\'re you.</string>
     <string name="ring_yes_hint">We\'ll ask for your fingerprint.</string>
+    <!-- Setup: about you, then one permission card at a time -->
+    <string name="action_continue">Continue</string>
+    <string name="about_title">About you</string>
+    <string name="about_name">Your name</string>
+    <string name="about_name_missing">Please write your name.</string>
+    <string name="about_mobile">Your mobile number</string>
+    <string name="about_wait">One moment…</string>
+    <string name="perm_heading">A few things to allow</string>
+    <string name="perm_progress">%1$d of %2$d</string>
+    <string name="perm_phone">Phone calls</string>
+    <string name="perm_phone_why">To know when you\'re on a call.</string>
+    <string name="perm_screening">Caller check</string>
+    <string name="perm_screening_why">To check family calls as they ring.</string>
+    <string name="perm_redirection">Calls you make</string>
+    <string name="perm_redirection_why">To check calls you make to family.</string>
+    <string name="perm_notifications">Alerts</string>
+    <string name="perm_notifications_why">To tell you when family needs you.</string>
+    <string name="perm_overlay">Show over other apps</string>
+    <string name="perm_overlay_why">To show the check on top of your call.</string>
+    <string name="perm_usage">App usage</string>
+    <string name="perm_usage_why">To stop payments while a scam call is on.</string>
+    <string name="perm_full_screen">Full-screen alerts</string>
+    <string name="perm_full_screen_why">So a family check rings like a call.</string>
+    <string name="perm_battery">Battery</string>
+    <string name="perm_battery_why">So checks keep working when the screen is off.</string>
+    <string name="perm_microphone">Microphone</string>
+    <string name="perm_microphone_why">To hear the call and warn you about a scam.</string>
+    <string name="perm_accessibility">Call listener</string>
+    <string name="perm_accessibility_why">Lets the app hear your calls. Nothing is ever played into a call.</string>
+    <string name="perm_sms">Text messages</string>
+    <string name="perm_sms_why">To text family during a scam call if their app is off.</string>
+    <string name="setup_done">You\'re set up</string>
 </resources>

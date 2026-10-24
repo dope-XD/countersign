@@ -1,5 +1,7 @@
 package app.countersign.bank.ui
 
+import android.app.Activity
+import android.content.ContextWrapper
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -17,13 +19,16 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.Typography
 import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.SideEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.core.view.WindowCompat
 
 // Every text colour here is at least 4.5:1 on the background it's used on (WCAG AA):
 // Green on white 5.4, on GreenSoft 4.7; Red 6.5 / 5.4; Grey 7.6 / 6.6; Muted on Paper 5.1.
@@ -69,6 +74,19 @@ val CsType = Typography(
 
 @Composable
 fun CsTheme(content: @Composable () -> Unit) {
+    // the app is light: dark status and navigation bar icons, or they vanish on Android 15's edge-to-edge
+    val view = LocalView.current
+    if (!view.isInEditMode) {
+        SideEffect {
+            val window = generateSequence(view.context) { (it as? ContextWrapper)?.baseContext }.filterIsInstance<Activity>().firstOrNull()?.window
+            if (window != null) {
+                WindowCompat.getInsetsController(window, view).apply {
+                    isAppearanceLightStatusBars = true
+                    isAppearanceLightNavigationBars = true
+                }
+            }
+        }
+    }
     MaterialTheme(
         colorScheme = lightColorScheme(
             primary = Brand,

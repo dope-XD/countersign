@@ -1,7 +1,10 @@
 package app.countersign.bank.ui
 
 import android.content.Intent
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.horizontalScroll
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -12,6 +15,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.safeDrawingPadding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -27,6 +31,7 @@ import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Icon
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
@@ -37,6 +42,7 @@ import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -46,6 +52,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -55,11 +62,18 @@ import app.countersign.bank.ApiError
 import app.countersign.bank.Approval
 import app.countersign.bank.ApprovalActivity
 import app.countersign.bank.Approvals
+import app.countersign.bank.BuildConfig
 import app.countersign.bank.Bus
 import app.countersign.bank.Home
 import app.countersign.bank.MainActivity
 import app.countersign.bank.Payment
 import app.countersign.bank.Prefs
+import app.countersign.bank.R
+import app.countersign.bank.data.FakeRepository
+import app.countersign.bank.data.Repo
+import app.countersign.bank.data.Repository
+import app.countersign.bank.data.Scenario
+import app.countersign.bank.ui.components.MemberFace
 import app.countersign.bank.inr
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
@@ -89,14 +103,32 @@ class HomeModel {
 
 @Composable
 fun AppRoot(activity: MainActivity) {
-    var signedIn by remember { mutableStateOf(Prefs.signedIn) }
-    if (!signedIn) {
-        Onboarding { signedIn = true }
-    } else {
-        MainShell(activity) {
+    // a fresh debug install on fake data starts as a new user, so setup can be tried end to end
+    val repo = remember {
+        Repo.instance.also { if (BuildConfig.DEBUG && !Language.chosen(activity)) (it as? FakeRepository)?.play(Scenario.NEW_USER) }
+    }
+    val signedIn by repo.signedIn.collectAsState()
+    // set up already when the app opens signed in; otherwise setup runs to its end, permissions included
+    var setUp by remember { mutableStateOf(repo.signedIn.value && Language.chosen(activity)) }
+    var bankSignedIn by remember { mutableStateOf(Prefs.signedIn) }
+    when {
+        !signedIn || !setUp -> SetupFlow(repo) { setUp = true }
+        // a phone still signed in to the old bank app keeps its screens until #11 and #13 replace them
+        bankSignedIn -> MainShell(activity) {
             Prefs.signOut()
-            signedIn = false
+            bankSignedIn = false
         }
+        else -> SetUpHome(repo)
+    }
+}
+
+/** A stand-in home after setup, until #11 builds the real one: the family's faces. */
+@Composable
+private fun SetUpHome(repo: Repository) {
+    val home by repo.home.collectAsState()
+    Column(Modifier.fillMaxSize().background(Paper).safeDrawingPadding().padding(24.dp), verticalArrangement = Arrangement.spacedBy(20.dp)) {
+        Text(stringResource(R.string.setup_done), color = Ink, style = MaterialTheme.typography.headlineLarge)
+        Row(Modifier.horizontalScroll(rememberScrollState())) { home?.family.orEmpty().forEach { MemberFace(it) } }
     }
 }
 
