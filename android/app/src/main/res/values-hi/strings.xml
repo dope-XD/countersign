@@ -14,6 +14,7 @@
     <string name="face_offline">ऑनलाइन नहीं</string>
 
     <string name="action_ok">ठीक है</string>
+    <string name="action_retry">फिर कोशिश करें</string>
     <string name="action_cancel">रद्द करें</string>
     <string name="action_close">बंद करें</string>
     <string name="action_back">वापस</string>

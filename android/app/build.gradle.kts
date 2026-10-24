@@ -62,7 +62,7 @@ android {
             // shrunk for judges downloading it over mobile data (about 5 MB instead of 50)
             isMinifyEnabled = true
             isShrinkResources = true
-            proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"))
+            proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
             signingConfig = signingConfigs.getByName("demo")
         }
     }
@@ -91,6 +91,8 @@ dependencies {
     implementation("androidx.compose.material:material-icons-core:1.7.8")
     implementation("androidx.activity:activity-compose:1.13.0")
     implementation("androidx.biometric:biometric:1.1.0")
+    // biometric brings an old fragment library whose FragmentActivity rejects the Activity Result API (the file picker)
+    implementation("androidx.fragment:fragment-ktx:1.8.8")
     implementation("com.squareup.okhttp3:okhttp:4.12.0")
     implementation("com.google.zxing:core:3.5.4") // draws the family invite QR code
     implementation("com.google.android.gms:play-services-code-scanner:16.1.0") // scans it, without a camera permission
