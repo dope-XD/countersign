@@ -39,6 +39,9 @@ android {
             signingConfig = signingConfigs.getByName("demo")
         }
     }
+    // English and Hindi under Settings → Apps → Language (Android 13+), and Hindi in every install
+    androidResources { generateLocaleConfig = true }
+    bundle { language { enableSplit = false } }
     buildFeatures {
         buildConfig = true
         compose = true
@@ -54,6 +57,8 @@ dependencies {
     implementation(composeBom)
     implementation("androidx.compose.ui:ui")
     implementation("androidx.compose.material3:material3")
+    implementation("androidx.compose.ui:ui-tooling-preview")
+    debugImplementation("androidx.compose.ui:ui-tooling") // B's English / Hindi / large-font @Previews
     implementation("androidx.compose.material:material-icons-core:1.7.8")
     implementation("androidx.activity:activity-compose:1.13.0")
     implementation("androidx.biometric:biometric:1.1.0")
