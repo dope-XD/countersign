@@ -22,11 +22,13 @@ import androidx.fragment.app.FragmentActivity
 import app.countersign.bank.Api
 import app.countersign.bank.ApiError
 import app.countersign.bank.Bus
+import app.countersign.bank.CallRisk
 import app.countersign.bank.CallWatchService
 import app.countersign.bank.DeviceKey
 import app.countersign.bank.ListenService
 import app.countersign.bank.Notify
 import app.countersign.bank.Prefs
+import app.countersign.bank.R
 import app.countersign.bank.Ringer
 import app.countersign.bank.dbl
 import app.countersign.bank.obj
@@ -46,6 +48,7 @@ import kotlinx.coroutines.launch
 import okhttp3.Response
 import okhttp3.WebSocket
 import okhttp3.WebSocketListener
+import org.json.JSONArray
 import org.json.JSONObject
 import java.util.UUID
 
@@ -190,6 +193,36 @@ class RealRepository(private val app: Application) : Repository {
         val same = _call.value?.takeIf { it.id == c?.id }
         _call.value = c?.copy(check = c.check ?: same?.check, risk = c.risk ?: same?.risk)
         refreshListen()
+    }
+
+    /**
+     * `POST /api/m/scam-alert` (ids only, no words, no audio): turns on the pay guard and alarms
+     * the family. Returns the members to text from this phone (their app is offline). Throws when
+     * the server can't be reached, so the caller can text everyone instead.
+     */
+    suspend fun scamAlert(callId: String, risk: Risk): List<String> {
+        val body = JSONObject().put("call_id", callId).put("level", risk.level.wire).put("type", risk.type.wire)
+            .put("cues", JSONArray(risk.cues)).put("sources", JSONArray(risk.sources.map { it.wire }.sorted()))
+        val r = Api.post("/api/m/scam-alert", body)
+        r.obj("scam")?.let { s -> _home.update { it?.copy(scam = parseScam(s)) } }
+        return r.optJSONArray("text_these")?.let { a -> (0 until a.length()).map { a.getString(it) } }.orEmpty()
+    }
+
+    /** "Alert family" on the call card: this call is a scam, now. [app.countersign.bank.ScamAlert] sends it. */
+    override suspend fun alertFamily() {
+        CallRisk.update { alertFamily() }
+    }
+
+    /** Opens SMS to the member with "cut that call" filled in; WhatsApp if there's no SMS app. */
+    override fun messageMember(memberId: String) {
+        val m = _home.value?.family?.firstOrNull { it.id == memberId } ?: return
+        val me = _home.value?.me?.name?.substringBefore(' ').orEmpty()
+        val text = app.getString(R.string.message_cut_call, me)
+        val sms = Intent(Intent.ACTION_SENDTO, Uri.parse("smsto:${m.mobile}")).putExtra("sms_body", text).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+        runCatching { app.startActivity(sms) }.onFailure {
+            val wa = Intent(Intent.ACTION_VIEW, Uri.parse("https://wa.me/${m.mobile.filter(Char::isDigit)}?text=${Uri.encode(text)}"))
+            runCatching { app.startActivity(wa.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)) }
+        }
     }
 
     /** From [app.countersign.bank.CallRisk]: how much [callId] looks like a scam right now. */

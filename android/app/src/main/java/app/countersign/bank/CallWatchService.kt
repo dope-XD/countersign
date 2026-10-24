@@ -65,6 +65,8 @@ class CallWatchService : Service() {
         real?.connect()
         Overlay.start(this)
         ListenStream.start()
+        CallContext.start(this)
+        ScamAlert.start(this)
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int = START_STICKY
@@ -76,6 +78,8 @@ class CallWatchService : Service() {
         real?.disconnect()
         Overlay.stop(this)
         ListenStream.stop()
+        CallContext.stop()
+        ScamAlert.stop()
         super.onDestroy()
     }
 
@@ -103,24 +107,27 @@ class CallWatchService : Service() {
             BankCall.active -> {} // our own call to the bank isn't a caller pressuring you
             // without the phone permission, the ringtone audio mode still says a call is ringing
             callState == TelephonyManager.CALL_STATE_RINGING || (c == null && mode == AudioManager.MODE_RINGTONE) -> if (c == null) {
-                start("ringing", "phone", incoming = true, peer = family(FamilyNumbers.takeIncoming()))
+                start("ringing", "phone", incoming = true, number = FamilyNumbers.takeIncoming())
             }
             callState == TelephonyManager.CALL_STATE_OFFHOOK || mode == AudioManager.MODE_IN_CALL -> when {
-                c == null -> start("outgoing", "phone", incoming = false, peer = family(FamilyNumbers.takeOutgoing()))
+                c == null -> start("outgoing", "phone", incoming = false, number = FamilyNumbers.takeOutgoing())
                 c.incoming && !c.answered -> answered(c)
             }
             // WhatsApp-style calls: no ringing state and no number, so just "on a call" and "ended"
-            internet -> if (c == null) start("answered", "internet", incoming = false, peer = null)
+            internet -> if (c == null) start("answered", "internet", incoming = false, number = null)
             c != null -> end(c)
         }
     }
 
     private fun family(number: String?): Member? = FamilyNumbers.match(number, Repo.instance.home.value?.family.orEmpty())
 
-    private fun start(event: String, kind: String, incoming: Boolean, peer: Member?) {
+    /** [number]: the raw number when the app could see it; it stays on the phone (only [peer] goes out). */
+    private fun start(event: String, kind: String, incoming: Boolean, number: String?) {
+        val peer = family(number)
         val c = Current(UUID.randomUUID().toString(), kind, incoming, peer, answered = event == "answered")
         current = c
         CallRisk.reset(c.id)
+        CallContext.started(this, c.id, kind, incoming, number, peer)
         real?.callEvent(c.id, event, kind, peer)
         if (incoming && peer != null) real?.autoCheck(c.id, peer)
         real?.setCall(LiveCall(c.id, incoming, c.answered, peer, null))
@@ -136,6 +143,7 @@ class CallWatchService : Service() {
     private fun end(c: Current) {
         current = null
         CallRisk.reset(null)
+        CallContext.ended()
         real?.callEvent(c.id, "ended", c.kind, c.peer)
         real?.setCall(null)
         showOnCall(false)

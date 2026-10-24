@@ -4,7 +4,6 @@ import android.net.Uri
 import android.os.Handler
 import android.os.Looper
 import android.util.Log
-import app.countersign.bank.data.Outcome
 import app.countersign.bank.data.RealRepository
 import app.countersign.bank.data.Repo
 import app.countersign.bank.data.listen.LEVELS
@@ -15,7 +14,6 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.distinctUntilChanged
-import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 import okhttp3.Response
 import okhttp3.WebSocket
@@ -60,13 +58,6 @@ object ListenStream {
                 call?.id?.takeIf { recording && home?.me?.strongerCheck != false }
             }.distinctUntilChanged().collect { id ->
                 if (id != null) connect(id) else disconnect()
-            }
-        }
-        jobs += scope.launch {
-            // a ✗ from the caller check is context too (the other signals come from #40)
-            repo.call.map { it?.check?.outcome == Outcome.DANGER }.distinctUntilChanged().collect { failed ->
-                CallRisk.update { context(if (failed) signals + "caller_check_failed" else signals - "caller_check_failed") }
-                sendContext()
             }
         }
     }
@@ -116,7 +107,8 @@ object ListenStream {
         (Repo.instance as? RealRepository)?.analysisReady = on
     }
 
-    private fun sendContext() {
+    /** Tells the server what the phone sees ([CallContext]), if it's listening and anything changed. */
+    fun sendContext() {
         val s = socket ?: return
         val call = Repo.instance.call.value ?: return
         val msg = JSONObject().put("type", "context").put("signals", JSONArray(CallRisk.signals.sorted()))
