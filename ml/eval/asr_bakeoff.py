@@ -37,14 +37,21 @@ ROOT = Path(__file__).resolve().parents[2]
 MODELS = ROOT / "data" / "datasets" / "asr"
 TTS = ROOT / "data" / "datasets" / "tts_calls"
 OUT = ROOT / "models" / "eval" / "asr_bakeoff.json"
-VOICES = {"en": ["en-IN-NeerjaNeural", "en-IN-PrabhatNeural"], "hinglish": ["en-IN-PrabhatNeural", "en-IN-NeerjaNeural"], "hi": ["hi-IN-SwaraNeural", "hi-IN-MadhurNeural"]}
+VOICES = {
+    "en": ["en-IN-NeerjaNeural", "en-IN-PrabhatNeural"],
+    "hinglish": ["en-IN-PrabhatNeural", "en-IN-NeerjaNeural"],
+    "hi": ["hi-IN-SwaraNeural", "hi-IN-MadhurNeural"],
+}
 CANDIDATES = {
     "dolphin_base": "sherpa-onnx-dolphin-base-ctc-multi-lang-int8-2025-04-02",
     "omnilingual_300m": "sherpa-onnx-omnilingual-asr-1600-languages-300M-ctc-v2-int8-2026-02-05",
     "moonshine_tiny_en": "sherpa-onnx-moonshine-tiny-en-quantized-2026-02-27",
     "whisper_tiny": "sherpa-onnx-whisper-tiny",
 }
-PAIRS = {"dolphin_base+moonshine_tiny_en": ["dolphin_base", "moonshine_tiny_en"], "omnilingual_300m+moonshine_tiny_en": ["omnilingual_300m", "moonshine_tiny_en"]}
+PAIRS = {
+    "dolphin_base+moonshine_tiny_en": ["dolphin_base", "moonshine_tiny_en"],
+    "omnilingual_300m+moonshine_tiny_en": ["omnilingual_300m", "moonshine_tiny_en"],
+}
 CHANNELS = ["clean", "g711u", "ota+g711u"]
 
 
@@ -90,7 +97,9 @@ def recognizer(name: str, threads: int = 4):
     if name.startswith("omnilingual"):
         return so.OfflineRecognizer.from_omnilingual_asr_ctc(model=str(next(d.glob("model*.onnx"))), tokens=tok, num_threads=threads)
     if name.startswith("moonshine"):
-        return so.OfflineRecognizer.from_moonshine_v2(encoder=str(d / "encoder_model.ort"), decoder=str(d / "decoder_model_merged.ort"), tokens=tok, num_threads=threads)
+        return so.OfflineRecognizer.from_moonshine_v2(
+            encoder=str(d / "encoder_model.ort"), decoder=str(d / "decoder_model_merged.ort"), tokens=tok, num_threads=threads
+        )
     if name.startswith("whisper"):
         enc = str(next(d.glob("*encoder.int8.onnx")))
         dec = str(next(d.glob("*decoder.int8.onnx")))
@@ -199,7 +208,7 @@ def main() -> int:
                 "harmless_at_scam": rate(sum(x == "scam" for x in neg), len(neg)),
             }
         res["models"][m] = {"rtf_4_threads": round(timing[m], 3), "size_mb": _size(m), "channels": per}
-    res["examples"] = {m: {k: v for k, v in list(hs.items())[:6]} for m, hs in hyps.items()}
+    res["examples"] = {m: dict(list(hs.items())[:6]) for m, hs in hyps.items()}
     res["markdown"] = markdown(res)
     OUT.parent.mkdir(parents=True, exist_ok=True)
     OUT.write_text(json.dumps(res, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
@@ -223,7 +232,9 @@ def markdown(res: dict) -> str:
         for ch, p in d["channels"].items():
             w = "–" if p["wer"] is None else f"{100 * p['wer']:.0f}%"
             f = lambda x: f"{100 * x['rate']:.0f}% ({x['k']}/{x['n']})" if x["n"] else "–"  # noqa: E731
-            L.append(f"| {m} | {d['size_mb']} | {d['rtf_4_threads']} | {ch} | {w} | {f(p['cue_recall'])} | {f(p['scams_at_warn'])} | {f(p['harmless_at_warn'])} | {f(p['harmless_at_scam'])} |")
+            L.append(
+                f"| {m} | {d['size_mb']} | {d['rtf_4_threads']} | {ch} | {w} | {f(p['cue_recall'])} | {f(p['scams_at_warn'])} | {f(p['harmless_at_warn'])} | {f(p['harmless_at_scam'])} |"
+            )
     return "\n".join(L)
 
 

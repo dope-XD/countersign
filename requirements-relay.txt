@@ -1,0 +1,9 @@
+# The relay only (engine/relay.py): no torch, no models. ~120 MB image.
+fastapi==0.115.6
+uvicorn[standard]==0.32.1
+python-multipart==0.0.20
+numpy<2.3
+scipy==1.14.1
+pyyaml==6.0.2
+cryptography==44.0.0
+pydantic>=2.9,<3
