@@ -12,11 +12,45 @@ No audio or transcript ever reaches a server, so the backend has nothing to stor
 
 ## Demo hosting (today)
 
-- **Relay:** Render free web service from `render.yaml` (Docker, Singapore). It sleeps after 15 idle minutes and wakes in
-  about a minute; state is in memory and SQLite on the container's disk and **is lost on a restart or redeploy**. Phones
-  then sign up and re-link in a minute. Health: `/health`; numbers: `/api/metrics`.
+- **Relay:** Render free web service from `render.yaml` (Docker, Singapore), https://countersign-relay.onrender.com.
+  Accounts, phone keys and cases live in **Supabase Postgres** (`DATABASE_URL`), so a restart or redeploy keeps everyone
+  signed in. A **Cloudflare Worker** (`deploy/keepalive/`) calls `/health` every 10 minutes, so Render never sleeps and
+  Supabase never pauses; `/health` runs a query and returns 503 if the database is unreachable. Numbers: `/api/metrics`.
 - **Model pack:** GitHub release `models-v1` (`python -m ml.pack_models --release`), checked by sha256 on the phone.
 - **APK:** GitHub releases, signed with the repository's demo key (a real deployment signs with the operator's own key).
+
+## Setting up the relay (free: Render + Supabase + Cloudflare)
+
+Each free plan has one catch, and each is covered:
+
+| Service | Job | Free-plan catch → handled by |
+|---|---|---|
+| Render | runs the relay | sleeps after 15 idle minutes (~1 min to wake); disk wiped on restart → keep-alive; data in Supabase |
+| Supabase | Postgres for the relay | pauses after 7 days without database activity, restored only by a click → keep-alive (`/health` queries it) |
+| Cloudflare Worker | calls `/health` every 10 min | none at 144 requests a day; backup: `.github/workflows/keepalive.yml` |
+
+1. **Supabase:** new project `countersign` in **Southeast Asia (Singapore)**.
+   - Press **Generate a password**: generated ones are letters and digits, so nothing needs URL encoding.
+   - **Connect → Direct → Method: Session pooler**, copy the string, and put the password in place of `[YOUR-PASSWORD]`.
+   - Don't use "Direct connection": it's IPv6 only, and Render's free plan has no IPv6. Symbols in a password need
+     URL encoding (`@` → `%40`, `#` → `%23`, `/` → `%2F`, `:` → `%3A`, `%` → `%25`).
+   - The relay creates its tables on first start (`engine/db.py`).
+2. **Render:** New → Blueprint → this repository (`render.yaml`). On the service's **Environment** tab:
+   - `DATABASE_URL` = that string (`sync: false`, so it's never in git).
+   - `COUNTERSIGN_SECRET` is generated. **Never change it**: it signs every phone's token.
+3. **Keep-alive:** in `deploy/keepalive/`, run `npx wrangler login`, then `npx wrangler deploy`. Its logs should show a 200
+   every 10 minutes.
+4. **Check:** `/health` → `"ok": true, "db": "postgres"`.
+
+| What you see | Cause | Fix |
+|---|---|---|
+| Phones told "sign up again" | `COUNTERSIGN_SECRET` changed, or `DATABASE_URL` missing (the relay fell back to its wiped disk) | restore the secret; set `DATABASE_URL`; `/health` must say `postgres` |
+| `/health` → 503 | Supabase paused or unreachable | Supabase dashboard → **Restore project**; check the string |
+| First request takes ~1 min | the keep-alive isn't running | check the Worker's logs (the app also retries a slow request once) |
+| Relay suspended | Render's 750 free hours a month are shared by the workspace's free services (this needs ≤ 744) | keep it the only always-on free service, or use the $7 Starter plan |
+
+Render's free plan may also restart the service without warning. Accounts survive and phones reconnect by themselves;
+only a caller check running at that moment is lost. The $7 Starter plan removes this.
 
 ## Who would run it
 

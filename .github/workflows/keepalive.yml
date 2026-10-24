@@ -1,0 +1,19 @@
+# Backup for the Cloudflare keep-alive (deploy/keepalive): asks the relay's /health every
+# 10 minutes, so Render doesn't sleep and Supabase doesn't pause. GitHub may run scheduled
+# jobs late or skip them when busy, and turns schedules off after 60 days without commits.
+name: Keep the relay awake
+
+on:
+  schedule:
+    - cron: "*/10 * * * *"
+  workflow_dispatch:
+
+permissions: {}
+
+jobs:
+  ping:
+    runs-on: ubuntu-latest
+    timeout-minutes: 3
+    steps:
+      - name: GET /health
+        run: curl --fail --silent --show-error --max-time 100 --retry 2 https://countersign-relay.onrender.com/health
