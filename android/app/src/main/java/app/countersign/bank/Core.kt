@@ -21,6 +21,7 @@ class CsApp : Application() {
         super.onCreate()
         Prefs.init(this)
         Notify.channels(this)
+        Api.wake()
         // -Pcountersign.fake=true keeps the scripted FakeRepository, for building screens without a server
         CallRisk.load(this)
         if (!BuildConfig.FAKE) Repo.instance = RealRepository(this)
@@ -73,6 +74,20 @@ object Api {
         .pingInterval(20, TimeUnit.SECONDS)
         .build()
 
+    /** The relay on Render's free plan sleeps when idle and takes up to a minute to wake: room for that. */
+    private val patient: OkHttpClient = http.newBuilder().readTimeout(90, TimeUnit.SECONDS).callTimeout(100, TimeUnit.SECONDS).build()
+
+    /** Wakes a sleeping server in the background, so it's up by the time the person needs it. */
+    fun wake() {
+        patient.newCall(request("/health").get().build()).enqueue(
+            object : okhttp3.Callback {
+                override fun onFailure(call: okhttp3.Call, e: java.io.IOException) {}
+
+                override fun onResponse(call: okhttp3.Call, response: okhttp3.Response) = response.close()
+            },
+        )
+    }
+
     fun request(path: String): Request.Builder {
         val b = Request.Builder().url(Prefs.server + path).header("ngrok-skip-browser-warning", "1")
         Prefs.token?.let { b.header("X-Device-Token", it) }
@@ -98,11 +113,17 @@ object Api {
     }
 
     private suspend fun run(b: Request.Builder): JSONObject = withContext(Dispatchers.IO) {
+        val req = b.build()
+        fun call(client: OkHttpClient) = client.newCall(req).execute().use { r ->
+            val text = r.body?.string().orEmpty()
+            if (!r.isSuccessful) throw failure(r, text)
+            if (text.isBlank()) JSONObject() else JSONObject(text)
+        }
         try {
-            http.newCall(b.build()).execute().use { r ->
-                val text = r.body?.string().orEmpty()
-                if (!r.isSuccessful) throw failure(r, text)
-                if (text.isBlank()) JSONObject() else JSONObject(text)
+            try {
+                call(http)
+            } catch (e: java.net.SocketTimeoutException) {
+                call(patient) // the server was asleep: once more, with time for it to wake
             }
         } catch (e: java.io.IOException) {
             throw ApiError("Can't reach CS Bank. Check your internet connection.", 0)
