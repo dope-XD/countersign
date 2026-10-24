@@ -127,7 +127,7 @@ class ListenService : AccessibilityService() {
             var frames = 0
             while (!Thread.currentThread().isInterrupted) {
                 val n = rec.read(frame, 0, frame.size)
-                if (n > 0) _audio.tryEmit(frame.copyOf(n)) // a copy each time: listeners keep frames while this one refills
+                if (n > 0 && !feeding) _audio.tryEmit(frame.copyOf(n)) // a copy each time: listeners keep frames while this one refills
                 if (++frames == 50) { // a second in: did Android let us hear the call? (#37)
                     val silenced = audioManager.activeRecordingConfigurations.firstOrNull { it.clientAudioSessionId == rec.audioSessionId }?.isClientSilenced
                     Log.i(TAG, "recording the call, silenced=$silenced, speaker=${_onSpeaker.value}")
@@ -172,6 +172,11 @@ class ListenService : AccessibilityService() {
         val foreground: StateFlow<String?> = _foreground
         val onSpeaker: StateFlow<Boolean> = _onSpeaker
         val recording: StateFlow<Boolean> = _recording
+
+        /** Debug builds only (spike/FeedAudio.kt): frames from a file, as if the mic heard them; the mic's own frames wait meanwhile. */
+        @Volatile var feeding = false
+
+        fun feed(frame: ShortArray): Boolean = BuildConfig.DEBUG && _audio.tryEmit(frame)
 
         /** Whether the user has turned this service on under Accessibility. */
         fun enabled(c: Context): Boolean {
