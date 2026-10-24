@@ -11,10 +11,10 @@
         "urgency"
       ],
       "p_scam": 0.992,
-      "voice_ai": null,
+      "voice_ai": 0.292,
       "pass": true,
       "seconds": 10.9,
-      "took_s": 1.04,
+      "took_s": 1.38,
       "heard": "लो एंफोरसमेंट से बोल रहा हूँ फादह को एक्सिडेंट हो गया है तुरंत fफटी थाउसंड भेज दीजिए हॉस्पिटल के लिए"
     },
     {
@@ -27,10 +27,10 @@
         "authority"
       ],
       "p_scam": 0.969,
-      "voice_ai": null,
+      "voice_ai": 0.049,
       "pass": true,
       "seconds": 8.5,
-      "took_s": 0.32,
+      "took_s": 0.57,
       "heard": "साइबर क्राइम डेपार्टमेंट से बोल रहा हूं का नंबर टेलेकॉम फ्रॉड केस में इडेंटिफाय हुआ है"
     },
     {
@@ -44,10 +44,10 @@
         "urgency"
       ],
       "p_scam": 0.977,
-      "voice_ai": null,
+      "voice_ai": 0.902,
       "pass": true,
       "seconds": 9.8,
-      "took_s": 0.34,
+      "took_s": 0.63,
       "heard": "पुलीस हेडक्वाटर से बोल रहा हूँ का आधार डिएक्टिवेट होन वाला है सुरंत अबदेत कीजिए"
     },
     {
@@ -58,10 +58,10 @@
       "type": "unknown",
       "why": [],
       "p_scam": null,
-      "voice_ai": null,
+      "voice_ai": 0.316,
       "pass": true,
       "seconds": 5.6,
-      "took_s": 0.25,
+      "took_s": 0.41,
       "heard": "जी नमस्कार डॉक्टर अपॉइंटमेंट कल नाइन बजे है फास्टिंग रहना"
     },
     {
@@ -72,10 +72,10 @@
       "type": "unknown",
       "why": [],
       "p_scam": null,
-      "voice_ai": null,
+      "voice_ai": 0.859,
       "pass": true,
       "seconds": 4.1,
-      "took_s": 0.16,
+      "took_s": 0.28,
       "heard": "नमस्ते माम काप थ्री मिनुट में पहुँच रहा है"
     },
     {
@@ -86,10 +86,10 @@
       "type": "unknown",
       "why": [],
       "p_scam": 0.998,
-      "voice_ai": null,
+      "voice_ai": 0.002,
       "pass": true,
       "seconds": 100.7,
-      "took_s": 4.12,
+      "took_s": 4.93,
       "heard": "hello my name is john and in calling from microsoft technical support we've been receiving alerts that your computer has been infected with malvad of no that st"
     },
     {
@@ -104,10 +104,10 @@
         "reward"
       ],
       "p_scam": 0.999,
-      "voice_ai": null,
+      "voice_ai": 0.026,
       "pass": true,
       "seconds": 113.4,
-      "took_s": 4.38,
+      "took_s": 5.34,
       "heard": "hallo congratulations youh've been selected to receive a fhundred dollar gift card from a popular retailer oh whow that sounds amazing how did i wen this you we"
     },
     {
@@ -122,10 +122,10 @@
         "urgency"
       ],
       "p_scam": 1.0,
-      "voice_ai": null,
+      "voice_ai": 0.015,
       "pass": true,
       "seconds": 93.6,
-      "took_s": 3.84,
+      "took_s": 4.73,
       "heard": "hello is this mister johnson yes it is 高林 my name is officer thompson from the social security administration how are you today i'm fine thank you what can i do"
     },
     {
@@ -138,10 +138,10 @@
         "authority"
       ],
       "p_scam": 0.002,
-      "voice_ai": null,
+      "voice_ai": 0.015,
       "pass": true,
       "seconds": 45.3,
-      "took_s": 1.73,
+      "took_s": 2.42,
       "heard": "high i'm calling to confirm the delivery of your new smartphone okay what's the order number number twelve thirty-four can you  tell me more about this phone yo"
     },
     {
@@ -152,10 +152,10 @@
       "type": "unknown",
       "why": [],
       "p_scam": 0.019,
-      "voice_ai": null,
+      "voice_ai": 0.038,
       "pass": true,
       "seconds": 119.1,
-      "took_s": 5.37,
+      "took_s": 6.35,
       "heard": "hello my name is carrey and im calling from exvised company we are offering a special promotion on our new line of kitchen appliances are you interested in hear"
     },
     {
@@ -172,7 +172,7 @@
       "voice_ai": null,
       "pass": true,
       "seconds": 0.0,
-      "took_s": 0.01,
+      "took_s": 0.0,
       "heard": "फ्री वाई-फाई हॉटस्पॉट कनेक्ट करने के लिए अपना फोन नंबर और ओटीपी दर्ज करें।"
     },
     {
@@ -317,7 +317,7 @@
       "voice_ai": null,
       "pass": true,
       "seconds": 0.0,
-      "took_s": 0.04,
+      "took_s": 0.05,
       "heard": "caller: Hi, I'm calling from ABC Delivery Service. I just wanted to confirm that you're available to receive your package today. receiver: Oh, yeah! I've been w"
     },
     {
@@ -328,10 +328,10 @@
       "type": "unknown",
       "why": [],
       "p_scam": 0.01,
-      "voice_ai": null,
-      "pass": null,
+      "voice_ai": 0.109,
+      "pass": true,
       "seconds": 12.2,
-      "took_s": 0.65,
+      "took_s": 1.12,
       "heard": "इससे पहले की कोई संघठन नवोनमेशी हो सके लीडरशिप को नवोनमेश की संस्कृति बनाने के साथ ही साझाज्ञान और संघठनआत्मक शिक्षण भी तैयार करना होगा"
     },
     {
@@ -344,10 +344,10 @@
         "authority"
       ],
       "p_scam": 0.009,
-      "voice_ai": null,
-      "pass": null,
+      "voice_ai": 0.8,
+      "pass": true,
       "seconds": 9.1,
-      "took_s": 0.49,
+      "took_s": 0.77,
       "heard": "इसे मंगलवार को कार्टना तै किया गया था लेकिन एक आपातकालीन अदालत के फैसले के बाद इसे बचा लिया गया था"
     },
     {
@@ -358,10 +358,10 @@
       "type": "unknown",
       "why": [],
       "p_scam": 0.219,
-      "voice_ai": null,
-      "pass": null,
+      "voice_ai": 0.069,
+      "pass": false,
       "seconds": 13.9,
-      "took_s": 0.66,
+      "took_s": 1.15,
       "heard": "उसका पहला स्लैलम था जहाँ उसने अपने पहले चक्र में दौड़ को पूरा न कर सका इस दौड़ में 1001 प्रतियोगियों में से 6 खिलाड़ियों ने एक ही स्थान प्राप्त किया"
     },
     {
@@ -372,10 +372,10 @@
       "type": "unknown",
       "why": [],
       "p_scam": 0.255,
-      "voice_ai": null,
-      "pass": null,
+      "voice_ai": 0.581,
+      "pass": true,
       "seconds": 8.5,
-      "took_s": 0.43,
+      "took_s": 0.72,
       "heard": "इसकी सापेक्ष अगम्यता के कारण टिंबक्टू का उपयोग दूर स्थित भूमी के रूपक के रूप में किया जाने लगा है"
     },
     {
@@ -388,10 +388,10 @@
         "authority"
       ],
       "p_scam": null,
-      "voice_ai": null,
-      "pass": null,
+      "voice_ai": 0.572,
+      "pass": true,
       "seconds": 5.0,
-      "took_s": 0.19,
+      "took_s": 0.36,
       "heard": "पुलिस ने कहा कि शव लगभग एक दिन पुराना है"
     },
     {
@@ -402,10 +402,10 @@
       "type": "unknown",
       "why": [],
       "p_scam": 0.067,
-      "voice_ai": null,
-      "pass": null,
+      "voice_ai": 0.0,
+      "pass": true,
       "seconds": 12.1,
-      "took_s": 0.64,
+      "took_s": 1.07,
       "heard": "तिबती बोत धर्मबुद्ध की शिक्षाओ पर आधारित है लेकिन प्रेम के महायान मार्ग और भार्तिय योग से बहुत सारी तकनीको दुवारा इसे बड़ाया गया"
     },
     {
@@ -418,10 +418,10 @@
         "authority"
       ],
       "p_scam": 0.004,
-      "voice_ai": null,
-      "pass": null,
+      "voice_ai": 0.064,
+      "pass": true,
       "seconds": 8.8,
-      "took_s": 0.47,
+      "took_s": 0.86,
       "heard": "इसे मंगलवार को काठना तय किया गया था लेकिन एक अपातकालीन अदालत के फैसले के बाद इसे बचा लिया गया था"
     },
     {
@@ -432,10 +432,10 @@
       "type": "unknown",
       "why": [],
       "p_scam": 0.02,
-      "voice_ai": null,
-      "pass": null,
+      "voice_ai": 0.0,
+      "pass": true,
       "seconds": 11.8,
-      "took_s": 0.63,
+      "took_s": 1.06,
       "heard": "पहले की कोई संगत न नवनमैसी हो सके लीडर सिप पोर नवन मैस किक संस्कृति बनाने के साथही साग्याग्नान और संगठात्मक शि्षर भी तैयार करना होगा"
     },
     {
@@ -446,10 +446,10 @@
       "type": "unknown",
       "why": [],
       "p_scam": 0.685,
-      "voice_ai": null,
-      "pass": null,
+      "voice_ai": 0.0,
+      "pass": true,
       "seconds": 9.4,
-      "took_s": 0.44,
+      "took_s": 0.76,
       "heard": "हाथ से बने प्रोडक्ट एंटी ग्रूप में परवासित किए जा सकते हैं हालांके वे बड़े पैमाने पर बनाए जाने वाले सामानों के मुकावले कमपुराने होते हैं"
     },
     {
@@ -460,12 +460,12 @@
       "type": "unknown",
       "why": [],
       "p_scam": 0.362,
-      "voice_ai": null,
-      "pass": null,
+      "voice_ai": 0.002,
+      "pass": true,
       "seconds": 10.4,
-      "took_s": 0.55,
+      "took_s": 0.9,
       "heard": "जबकि हमारे माल के असी प्रतिशत पर केंद्री अमेरिका देशों द्वारा कर लगाया गया फिर भी हम आपका इलाज करते हैं"
     }
   ],
-  "markdown": "| File | Kind | Expected | Phone says | Why | Voice AI | Pass |\n|---|---|---|---|---|---|---|\n| call_01.wav | call | scam | warn (unknown) | family_emergency, urgency | – | ✓ |\n| call_02.wav | call | scam | warn (unknown) | authority | – | ✓ |\n| call_03.wav | call | scam | warn (unknown) | authority, urgency | – | ✓ |\n| call_04.wav | call | harmless | none | – | – | ✓ |\n| call_05.wav | call | harmless | none | – | – | ✓ |\n| call_06.wav | call | scam | warn (unknown) | – | – | ✓ |\n| call_07.wav | call | scam | scam (reward) | authority, money_ask, reward | – | ✓ |\n| call_08.wav | call | scam | scam (digital_arrest) | authority, threat, urgency | – | ✓ |\n| call_09.wav | call | harmless | watch | authority | – | ✓ |\n| call_10.wav | call | harmless | none | – | – | ✓ |\n| text_01.txt | text | scam | warn (otp_upi) | credentials, threat | – | ✓ |\n| text_02.txt | text | scam | warn (reward) | money_ask, reward | – | ✓ |\n| text_03.txt | text | scam | watch | credentials | – | ✗ |\n| text_04.txt | text | harmless | none | – | – | ✓ |\n| text_05.txt | text | harmless | watch | parcel_customs | – | ✓ |\n| text_06.txt | text | scam | warn (unknown) | threat | – | ✓ |\n| text_07.txt | text | scam | scam (digital_arrest) | authority, threat | – | ✓ |\n| text_08.txt | text | harmless | none | – | – | ✓ |\n| text_09.txt | text | scam | scam (bank_kyc) | money_ask, threat, urgency, verification_pretext | – | ✓ |\n| text_10.txt | text | harmless | watch | parcel_customs | – | ✓ |\n| voice_ai_01.wav | voice | ai | none | – | – | – |\n| voice_ai_02.wav | voice | ai | watch | authority | – | – |\n| voice_ai_03.wav | voice | ai | none | – | – | – |\n| voice_ai_04.wav | voice | ai | none | – | – | – |\n| voice_ai_05.wav | voice | ai | watch | authority | – | – |\n| voice_real_01.wav | voice | real | none | – | – | – |\n| voice_real_02.wav | voice | real | watch | authority | – | – |\n| voice_real_03.wav | voice | real | none | – | – | – |\n| voice_real_04.wav | voice | real | none | – | – | – |\n| voice_real_05.wav | voice | real | none | – | – | – |\n\n**19/20 passed** (10 without an expected answer)\n- text: 9/10\n- call: 10/10"
+  "markdown": "| File | Kind | Expected | Phone says | Why | Voice AI | Pass |\n|---|---|---|---|---|---|---|\n| call_01.wav | call | scam | warn (unknown) | family_emergency, urgency | 0.29 | ✓ |\n| call_02.wav | call | scam | warn (unknown) | authority | 0.05 | ✓ |\n| call_03.wav | call | scam | warn (unknown) | authority, urgency | 0.90 | ✓ |\n| call_04.wav | call | harmless | none | – | 0.32 | ✓ |\n| call_05.wav | call | harmless | none | – | 0.86 | ✓ |\n| call_06.wav | call | scam | warn (unknown) | – | 0.00 | ✓ |\n| call_07.wav | call | scam | scam (reward) | authority, money_ask, reward | 0.03 | ✓ |\n| call_08.wav | call | scam | scam (digital_arrest) | authority, threat, urgency | 0.01 | ✓ |\n| call_09.wav | call | harmless | watch | authority | 0.01 | ✓ |\n| call_10.wav | call | harmless | none | – | 0.04 | ✓ |\n| text_01.txt | text | scam | warn (otp_upi) | credentials, threat | – | ✓ |\n| text_02.txt | text | scam | warn (reward) | money_ask, reward | – | ✓ |\n| text_03.txt | text | scam | watch | credentials | – | ✗ |\n| text_04.txt | text | harmless | none | – | – | ✓ |\n| text_05.txt | text | harmless | watch | parcel_customs | – | ✓ |\n| text_06.txt | text | scam | warn (unknown) | threat | – | ✓ |\n| text_07.txt | text | scam | scam (digital_arrest) | authority, threat | – | ✓ |\n| text_08.txt | text | harmless | none | – | – | ✓ |\n| text_09.txt | text | scam | scam (bank_kyc) | money_ask, threat, urgency, verification_pretext | – | ✓ |\n| text_10.txt | text | harmless | watch | parcel_customs | – | ✓ |\n| voice_ai_01.wav | voice | ai | none | – | 0.11 | ✓ |\n| voice_ai_02.wav | voice | ai | watch | authority | 0.80 | ✓ |\n| voice_ai_03.wav | voice | ai | none | – | 0.07 | ✗ |\n| voice_ai_04.wav | voice | ai | none | – | 0.58 | ✓ |\n| voice_ai_05.wav | voice | ai | watch | authority | 0.57 | ✓ |\n| voice_real_01.wav | voice | real | none | – | 0.00 | ✓ |\n| voice_real_02.wav | voice | real | watch | authority | 0.06 | ✓ |\n| voice_real_03.wav | voice | real | none | – | 0.00 | ✓ |\n| voice_real_04.wav | voice | real | none | – | 0.00 | ✓ |\n| voice_real_05.wav | voice | real | none | – | 0.00 | ✓ |\n\n**28/30 passed**\n- text: 9/10\n- call: 10/10\n- voice: 9/10"
 }

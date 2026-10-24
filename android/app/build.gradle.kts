@@ -6,8 +6,10 @@ plugins {
     id("org.jetbrains.kotlin.plugin.compose")
 }
 
-// The server the app talks to by default (the dev server in docs/agents/CONTRACT.md); the sign-up screen can change it.
-val defaultServer = (findProperty("countersign.server") as String?) ?: "https://pseudoskeletal-yung-implausibly.ngrok-free.dev"
+// The relay the app talks to by default (engine/relay.py on Render, docs/DEPLOY.md); the sign-up screen can change it.
+val defaultServer = (findProperty("countersign.server") as String?) ?: "https://countersign-relay.onrender.com"
+// -Pcountersign.phonesOnly=true: arm64 only (the release APK for real phones; half the size)
+val phonesOnly = (findProperty("countersign.phonesOnly") as String?)?.toBoolean() ?: false
 // -Pcountersign.fake=true: scripted data (FakeRepository) instead of the server.
 
 // On-phone speech-to-text and VAD: sherpa-onnx's Android AAR with onnxruntime linked in statically (so it can't clash
@@ -41,7 +43,7 @@ android {
         buildConfigField("boolean", "FAKE", "$fake")
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         // phones (arm64) and the emulator (x86_64); keeps the APK small
-        ndk { abiFilters += listOf("arm64-v8a", "x86_64") }
+        ndk { abiFilters += if (phonesOnly) listOf("arm64-v8a") else listOf("arm64-v8a", "x86_64") }
     }
 
     // One demo signing key in the repo, so every teammate's build installs over the others'.

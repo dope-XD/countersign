@@ -351,7 +351,7 @@ class FakeRepository(start: Scenario = Scenario.IDLE) : Repository {
     }
 
     companion object {
-        const val PACK_MB = 180
+        const val PACK_MB = 379
 
         val SCAM_ANALYSIS = Analysis(
             level = RiskLevel.SCAM,

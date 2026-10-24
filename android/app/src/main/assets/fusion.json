@@ -1,6 +1,6 @@
 {
   "version": 2,
-  "about": "How the call listener turns evidence into a level (docs/agents/CONTRACT.md, 'Call listener'). Same logic in data/listen/Fusion.kt and engine/listener/fusion.py. Evidence: cue categories (scam_patterns.json), our scam classifier's p_scam on the transcript ('clf', abstains under ~25 words), context signals from the phone, the voice-clone check (context id 'synthetic_voice': warn at most, never scam on its own) and the user. When the classifier has heard enough and its p_scam is under warn.clf_veto_below, cue words alone don't make 'warn' (a real bank or police call uses the same words). A single model never makes 'scam' on its own: the classifier counts towards 'scam' only when the cue words alone already reach 'warn' (clf_needs_cue_warn) and the call isn't talk about scams. Levels never go down during a call, except when the user says 'Not a scam'. 'strong' = a category that isn't weak; 'discussion' never counts as a category.",
+  "about": "How the call listener turns evidence into a level (docs/agents/CONTRACT.md, 'Call listener'). Same logic in data/listen/Fusion.kt and engine/listener/fusion.py. Evidence: cue categories (scam_patterns.json), our scam classifier's p_scam on the transcript ('clf', abstains under ~25 words), context signals from the phone, the voice-clone check (context id 'synthetic_voice': one piece of evidence, so it needs a scam cue to reach warn and never makes scam) and the user. When the classifier has heard enough and its p_scam is under warn.clf_veto_below, cue words alone don't make 'warn' (a real bank or police call uses the same words). A single model never makes 'scam' on its own: the classifier counts towards 'scam' only when the cue words alone already reach 'warn' (clf_needs_cue_warn) and the call isn't talk about scams. Levels never go down during a call, except when the user says 'Not a scam'. 'strong' = a category that isn't weak; 'discussion' never counts as a category.",
   "watch": {
     "min_categories": 1
   },
@@ -11,8 +11,7 @@
     "clf_veto_below": 0.3,
     "context_alone": [
       "caller_check_failed",
-      "remote_app_opened",
-      "synthetic_voice"
+      "remote_app_opened"
     ]
   },
   "scam": {
@@ -33,7 +32,8 @@
   "context_as_category": [
     "long_call",
     "international_number",
-    "video_call_unknown"
+    "video_call_unknown",
+    "synthetic_voice"
   ],
   "trusted_context": [
     "caller_verified",

@@ -5,7 +5,7 @@ WORKDIR /app
 COPY requirements-relay.txt .
 RUN pip install --no-cache-dir -r requirements-relay.txt
 COPY --chown=user engine ./engine
-COPY --chown=user models/metrics.json ./models/metrics.json
+COPY --chown=user models/metrics.json models/pack.json ./models/
 USER user
 ENV COUNTERSIGN_RUNTIME=/tmp/countersign COUNTERSIGN_DATA=/tmp/countersign COUNTERSIGN_ALLOW_TEST_NUMBERS=1 PYTHONUNBUFFERED=1
 EXPOSE 7860

@@ -12,7 +12,7 @@ Data (ml/fetch_data.py; licences in docs/ML.md):
               every clip through one random phone channel (clean, G.711, or played over a speakerphone; ml/augment).
   held out    In-the-Wild (real-world celebrity deepfakes), ReplayDF (replayed through 20 loudspeaker/mic pairs),
               and our TTS: edge-tts en-IN/hi-IN voices on our 57 call scripts vs real FLEURS Hindi validation speech.
-The threshold is set on dev so that 5% of real dev voices are flagged: in the app this signal can only raise the amber
+A voice is flagged at P(AI) >= 0.9 (THRESHOLD); in the app this signal can only raise the amber
 card ("the voice may be computer-made"), never the red one, because over a speakerphone it is much weaker.
 
 Outputs: models/voice_clone/voice.int8.onnx (+ voice.json), models/eval/voice_clone.json (EER and flags per set and channel,
@@ -36,6 +36,7 @@ EVAL = ROOT / "models" / "eval" / "voice_clone.json"
 CKPT = ROOT / "models" / "s1_add_w2vlarge.pt"
 LAYERS = (4, 6, 8)
 TRAIN_S = 6.0
+THRESHOLD = 0.9
 SEED = 11
 
 
@@ -260,13 +261,15 @@ def export(model, k: int, lr, mu, sd, probe: list[np.ndarray]) -> tuple[Path, fl
     x = torch.from_numpy(probe[0][None].astype(np.float32))
     torch.onnx.export(m, (x,), str(fp32), input_names=["audio"], output_names=["p_ai"], dynamic_axes={"audio": {1: "samples"}}, opset_version=17, dynamo=False)
     q = OUT / "voice.int8.onnx"
-    quantize_dynamic(str(fp32), str(q), weight_type=QuantType.QInt8)
+    # only the transformer's matrix multiplies: quantising the waveform convolutions wrecks the scores
+    quantize_dynamic(str(fp32), str(q), weight_type=QuantType.QInt8, op_types_to_quantize=["MatMul", "Gemm"])
     s = ort.InferenceSession(str(q), providers=["CPUExecutionProvider"])
     with torch.inference_mode():
         ref = [float(m(torch.from_numpy(p[None].astype(np.float32)))[0, 0]) for p in probe]
     got = [float(s.run(None, {"audio": p[None].astype(np.float32)})[0].reshape(-1)[0]) for p in probe]
     gap = float(np.max(np.abs(np.array(ref) - np.array(got))))
     fp32.unlink()
+    assert gap < 0.05, f"int8 model differs from fp32 by {gap:.3f}: not shipping it"
     return q, gap
 
 
@@ -308,12 +311,14 @@ def main() -> int:
     print(f"exporting K={k} …", flush=True)
     model = load_backbone(k)
     q, gap = export(model, k, lr, mu, sd, [r["x"] for r in pool[:8]])
-    # the threshold on dev, with the shipped int8 model: 5% of real dev voices flagged
+    # A fixed, confident cut-off: the head's 90% posterior. Our first rule, "flag 5% of real dev voices", gave ~0.00
+    # because dev is cleanly separated, and flagged most real voices on held-out data (docs/RESULTS.md says so).
     dev = [r for r in pool if r["split"] == "dev"]
     pq_dev = score_onnx(q, [r["x"] for r in dev])
     yd = np.array([r["label"] for r in dev])
-    thr = float(np.quantile(pq_dev[yd == 0], 0.95))
-    meta = {"layers": k, "threshold": round(thr, 4), "seconds": 20, "dev_eer_fp32": {str(kk): sweep[kk]["dev_eer"] for kk in LAYERS}, "int8_vs_fp32_max_gap": round(gap, 4),
+    thr = THRESHOLD
+    dev_flagged = float(np.mean(pq_dev[yd == 0] >= thr))
+    meta = {"layers": k, "threshold": thr, "seconds": 20, "dev_eer_fp32": {str(kk): sweep[kk]["dev_eer"] for kk in LAYERS}, "int8_vs_fp32_max_gap": round(gap, 4), "dev_real_flagged": round(dev_flagged, 4),
             "size_mb": round(q.stat().st_size / 1e6, 1), "trained_on": sorted({r["source"] for r in pool}), "train_clips": int(tr.sum()), "dev_clips": int((~tr).sum()), "seed": SEED,
             "licence": "CC BY-NC-SA 4.0 (derived from nii-yamagishilab/wav2vec-large-anti-deepfake)"}  # fmt: skip
     (OUT / "voice.json").write_text(json.dumps(meta, indent=2) + "\n", encoding="utf-8")
@@ -326,28 +331,30 @@ def main() -> int:
         yy = np.array([test[i]["label"] for i in idx])
         pp = p[idx]
         e, _ = eer(pp[yy == 0], pp[yy == 1]) if (yy == 0).any() and (yy == 1).any() else (float("nan"), 0)
-        fr = int(((pp >= thr) & (yy == 0)).sum())
-        fk = int(((pp >= thr) & (yy == 1)).sum())
         nr, nf = int((yy == 0).sum()), int((yy == 1).sum())
-        res["sets"][f"{key[0]} | {key[1]}"] = {
-            "eer": round(e, 4),
-            "real_flagged": [fr, nr, [round(v, 3) for v in wilson(fr, nr)]],
-            "fakes_caught": [fk, nf, [round(v, 3) for v in wilson(fk, nf)]],
-        }
+        d = {"eer": round(e, 4), "scores_real": [round(float(v), 4) for v in pp[yy == 0]], "scores_ai": [round(float(v), 4) for v in pp[yy == 1]]}
+        for suffix, cut in (("", thr), ("_at_0.5", 0.5)):
+            fr, fk = int(((pp >= cut) & (yy == 0)).sum()), int(((pp >= cut) & (yy == 1)).sum())
+            d["real_flagged" + suffix] = [fr, nr, [round(v, 3) for v in wilson(fr, nr)]]
+            d["fakes_caught" + suffix] = [fk, nf, [round(v, 3) for v in wilson(fk, nf)]]
+        res["sets"][f"{key[0]} | {key[1]}"] = d
     lines = [
-        f"First {k} layers of AntiDeepfake W2V-Large + logistic head, ONNX int8 ({meta['size_mb']} MB), threshold {thr:.2f} (5% of real dev voices flagged). Dev EER by depth: "
+        f"First {k} layers of AntiDeepfake W2V-Large + logistic head, ONNX int8 ({meta['size_mb']} MB); a voice is flagged at P(AI) ≥ {thr:.1f}"
+        f" ({100 * dev_flagged:.1f}% of real dev voices). Dev EER by depth: "
         + ", ".join(f"K={kk}: {100 * sweep[kk]['dev_eer']:.1f}%" for kk in LAYERS)
         + f". int8 vs fp32 max gap {gap:.3f}.",
         "",
-        "| Held-out set | Channel | EER | Real voices flagged | AI voices caught |",
-        "|---|---|---|---|---|",
+        f"| Held-out set | Channel | EER | Real voices flagged (≥ {thr:.1f}) | AI voices caught (≥ {thr:.1f}) | Real flagged / AI caught at 0.5 |",
+        "|---|---|---|---|---|---|",
     ]
+
+    def pc(x: list) -> str:
+        return f"{100 * x[0] / max(1, x[1]):.0f}%"
+
     for name, d in res["sets"].items():
         s, ch = name.split(" | ")
-        rf, fc = d["real_flagged"], d["fakes_caught"]
-        lines.append(
-            f"| {s} | {ch} | {100 * d['eer']:.1f}% | {100 * rf[0] / max(1, rf[1]):.0f}% ({rf[0]}/{rf[1]}) | {100 * fc[0] / max(1, fc[1]):.0f}% ({fc[0]}/{fc[1]}) |"
-        )
+        rf, fc, r5, f5 = d["real_flagged"], d["fakes_caught"], d["real_flagged_at_0.5"], d["fakes_caught_at_0.5"]
+        lines.append(f"| {s} | {ch} | {100 * d['eer']:.1f}% | {pc(rf)} ({rf[0]}/{rf[1]}) | {pc(fc)} ({fc[0]}/{fc[1]}) | {pc(r5)} / {pc(f5)} |")
     res["markdown"] = "\n".join(lines)
     res["seconds"] = round(time.time() - t0)
     EVAL.write_text(json.dumps(res, indent=2) + "\n", encoding="utf-8")

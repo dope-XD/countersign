@@ -59,10 +59,10 @@
    "money_ask",
    "secrecy",
    "sim_block",
+   "synthetic_voice",
    "threat",
    "urgency",
-   "video_move",
-   "synthetic_voice"
+   "video_move"
   ],
   "sources": [
    "cues",
@@ -125,8 +125,8 @@
    "family_emergency",
    "money_ask",
    "secrecy",
-   "urgency",
-   "synthetic_voice"
+   "synthetic_voice",
+   "urgency"
   ],
   "sources": [
    "cues",
@@ -183,8 +183,8 @@
    "authority",
    "money_ask",
    "parcel_customs",
-   "threat",
-   "synthetic_voice"
+   "synthetic_voice",
+   "threat"
   ],
   "sources": [
    "cues",
@@ -295,16 +295,15 @@
   "text": "This is the cyber crime branch, Delhi police. There is a warrant against your Aadhaar number.",
   "context": [],
   "voice": 0.9,
-  "level": "warn",
+  "level": "watch",
   "type": "digital_arrest",
   "cues": [
    "authority",
-   "threat",
-   "synthetic_voice"
+   "synthetic_voice",
+   "threat"
   ],
   "sources": [
-   "cues",
-   "voice"
+   "cues"
   ],
   "p_scam": 0.13361959236989104
  },
@@ -350,16 +349,15 @@
   "text": "Madam Flipkart se delivery hai, main neeche khada hoon. OTP bata dijiye abhi, mujhe jaldi agla order dena hai.",
   "context": [],
   "voice": 0.9,
-  "level": "warn",
+  "level": "watch",
   "type": "otp_upi",
   "cues": [
    "credentials",
-   "urgency",
-   "synthetic_voice"
+   "synthetic_voice",
+   "urgency"
   ],
   "sources": [
-   "cues",
-   "voice"
+   "cues"
   ],
   "p_scam": 0.0011020032687389352
  },
@@ -404,9 +402,9 @@
   "cues": [
    "authority",
    "money_ask",
+   "synthetic_voice",
    "threat",
-   "video_move",
-   "synthetic_voice"
+   "video_move"
   ],
   "sources": [
    "cues",
@@ -454,8 +452,8 @@
   "level": "warn",
   "type": "unknown",
   "cues": [
-   "verification_pretext",
-   "synthetic_voice"
+   "synthetic_voice",
+   "verification_pretext"
   ],
   "sources": [
    "cues",
@@ -501,16 +499,15 @@
   "text": "नमस्ते, मैं थाने से बोल रहा हूं, आपके किरायेदार के पुलिस वेरिफिकेशन के बारे में। कल दोपहर तक उनके आधार की कॉपी लेकर थाने आ जाइए।",
   "context": [],
   "voice": 0.9,
-  "level": "warn",
+  "level": "watch",
   "type": "unknown",
   "cues": [
    "authority",
-   "verification_pretext",
-   "synthetic_voice"
+   "synthetic_voice",
+   "verification_pretext"
   ],
   "sources": [
-   "cues",
-   "voice"
+   "cues"
   ],
   "p_scam": 0.16688538173334796
  },
@@ -615,9 +612,9 @@
   "cues": [
    "authority",
    "money_ask",
+   "synthetic_voice",
    "threat",
-   "verification_pretext",
-   "synthetic_voice"
+   "verification_pretext"
   ],
   "sources": [
    "cues",
@@ -673,10 +670,10 @@
   "type": "bank_kyc",
   "cues": [
    "credentials",
+   "synthetic_voice",
    "threat",
    "urgency",
-   "verification_pretext",
-   "synthetic_voice"
+   "verification_pretext"
   ],
   "sources": [
    "cues",
@@ -790,7 +787,7 @@
   "text": "नमस्ते जी, आप कैसे हैं? मैं कौन बनेगा करोड़पति के ऑफिस से बोल रहा हूँ। आपका नंबर लकी ड्रॉ में आया है। बधाई हो, आपने पच्चीस लाख रुपये जीते हैं। बस प्रोसेसिंग फीस के दस हज़ार रुपये भेज दीजिए, फिर पूरी रकम आपके खाते में आ जाएगी।",
   "context": [],
   "voice": 0.9,
-  "level": "warn",
+  "level": "scam",
   "type": "reward",
   "cues": [
    "money_ask",
@@ -841,13 +838,13 @@
   "text": "Namaste sir, main ICICI branch se bol rahi hoon. Aapne home loan ke liye form bhara tha, uske documents ke liye aapko branch aana hoga. Original PAN aur salary slip le aaiye. Koi payment phone pe nahi hogi, sab branch mein counter pe hoga.",
   "context": [],
   "voice": 0.9,
-  "level": "warn",
+  "level": "watch",
   "type": "unknown",
   "cues": [
    "synthetic_voice"
   ],
   "sources": [
-   "voice"
+   "cues"
   ],
   "p_scam": 0.05398755779823857
  },
@@ -886,7 +883,7 @@
   "text": "Namaste ji, main Kotwali thane se constable bol raha hoon. Aapke passport ki police verification ke liye kal subah gyarah baje thane aa jaiye. Aadhaar aur address proof ki photocopy le aaiye. Phone pe koi paisa ya details nahi chahiye.",
   "context": [],
   "voice": 0.9,
-  "level": "warn",
+  "level": "watch",
   "type": "courier_customs",
   "cues": [
    "authority",
@@ -894,8 +891,7 @@
    "synthetic_voice"
   ],
   "sources": [
-   "cues",
-   "voice"
+   "cues"
   ],
   "p_scam": 0.1854609968553102
  },
@@ -942,17 +938,16 @@
   "text": "Papa, remember what I told you. If anyone calls saying your KYC is expired or your account will be blocked, and asks for an OTP, it's a scam. The bank never asks for OTP on a call. Just cut the call and phone me. Did you get the new debit card yet?",
   "context": [],
   "voice": 0.9,
-  "level": "warn",
+  "level": "watch",
   "type": "bank_kyc",
   "cues": [
    "credentials",
+   "synthetic_voice",
    "threat",
-   "verification_pretext",
-   "synthetic_voice"
+   "verification_pretext"
   ],
   "sources": [
-   "cues",
-   "voice"
+   "cues"
   ],
   "p_scam": 0.008519502819855725
  },
@@ -995,16 +990,15 @@
   "text": "Hello sir, this is Priya from LIC branch office. Your policy premium is due on the fifteenth. You can pay at the branch, through the LIC app or on the official website. Would you like me to send you the due amount by SMS? There's no penalty if paid within the grace period.",
   "context": [],
   "voice": 0.9,
-  "level": "warn",
+  "level": "watch",
   "type": "digital_arrest",
   "cues": [
    "authority",
-   "threat",
-   "synthetic_voice"
+   "synthetic_voice",
+   "threat"
   ],
   "sources": [
-   "cues",
-   "voice"
+   "cues"
   ],
   "p_scam": 0.0007263947634719941
  },
@@ -1039,13 +1033,13 @@
   "text": "Hello, I'm calling back from Airtel customer care about the complaint you raised about slow internet. Our engineer will visit tomorrow between ten and one. He will not ask for any payment. Is that time okay for you?",
   "context": [],
   "voice": 0.9,
-  "level": "warn",
+  "level": "watch",
   "type": "unknown",
   "cues": [
    "synthetic_voice"
   ],
   "sources": [
-   "voice"
+   "cues"
   ],
   "p_scam": 0.06831471042232305
  }

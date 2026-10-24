@@ -1,0 +1,28 @@
+{
+  "layers": 6,
+  "threshold": 0.1,
+  "seconds": 20,
+  "dev_eer_fp32": {
+    "4": 0.0049,
+    "6": 0.0,
+    "8": 0.0049
+  },
+  "int8_vs_fp32_max_gap": 0.0027,
+  "dev_real_flagged": 0.0,
+  "size_mb": 126.9,
+  "trained_on": [
+    "asv19_train",
+    "fleurs_hi",
+    "indicsynth_hi"
+  ],
+  "train_clips": 2565,
+  "dev_clips": 417,
+  "seed": 11,
+  "licence": "CC BY-NC-SA 4.0 (derived from nii-yamagishilab/wav2vec-large-anti-deepfake)",
+  "calibration": {
+    "set": "gTTS (hi, co.in/com) vs FLEURS hi train tail, G.711 + speakerphone",
+    "clips": 240,
+    "eer": 0.0083,
+    "rule": "equal-error point"
+  }
+}

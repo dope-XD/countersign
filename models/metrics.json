@@ -1,6 +1,6 @@
 {
-  "generated_at": "2026-10-24T19:57:08+0530",
-  "git": "7ee991c",
+  "generated_at": "2026-10-24T21:11:22+0530",
+  "git": "2656d01",
   "frozen_at": "2441c18 2026-10-24T19:54:39+05:30",
   "seed": 13,
   "machine": "Darwin arm64, Python 3.12.15",
@@ -28,7 +28,7 @@
   },
   "fusion": {
     "version": 2,
-    "about": "How the call listener turns evidence into a level (docs/agents/CONTRACT.md, 'Call listener'). Same logic in data/listen/Fusion.kt and engine/listener/fusion.py. Evidence: cue categories (scam_patterns.json), our scam classifier's p_scam on the transcript ('clf', abstains under ~25 words), context signals from the phone, the voice-clone check (context id 'synthetic_voice': warn at most, never scam on its own) and the user. When the classifier has heard enough and its p_scam is under warn.clf_veto_below, cue words alone don't make 'warn' (a real bank or police call uses the same words). A single model never makes 'scam' on its own: the classifier counts towards 'scam' only when the cue words alone already reach 'warn' (clf_needs_cue_warn) and the call isn't talk about scams. Levels never go down during a call, except when the user says 'Not a scam'. 'strong' = a category that isn't weak; 'discussion' never counts as a category.",
+    "about": "How the call listener turns evidence into a level (docs/agents/CONTRACT.md, 'Call listener'). Same logic in data/listen/Fusion.kt and engine/listener/fusion.py. Evidence: cue categories (scam_patterns.json), our scam classifier's p_scam on the transcript ('clf', abstains under ~25 words), context signals from the phone, the voice-clone check (context id 'synthetic_voice': one piece of evidence, so it needs a scam cue to reach warn and never makes scam) and the user. When the classifier has heard enough and its p_scam is under warn.clf_veto_below, cue words alone don't make 'warn' (a real bank or police call uses the same words). A single model never makes 'scam' on its own: the classifier counts towards 'scam' only when the cue words alone already reach 'warn' (clf_needs_cue_warn) and the call isn't talk about scams. Levels never go down during a call, except when the user says 'Not a scam'. 'strong' = a category that isn't weak; 'discussion' never counts as a category.",
     "watch": {
       "min_categories": 1
     },
@@ -39,8 +39,7 @@
       "clf_veto_below": 0.3,
       "context_alone": [
         "caller_check_failed",
-        "remote_app_opened",
-        "synthetic_voice"
+        "remote_app_opened"
       ]
     },
     "scam": {
@@ -61,7 +60,8 @@
     "context_as_category": [
       "long_call",
       "international_number",
-      "video_call_unknown"
+      "video_call_unknown",
+      "synthetic_voice"
     ],
     "trusted_context": [
       "caller_verified",
@@ -2427,12 +2427,1480 @@
       "dev_auc": 1.0
     }
   },
+  "audio": {
+    "calls": 57,
+    "channels": [
+      "clean",
+      "g711u",
+      "ota+g711u"
+    ],
+    "seconds_of_audio": 1131.9,
+    "models": {
+      "dolphin_base": {
+        "rtf_4_threads": 0.007,
+        "size_mb": 104,
+        "channels": {
+          "clean": {
+            "wer": 0.7422,
+            "cue_recall": {
+              "k": 54,
+              "n": 153,
+              "rate": 0.3529,
+              "ci95": [
+                0.2817,
+                0.4314
+              ]
+            },
+            "scams_at_warn": {
+              "k": 11,
+              "n": 31,
+              "rate": 0.3548,
+              "ci95": [
+                0.2112,
+                0.5305
+              ]
+            },
+            "harmless_at_warn": {
+              "k": 1,
+              "n": 26,
+              "rate": 0.0385,
+              "ci95": [
+                0.0068,
+                0.1889
+              ]
+            },
+            "harmless_at_scam": {
+              "k": 0,
+              "n": 26,
+              "rate": 0.0,
+              "ci95": [
+                0.0,
+                0.1287
+              ]
+            }
+          },
+          "g711u": {
+            "wer": 0.7801,
+            "cue_recall": {
+              "k": 37,
+              "n": 153,
+              "rate": 0.2418,
+              "ci95": [
+                0.1808,
+                0.3155
+              ]
+            },
+            "scams_at_warn": {
+              "k": 6,
+              "n": 31,
+              "rate": 0.1935,
+              "ci95": [
+                0.0919,
+                0.3628
+              ]
+            },
+            "harmless_at_warn": {
+              "k": 0,
+              "n": 26,
+              "rate": 0.0,
+              "ci95": [
+                0.0,
+                0.1287
+              ]
+            },
+            "harmless_at_scam": {
+              "k": 0,
+              "n": 26,
+              "rate": 0.0,
+              "ci95": [
+                0.0,
+                0.1287
+              ]
+            }
+          },
+          "ota+g711u": {
+            "wer": 0.8556,
+            "cue_recall": {
+              "k": 18,
+              "n": 153,
+              "rate": 0.1176,
+              "ci95": [
+                0.0757,
+                0.1783
+              ]
+            },
+            "scams_at_warn": {
+              "k": 5,
+              "n": 31,
+              "rate": 0.1613,
+              "ci95": [
+                0.0709,
+                0.3263
+              ]
+            },
+            "harmless_at_warn": {
+              "k": 1,
+              "n": 26,
+              "rate": 0.0385,
+              "ci95": [
+                0.0068,
+                0.1889
+              ]
+            },
+            "harmless_at_scam": {
+              "k": 0,
+              "n": 26,
+              "rate": 0.0,
+              "ci95": [
+                0.0,
+                0.1287
+              ]
+            }
+          }
+        }
+      },
+      "omnilingual_300m": {
+        "rtf_4_threads": 0.046,
+        "size_mb": 365,
+        "channels": {
+          "clean": {
+            "wer": 0.2805,
+            "cue_recall": {
+              "k": 116,
+              "n": 153,
+              "rate": 0.7582,
+              "ci95": [
+                0.6845,
+                0.8192
+              ]
+            },
+            "scams_at_warn": {
+              "k": 28,
+              "n": 31,
+              "rate": 0.9032,
+              "ci95": [
+                0.751,
+                0.9665
+              ]
+            },
+            "harmless_at_warn": {
+              "k": 1,
+              "n": 26,
+              "rate": 0.0385,
+              "ci95": [
+                0.0068,
+                0.1889
+              ]
+            },
+            "harmless_at_scam": {
+              "k": 0,
+              "n": 26,
+              "rate": 0.0,
+              "ci95": [
+                0.0,
+                0.1287
+              ]
+            }
+          },
+          "g711u": {
+            "wer": 0.2785,
+            "cue_recall": {
+              "k": 118,
+              "n": 153,
+              "rate": 0.7712,
+              "ci95": [
+                0.6985,
+                0.8307
+              ]
+            },
+            "scams_at_warn": {
+              "k": 27,
+              "n": 31,
+              "rate": 0.871,
+              "ci95": [
+                0.7115,
+                0.9487
+              ]
+            },
+            "harmless_at_warn": {
+              "k": 2,
+              "n": 26,
+              "rate": 0.0769,
+              "ci95": [
+                0.0214,
+                0.2414
+              ]
+            },
+            "harmless_at_scam": {
+              "k": 0,
+              "n": 26,
+              "rate": 0.0,
+              "ci95": [
+                0.0,
+                0.1287
+              ]
+            }
+          },
+          "ota+g711u": {
+            "wer": 0.5726,
+            "cue_recall": {
+              "k": 71,
+              "n": 153,
+              "rate": 0.4641,
+              "ci95": [
+                0.3869,
+                0.543
+              ]
+            },
+            "scams_at_warn": {
+              "k": 18,
+              "n": 31,
+              "rate": 0.5806,
+              "ci95": [
+                0.4077,
+                0.7358
+              ]
+            },
+            "harmless_at_warn": {
+              "k": 1,
+              "n": 26,
+              "rate": 0.0385,
+              "ci95": [
+                0.0068,
+                0.1889
+              ]
+            },
+            "harmless_at_scam": {
+              "k": 0,
+              "n": 26,
+              "rate": 0.0,
+              "ci95": [
+                0.0,
+                0.1287
+              ]
+            }
+          }
+        }
+      },
+      "moonshine_tiny_en": {
+        "rtf_4_threads": 0.008,
+        "size_mb": 44,
+        "channels": {
+          "clean": {
+            "wer": 0.6114,
+            "cue_recall": {
+              "k": 97,
+              "n": 153,
+              "rate": 0.634,
+              "ci95": [
+                0.5552,
+                0.7062
+              ]
+            },
+            "scams_at_warn": {
+              "k": 20,
+              "n": 31,
+              "rate": 0.6452,
+              "ci95": [
+                0.4695,
+                0.7888
+              ]
+            },
+            "harmless_at_warn": {
+              "k": 6,
+              "n": 26,
+              "rate": 0.2308,
+              "ci95": [
+                0.1103,
+                0.4205
+              ]
+            },
+            "harmless_at_scam": {
+              "k": 1,
+              "n": 26,
+              "rate": 0.0385,
+              "ci95": [
+                0.0068,
+                0.1889
+              ]
+            }
+          },
+          "g711u": {
+            "wer": 0.6423,
+            "cue_recall": {
+              "k": 94,
+              "n": 153,
+              "rate": 0.6144,
+              "ci95": [
+                0.5353,
+                0.6878
+              ]
+            },
+            "scams_at_warn": {
+              "k": 17,
+              "n": 31,
+              "rate": 0.5484,
+              "ci95": [
+                0.3777,
+                0.7084
+              ]
+            },
+            "harmless_at_warn": {
+              "k": 5,
+              "n": 26,
+              "rate": 0.1923,
+              "ci95": [
+                0.0851,
+                0.3788
+              ]
+            },
+            "harmless_at_scam": {
+              "k": 1,
+              "n": 26,
+              "rate": 0.0385,
+              "ci95": [
+                0.0068,
+                0.1889
+              ]
+            }
+          },
+          "ota+g711u": {
+            "wer": 0.9744,
+            "cue_recall": {
+              "k": 12,
+              "n": 153,
+              "rate": 0.0784,
+              "ci95": [
+                0.0454,
+                0.1321
+              ]
+            },
+            "scams_at_warn": {
+              "k": 3,
+              "n": 31,
+              "rate": 0.0968,
+              "ci95": [
+                0.0335,
+                0.249
+              ]
+            },
+            "harmless_at_warn": {
+              "k": 1,
+              "n": 26,
+              "rate": 0.0385,
+              "ci95": [
+                0.0068,
+                0.1889
+              ]
+            },
+            "harmless_at_scam": {
+              "k": 0,
+              "n": 26,
+              "rate": 0.0,
+              "ci95": [
+                0.0,
+                0.1287
+              ]
+            }
+          }
+        }
+      },
+      "whisper_tiny": {
+        "rtf_4_threads": 0.04,
+        "size_mb": 255,
+        "channels": {
+          "clean": {
+            "wer": 0.5503,
+            "cue_recall": {
+              "k": 92,
+              "n": 153,
+              "rate": 0.6013,
+              "ci95": [
+                0.5222,
+                0.6755
+              ]
+            },
+            "scams_at_warn": {
+              "k": 22,
+              "n": 31,
+              "rate": 0.7097,
+              "ci95": [
+                0.5341,
+                0.839
+              ]
+            },
+            "harmless_at_warn": {
+              "k": 5,
+              "n": 26,
+              "rate": 0.1923,
+              "ci95": [
+                0.0851,
+                0.3788
+              ]
+            },
+            "harmless_at_scam": {
+              "k": 2,
+              "n": 26,
+              "rate": 0.0769,
+              "ci95": [
+                0.0214,
+                0.2414
+              ]
+            }
+          },
+          "g711u": {
+            "wer": 0.6267,
+            "cue_recall": {
+              "k": 84,
+              "n": 153,
+              "rate": 0.549,
+              "ci95": [
+                0.4699,
+                0.6257
+              ]
+            },
+            "scams_at_warn": {
+              "k": 17,
+              "n": 31,
+              "rate": 0.5484,
+              "ci95": [
+                0.3777,
+                0.7084
+              ]
+            },
+            "harmless_at_warn": {
+              "k": 3,
+              "n": 26,
+              "rate": 0.1154,
+              "ci95": [
+                0.04,
+                0.2898
+              ]
+            },
+            "harmless_at_scam": {
+              "k": 1,
+              "n": 26,
+              "rate": 0.0385,
+              "ci95": [
+                0.0068,
+                0.1889
+              ]
+            }
+          },
+          "ota+g711u": {
+            "wer": 0.9059,
+            "cue_recall": {
+              "k": 30,
+              "n": 153,
+              "rate": 0.1961,
+              "ci95": [
+                0.1409,
+                0.2661
+              ]
+            },
+            "scams_at_warn": {
+              "k": 6,
+              "n": 31,
+              "rate": 0.1935,
+              "ci95": [
+                0.0919,
+                0.3628
+              ]
+            },
+            "harmless_at_warn": {
+              "k": 1,
+              "n": 26,
+              "rate": 0.0385,
+              "ci95": [
+                0.0068,
+                0.1889
+              ]
+            },
+            "harmless_at_scam": {
+              "k": 0,
+              "n": 26,
+              "rate": 0.0,
+              "ci95": [
+                0.0,
+                0.1287
+              ]
+            }
+          }
+        }
+      },
+      "dolphin_base+moonshine_tiny_en": {
+        "rtf_4_threads": 0.015,
+        "size_mb": 148,
+        "channels": {
+          "clean": {
+            "wer": null,
+            "cue_recall": {
+              "k": 131,
+              "n": 153,
+              "rate": 0.8562,
+              "ci95": [
+                0.7919,
+                0.9031
+              ]
+            },
+            "scams_at_warn": {
+              "k": 27,
+              "n": 31,
+              "rate": 0.871,
+              "ci95": [
+                0.7115,
+                0.9487
+              ]
+            },
+            "harmless_at_warn": {
+              "k": 7,
+              "n": 26,
+              "rate": 0.2692,
+              "ci95": [
+                0.137,
+                0.4608
+              ]
+            },
+            "harmless_at_scam": {
+              "k": 1,
+              "n": 26,
+              "rate": 0.0385,
+              "ci95": [
+                0.0068,
+                0.1889
+              ]
+            }
+          },
+          "g711u": {
+            "wer": null,
+            "cue_recall": {
+              "k": 114,
+              "n": 153,
+              "rate": 0.7451,
+              "ci95": [
+                0.6706,
+                0.8076
+              ]
+            },
+            "scams_at_warn": {
+              "k": 25,
+              "n": 31,
+              "rate": 0.8065,
+              "ci95": [
+                0.6372,
+                0.9081
+              ]
+            },
+            "harmless_at_warn": {
+              "k": 5,
+              "n": 26,
+              "rate": 0.1923,
+              "ci95": [
+                0.0851,
+                0.3788
+              ]
+            },
+            "harmless_at_scam": {
+              "k": 2,
+              "n": 26,
+              "rate": 0.0769,
+              "ci95": [
+                0.0214,
+                0.2414
+              ]
+            }
+          },
+          "ota+g711u": {
+            "wer": null,
+            "cue_recall": {
+              "k": 29,
+              "n": 153,
+              "rate": 0.1895,
+              "ci95": [
+                0.1353,
+                0.259
+              ]
+            },
+            "scams_at_warn": {
+              "k": 8,
+              "n": 31,
+              "rate": 0.2581,
+              "ci95": [
+                0.137,
+                0.4325
+              ]
+            },
+            "harmless_at_warn": {
+              "k": 2,
+              "n": 26,
+              "rate": 0.0769,
+              "ci95": [
+                0.0214,
+                0.2414
+              ]
+            },
+            "harmless_at_scam": {
+              "k": 0,
+              "n": 26,
+              "rate": 0.0,
+              "ci95": [
+                0.0,
+                0.1287
+              ]
+            }
+          }
+        }
+      },
+      "omnilingual_300m+moonshine_tiny_en": {
+        "rtf_4_threads": 0.054,
+        "size_mb": 410,
+        "channels": {
+          "clean": {
+            "wer": null,
+            "cue_recall": {
+              "k": 130,
+              "n": 153,
+              "rate": 0.8497,
+              "ci95": [
+                0.7845,
+                0.8977
+              ]
+            },
+            "scams_at_warn": {
+              "k": 28,
+              "n": 31,
+              "rate": 0.9032,
+              "ci95": [
+                0.751,
+                0.9665
+              ]
+            },
+            "harmless_at_warn": {
+              "k": 6,
+              "n": 26,
+              "rate": 0.2308,
+              "ci95": [
+                0.1103,
+                0.4205
+              ]
+            },
+            "harmless_at_scam": {
+              "k": 0,
+              "n": 26,
+              "rate": 0.0,
+              "ci95": [
+                0.0,
+                0.1287
+              ]
+            }
+          },
+          "g711u": {
+            "wer": null,
+            "cue_recall": {
+              "k": 129,
+              "n": 153,
+              "rate": 0.8431,
+              "ci95": [
+                0.7772,
+                0.8923
+              ]
+            },
+            "scams_at_warn": {
+              "k": 27,
+              "n": 31,
+              "rate": 0.871,
+              "ci95": [
+                0.7115,
+                0.9487
+              ]
+            },
+            "harmless_at_warn": {
+              "k": 5,
+              "n": 26,
+              "rate": 0.1923,
+              "ci95": [
+                0.0851,
+                0.3788
+              ]
+            },
+            "harmless_at_scam": {
+              "k": 2,
+              "n": 26,
+              "rate": 0.0769,
+              "ci95": [
+                0.0214,
+                0.2414
+              ]
+            }
+          },
+          "ota+g711u": {
+            "wer": null,
+            "cue_recall": {
+              "k": 73,
+              "n": 153,
+              "rate": 0.4771,
+              "ci95": [
+                0.3995,
+                0.5559
+              ]
+            },
+            "scams_at_warn": {
+              "k": 18,
+              "n": 31,
+              "rate": 0.5806,
+              "ci95": [
+                0.4077,
+                0.7358
+              ]
+            },
+            "harmless_at_warn": {
+              "k": 2,
+              "n": 26,
+              "rate": 0.0769,
+              "ci95": [
+                0.0214,
+                0.2414
+              ]
+            },
+            "harmless_at_scam": {
+              "k": 0,
+              "n": 26,
+              "rate": 0.0,
+              "ci95": [
+                0.0,
+                0.1287
+              ]
+            }
+          }
+        }
+      }
+    },
+    "markdown": "57 calls (1131.9 s each channel), spoken by en-IN / hi-IN neural voices; WER on the listener's folded tokens.\n\n| Model | MB | RTF (4 threads, laptop) | Channel | WER | Cue recall | Scams at warn | Harmless at warn | Harmless at scam |\n|---|---|---|---|---|---|---|---|---|\n| dolphin_base | 104 | 0.007 | clean | 74% | 35% (54/153) | 35% (11/31) | 4% (1/26) | 0% (0/26) |\n| dolphin_base | 104 | 0.007 | g711u | 78% | 24% (37/153) | 19% (6/31) | 0% (0/26) | 0% (0/26) |\n| dolphin_base | 104 | 0.007 | ota+g711u | 86% | 12% (18/153) | 16% (5/31) | 4% (1/26) | 0% (0/26) |\n| omnilingual_300m | 365 | 0.046 | clean | 28% | 76% (116/153) | 90% (28/31) | 4% (1/26) | 0% (0/26) |\n| omnilingual_300m | 365 | 0.046 | g711u | 28% | 77% (118/153) | 87% (27/31) | 8% (2/26) | 0% (0/26) |\n| omnilingual_300m | 365 | 0.046 | ota+g711u | 57% | 46% (71/153) | 58% (18/31) | 4% (1/26) | 0% (0/26) |\n| moonshine_tiny_en | 44 | 0.008 | clean | 61% | 63% (97/153) | 65% (20/31) | 23% (6/26) | 4% (1/26) |\n| moonshine_tiny_en | 44 | 0.008 | g711u | 64% | 61% (94/153) | 55% (17/31) | 19% (5/26) | 4% (1/26) |\n| moonshine_tiny_en | 44 | 0.008 | ota+g711u | 97% | 8% (12/153) | 10% (3/31) | 4% (1/26) | 0% (0/26) |\n| whisper_tiny | 255 | 0.04 | clean | 55% | 60% (92/153) | 71% (22/31) | 19% (5/26) | 8% (2/26) |\n| whisper_tiny | 255 | 0.04 | g711u | 63% | 55% (84/153) | 55% (17/31) | 12% (3/26) | 4% (1/26) |\n| whisper_tiny | 255 | 0.04 | ota+g711u | 91% | 20% (30/153) | 19% (6/31) | 4% (1/26) | 0% (0/26) |\n| dolphin_base+moonshine_tiny_en | 148 | 0.015 | clean | – | 86% (131/153) | 87% (27/31) | 27% (7/26) | 4% (1/26) |\n| dolphin_base+moonshine_tiny_en | 148 | 0.015 | g711u | – | 75% (114/153) | 81% (25/31) | 19% (5/26) | 8% (2/26) |\n| dolphin_base+moonshine_tiny_en | 148 | 0.015 | ota+g711u | – | 19% (29/153) | 26% (8/31) | 8% (2/26) | 0% (0/26) |\n| omnilingual_300m+moonshine_tiny_en | 410 | 0.054 | clean | – | 85% (130/153) | 90% (28/31) | 23% (6/26) | 0% (0/26) |\n| omnilingual_300m+moonshine_tiny_en | 410 | 0.054 | g711u | – | 84% (129/153) | 87% (27/31) | 19% (5/26) | 8% (2/26) |\n| omnilingual_300m+moonshine_tiny_en | 410 | 0.054 | ota+g711u | – | 48% (73/153) | 58% (18/31) | 8% (2/26) | 0% (0/26) |"
+  },
+  "voice": {
+    "model": {
+      "layers": 6,
+      "threshold": 0.1,
+      "seconds": 20,
+      "dev_eer_fp32": {
+        "4": 0.0049,
+        "6": 0.0,
+        "8": 0.0049
+      },
+      "int8_vs_fp32_max_gap": 0.0027,
+      "dev_real_flagged": 0.0,
+      "size_mb": 126.9,
+      "trained_on": [
+        "asv19_train",
+        "fleurs_hi",
+        "indicsynth_hi"
+      ],
+      "train_clips": 2565,
+      "dev_clips": 417,
+      "seed": 11,
+      "licence": "CC BY-NC-SA 4.0 (derived from nii-yamagishilab/wav2vec-large-anti-deepfake)",
+      "calibration": {
+        "set": "gTTS (hi, co.in/com) vs FLEURS hi train tail, G.711 + speakerphone",
+        "clips": 240,
+        "eer": 0.0083,
+        "rule": "equal-error point"
+      }
+    },
+    "sets": {
+      "In-the-Wild | clean": {
+        "eer": 0.232,
+        "real_flagged": [
+          84,
+          306,
+          [
+            0.228,
+            0.327
+          ]
+        ],
+        "fakes_caught": [
+          162,
+          194,
+          [
+            0.776,
+            0.881
+          ]
+        ],
+        "real_flagged_at_0.5": [
+          50,
+          306,
+          [
+            0.126,
+            0.209
+          ]
+        ],
+        "fakes_caught_at_0.5": [
+          132,
+          194,
+          [
+            0.612,
+            0.742
+          ]
+        ]
+      },
+      "In-the-Wild | g711u": {
+        "eer": 0.2463,
+        "real_flagged": [
+          108,
+          306,
+          [
+            0.302,
+            0.408
+          ]
+        ],
+        "fakes_caught": [
+          168,
+          194,
+          [
+            0.811,
+            0.907
+          ]
+        ],
+        "real_flagged_at_0.5": [
+          72,
+          306,
+          [
+            0.191,
+            0.286
+          ]
+        ],
+        "fakes_caught_at_0.5": [
+          142,
+          194,
+          [
+            0.666,
+            0.789
+          ]
+        ]
+      },
+      "ReplayDF (speaker→mic) | g711u": {
+        "eer": 0.352,
+        "real_flagged": [
+          83,
+          128,
+          [
+            0.562,
+            0.726
+          ]
+        ],
+        "fakes_caught": [
+          110,
+          122,
+          [
+            0.836,
+            0.943
+          ]
+        ],
+        "real_flagged_at_0.5": [
+          57,
+          128,
+          [
+            0.362,
+            0.532
+          ]
+        ],
+        "fakes_caught_at_0.5": [
+          91,
+          122,
+          [
+            0.662,
+            0.815
+          ]
+        ]
+      },
+      "Stock TTS (edge-tts) vs real Hindi | clean": {
+        "eer": 0.1053,
+        "real_flagged": [
+          1,
+          57,
+          [
+            0.003,
+            0.093
+          ]
+        ],
+        "fakes_caught": [
+          16,
+          57,
+          [
+            0.181,
+            0.408
+          ]
+        ],
+        "real_flagged_at_0.5": [
+          0,
+          57,
+          [
+            0.0,
+            0.063
+          ]
+        ],
+        "fakes_caught_at_0.5": [
+          2,
+          57,
+          [
+            0.01,
+            0.119
+          ]
+        ]
+      },
+      "Stock TTS (edge-tts) vs real Hindi | g711u": {
+        "eer": 0.1754,
+        "real_flagged": [
+          6,
+          57,
+          [
+            0.049,
+            0.211
+          ]
+        ],
+        "fakes_caught": [
+          30,
+          57,
+          [
+            0.399,
+            0.65
+          ]
+        ],
+        "real_flagged_at_0.5": [
+          1,
+          57,
+          [
+            0.003,
+            0.093
+          ]
+        ],
+        "fakes_caught_at_0.5": [
+          4,
+          57,
+          [
+            0.028,
+            0.167
+          ]
+        ]
+      },
+      "Stock TTS (edge-tts) vs real Hindi | ota+g711u": {
+        "eer": 0.193,
+        "real_flagged": [
+          8,
+          57,
+          [
+            0.073,
+            0.253
+          ]
+        ],
+        "fakes_caught": [
+          40,
+          57,
+          [
+            0.573,
+            0.805
+          ]
+        ],
+        "real_flagged_at_0.5": [
+          5,
+          57,
+          [
+            0.038,
+            0.189
+          ]
+        ],
+        "fakes_caught_at_0.5": [
+          25,
+          57,
+          [
+            0.318,
+            0.567
+          ]
+        ]
+      }
+    },
+    "markdown": "First 6 layers of AntiDeepfake W2V-Large + logistic head, ONNX int8 (126.9 MB). A voice is flagged at P(AI) ≥ 0.100, the equal-error point on a calibration set used nowhere else (gTTS vs unseen FLEURS speakers; EER there 0.8%).\n\n| Held-out set | Channel | EER | Real voices flagged | AI voices caught |\n|---|---|---|---|---|\n| In-the-Wild | clean | 23.2% | 27% (84/306) | 84% (162/194) |\n| In-the-Wild | g711u | 24.6% | 35% (108/306) | 87% (168/194) |\n| ReplayDF (speaker→mic) | g711u | 35.2% | 65% (83/128) | 90% (110/122) |\n| Stock TTS (edge-tts) vs real Hindi | clean | 10.5% | 2% (1/57) | 28% (16/57) |\n| Stock TTS (edge-tts) vs real Hindi | g711u | 17.5% | 11% (6/57) | 53% (30/57) |\n| Stock TTS (edge-tts) vs real Hindi | ota+g711u | 19.3% | 14% (8/57) | 70% (40/57) |",
+    "seconds": 667
+  },
+  "kit": {
+    "rows": [
+      {
+        "file": "call_01.wav",
+        "kind": "call",
+        "expect": "scam",
+        "level": "warn",
+        "type": "unknown",
+        "why": [
+          "family_emergency",
+          "urgency"
+        ],
+        "p_scam": 0.992,
+        "voice_ai": 0.292,
+        "pass": true,
+        "seconds": 10.9,
+        "took_s": 1.38,
+        "heard": "लो एंफोरसमेंट से बोल रहा हूँ फादह को एक्सिडेंट हो गया है तुरंत fफटी थाउसंड भेज दीजिए हॉस्पिटल के लिए"
+      },
+      {
+        "file": "call_02.wav",
+        "kind": "call",
+        "expect": "scam",
+        "level": "warn",
+        "type": "unknown",
+        "why": [
+          "authority"
+        ],
+        "p_scam": 0.969,
+        "voice_ai": 0.049,
+        "pass": true,
+        "seconds": 8.5,
+        "took_s": 0.57,
+        "heard": "साइबर क्राइम डेपार्टमेंट से बोल रहा हूं का नंबर टेलेकॉम फ्रॉड केस में इडेंटिफाय हुआ है"
+      },
+      {
+        "file": "call_03.wav",
+        "kind": "call",
+        "expect": "scam",
+        "level": "warn",
+        "type": "unknown",
+        "why": [
+          "authority",
+          "urgency"
+        ],
+        "p_scam": 0.977,
+        "voice_ai": 0.902,
+        "pass": true,
+        "seconds": 9.8,
+        "took_s": 0.63,
+        "heard": "पुलीस हेडक्वाटर से बोल रहा हूँ का आधार डिएक्टिवेट होन वाला है सुरंत अबदेत कीजिए"
+      },
+      {
+        "file": "call_04.wav",
+        "kind": "call",
+        "expect": "harmless",
+        "level": "none",
+        "type": "unknown",
+        "why": [],
+        "p_scam": null,
+        "voice_ai": 0.316,
+        "pass": true,
+        "seconds": 5.6,
+        "took_s": 0.41,
+        "heard": "जी नमस्कार डॉक्टर अपॉइंटमेंट कल नाइन बजे है फास्टिंग रहना"
+      },
+      {
+        "file": "call_05.wav",
+        "kind": "call",
+        "expect": "harmless",
+        "level": "none",
+        "type": "unknown",
+        "why": [],
+        "p_scam": null,
+        "voice_ai": 0.859,
+        "pass": true,
+        "seconds": 4.1,
+        "took_s": 0.28,
+        "heard": "नमस्ते माम काप थ्री मिनुट में पहुँच रहा है"
+      },
+      {
+        "file": "call_06.wav",
+        "kind": "call",
+        "expect": "scam",
+        "level": "warn",
+        "type": "unknown",
+        "why": [],
+        "p_scam": 0.998,
+        "voice_ai": 0.002,
+        "pass": true,
+        "seconds": 100.7,
+        "took_s": 4.93,
+        "heard": "hello my name is john and in calling from microsoft technical support we've been receiving alerts that your computer has been infected with malvad of no that st"
+      },
+      {
+        "file": "call_07.wav",
+        "kind": "call",
+        "expect": "scam",
+        "level": "scam",
+        "type": "reward",
+        "why": [
+          "authority",
+          "money_ask",
+          "reward"
+        ],
+        "p_scam": 0.999,
+        "voice_ai": 0.026,
+        "pass": true,
+        "seconds": 113.4,
+        "took_s": 5.34,
+        "heard": "hallo congratulations youh've been selected to receive a fhundred dollar gift card from a popular retailer oh whow that sounds amazing how did i wen this you we"
+      },
+      {
+        "file": "call_08.wav",
+        "kind": "call",
+        "expect": "scam",
+        "level": "scam",
+        "type": "digital_arrest",
+        "why": [
+          "authority",
+          "threat",
+          "urgency"
+        ],
+        "p_scam": 1.0,
+        "voice_ai": 0.015,
+        "pass": true,
+        "seconds": 93.6,
+        "took_s": 4.73,
+        "heard": "hello is this mister johnson yes it is 高林 my name is officer thompson from the social security administration how are you today i'm fine thank you what can i do"
+      },
+      {
+        "file": "call_09.wav",
+        "kind": "call",
+        "expect": "harmless",
+        "level": "watch",
+        "type": "unknown",
+        "why": [
+          "authority"
+        ],
+        "p_scam": 0.002,
+        "voice_ai": 0.015,
+        "pass": true,
+        "seconds": 45.3,
+        "took_s": 2.42,
+        "heard": "high i'm calling to confirm the delivery of your new smartphone okay what's the order number number twelve thirty-four can you  tell me more about this phone yo"
+      },
+      {
+        "file": "call_10.wav",
+        "kind": "call",
+        "expect": "harmless",
+        "level": "none",
+        "type": "unknown",
+        "why": [],
+        "p_scam": 0.019,
+        "voice_ai": 0.038,
+        "pass": true,
+        "seconds": 119.1,
+        "took_s": 6.35,
+        "heard": "hello my name is carrey and im calling from exvised company we are offering a special promotion on our new line of kitchen appliances are you interested in hear"
+      },
+      {
+        "file": "text_01.txt",
+        "kind": "text",
+        "expect": "scam",
+        "level": "warn",
+        "type": "otp_upi",
+        "why": [
+          "credentials",
+          "threat"
+        ],
+        "p_scam": 0.819,
+        "voice_ai": null,
+        "pass": true,
+        "seconds": 0.0,
+        "took_s": 0.0,
+        "heard": "फ्री वाई-फाई हॉटस्पॉट कनेक्ट करने के लिए अपना फोन नंबर और ओटीपी दर्ज करें।"
+      },
+      {
+        "file": "text_02.txt",
+        "kind": "text",
+        "expect": "scam",
+        "level": "warn",
+        "type": "reward",
+        "why": [
+          "money_ask",
+          "reward"
+        ],
+        "p_scam": 0.998,
+        "voice_ai": null,
+        "pass": true,
+        "seconds": 0.0,
+        "took_s": 0.01,
+        "heard": "Congratulations! Aapne 5 lakh rupaye ka cash prize jeeta hai. Prize lene se pehle tax aur processing fee pay karein."
+      },
+      {
+        "file": "text_03.txt",
+        "kind": "text",
+        "expect": "scam",
+        "level": "watch",
+        "type": "otp_upi",
+        "why": [
+          "credentials"
+        ],
+        "p_scam": 0.559,
+        "voice_ai": null,
+        "pass": false,
+        "seconds": 0.0,
+        "took_s": 0.01,
+        "heard": "Your Instagram account is eligible for the verified blue badge! Submit your profile password to our verification bot: @BadgeVerifyBot"
+      },
+      {
+        "file": "text_04.txt",
+        "kind": "text",
+        "expect": "harmless",
+        "level": "none",
+        "type": "unknown",
+        "why": [],
+        "p_scam": 0.097,
+        "voice_ai": null,
+        "pass": true,
+        "seconds": 0.0,
+        "took_s": 0.01,
+        "heard": "प्रिय ग्राहक, आपका एलपीजी गैस सिलेंडर बुक हो गया है। बुकिंग रेफरेंस नंबर 847291 है."
+      },
+      {
+        "file": "text_05.txt",
+        "kind": "text",
+        "expect": "harmless",
+        "level": "watch",
+        "type": "unknown",
+        "why": [
+          "parcel_customs"
+        ],
+        "p_scam": 0.024,
+        "voice_ai": null,
+        "pass": true,
+        "seconds": 0.0,
+        "took_s": 0.01,
+        "heard": "Your passport renewal application has been verified and printed. It has been handed over to Speed Post for delivery."
+      },
+      {
+        "file": "text_06.txt",
+        "kind": "text",
+        "expect": "scam",
+        "level": "warn",
+        "type": "unknown",
+        "why": [
+          "threat"
+        ],
+        "p_scam": 0.995,
+        "voice_ai": null,
+        "pass": true,
+        "seconds": 0.0,
+        "took_s": 0.01,
+        "heard": "Aap sun rahe hain na? Aapke khilaaf legal action initiate kiya gaya hai."
+      },
+      {
+        "file": "text_07.txt",
+        "kind": "text",
+        "expect": "scam",
+        "level": "scam",
+        "type": "digital_arrest",
+        "why": [
+          "authority",
+          "threat"
+        ],
+        "p_scam": 0.996,
+        "voice_ai": null,
+        "pass": true,
+        "seconds": 0.0,
+        "took_s": 0.01,
+        "heard": "Hello ma'am Aapki morphed photos viral ho rahi hain. Cyber cell ne case register kar liya hai."
+      },
+      {
+        "file": "text_08.txt",
+        "kind": "text",
+        "expect": "harmless",
+        "level": "none",
+        "type": "unknown",
+        "why": [],
+        "p_scam": 0.0,
+        "voice_ai": null,
+        "pass": true,
+        "seconds": 0.0,
+        "took_s": 0.01,
+        "heard": "Sir ek minute suniye Sir kal subah 10 baje meeting hai, agenda mail kar diya."
+      },
+      {
+        "file": "text_09.txt",
+        "kind": "text",
+        "expect": "scam",
+        "level": "scam",
+        "type": "bank_kyc",
+        "why": [
+          "money_ask",
+          "threat",
+          "urgency",
+          "verification_pretext"
+        ],
+        "p_scam": 0.999,
+        "voice_ai": null,
+        "pass": true,
+        "seconds": 0.0,
+        "took_s": 0.06,
+        "heard": "caller: Hello, is this Mr. Johnson? receiver: Yes, it is. Who's calling? caller: My name is Officer Thompson from the Social Security Administration. We've been"
+      },
+      {
+        "file": "text_10.txt",
+        "kind": "text",
+        "expect": "harmless",
+        "level": "watch",
+        "type": "unknown",
+        "why": [
+          "parcel_customs"
+        ],
+        "p_scam": 0.0,
+        "voice_ai": null,
+        "pass": true,
+        "seconds": 0.0,
+        "took_s": 0.05,
+        "heard": "caller: Hi, I'm calling from ABC Delivery Service. I just wanted to confirm that you're available to receive your package today. receiver: Oh, yeah! I've been w"
+      },
+      {
+        "file": "voice_ai_01.wav",
+        "kind": "voice",
+        "expect": "ai",
+        "level": "none",
+        "type": "unknown",
+        "why": [],
+        "p_scam": 0.01,
+        "voice_ai": 0.109,
+        "pass": true,
+        "seconds": 12.2,
+        "took_s": 1.12,
+        "heard": "इससे पहले की कोई संघठन नवोनमेशी हो सके लीडरशिप को नवोनमेश की संस्कृति बनाने के साथ ही साझाज्ञान और संघठनआत्मक शिक्षण भी तैयार करना होगा"
+      },
+      {
+        "file": "voice_ai_02.wav",
+        "kind": "voice",
+        "expect": "ai",
+        "level": "watch",
+        "type": "unknown",
+        "why": [
+          "authority"
+        ],
+        "p_scam": 0.009,
+        "voice_ai": 0.8,
+        "pass": true,
+        "seconds": 9.1,
+        "took_s": 0.77,
+        "heard": "इसे मंगलवार को कार्टना तै किया गया था लेकिन एक आपातकालीन अदालत के फैसले के बाद इसे बचा लिया गया था"
+      },
+      {
+        "file": "voice_ai_03.wav",
+        "kind": "voice",
+        "expect": "ai",
+        "level": "none",
+        "type": "unknown",
+        "why": [],
+        "p_scam": 0.219,
+        "voice_ai": 0.069,
+        "pass": false,
+        "seconds": 13.9,
+        "took_s": 1.15,
+        "heard": "उसका पहला स्लैलम था जहाँ उसने अपने पहले चक्र में दौड़ को पूरा न कर सका इस दौड़ में 1001 प्रतियोगियों में से 6 खिलाड़ियों ने एक ही स्थान प्राप्त किया"
+      },
+      {
+        "file": "voice_ai_04.wav",
+        "kind": "voice",
+        "expect": "ai",
+        "level": "none",
+        "type": "unknown",
+        "why": [],
+        "p_scam": 0.255,
+        "voice_ai": 0.581,
+        "pass": true,
+        "seconds": 8.5,
+        "took_s": 0.72,
+        "heard": "इसकी सापेक्ष अगम्यता के कारण टिंबक्टू का उपयोग दूर स्थित भूमी के रूपक के रूप में किया जाने लगा है"
+      },
+      {
+        "file": "voice_ai_05.wav",
+        "kind": "voice",
+        "expect": "ai",
+        "level": "watch",
+        "type": "unknown",
+        "why": [
+          "authority"
+        ],
+        "p_scam": null,
+        "voice_ai": 0.572,
+        "pass": true,
+        "seconds": 5.0,
+        "took_s": 0.36,
+        "heard": "पुलिस ने कहा कि शव लगभग एक दिन पुराना है"
+      },
+      {
+        "file": "voice_real_01.wav",
+        "kind": "voice",
+        "expect": "real",
+        "level": "none",
+        "type": "unknown",
+        "why": [],
+        "p_scam": 0.067,
+        "voice_ai": 0.0,
+        "pass": true,
+        "seconds": 12.1,
+        "took_s": 1.07,
+        "heard": "तिबती बोत धर्मबुद्ध की शिक्षाओ पर आधारित है लेकिन प्रेम के महायान मार्ग और भार्तिय योग से बहुत सारी तकनीको दुवारा इसे बड़ाया गया"
+      },
+      {
+        "file": "voice_real_02.wav",
+        "kind": "voice",
+        "expect": "real",
+        "level": "watch",
+        "type": "unknown",
+        "why": [
+          "authority"
+        ],
+        "p_scam": 0.004,
+        "voice_ai": 0.064,
+        "pass": true,
+        "seconds": 8.8,
+        "took_s": 0.86,
+        "heard": "इसे मंगलवार को काठना तय किया गया था लेकिन एक अपातकालीन अदालत के फैसले के बाद इसे बचा लिया गया था"
+      },
+      {
+        "file": "voice_real_03.wav",
+        "kind": "voice",
+        "expect": "real",
+        "level": "none",
+        "type": "unknown",
+        "why": [],
+        "p_scam": 0.02,
+        "voice_ai": 0.0,
+        "pass": true,
+        "seconds": 11.8,
+        "took_s": 1.06,
+        "heard": "पहले की कोई संगत न नवनमैसी हो सके लीडर सिप पोर नवन मैस किक संस्कृति बनाने के साथही साग्याग्नान और संगठात्मक शि्षर भी तैयार करना होगा"
+      },
+      {
+        "file": "voice_real_04.wav",
+        "kind": "voice",
+        "expect": "real",
+        "level": "none",
+        "type": "unknown",
+        "why": [],
+        "p_scam": 0.685,
+        "voice_ai": 0.0,
+        "pass": true,
+        "seconds": 9.4,
+        "took_s": 0.76,
+        "heard": "हाथ से बने प्रोडक्ट एंटी ग्रूप में परवासित किए जा सकते हैं हालांके वे बड़े पैमाने पर बनाए जाने वाले सामानों के मुकावले कमपुराने होते हैं"
+      },
+      {
+        "file": "voice_real_05.wav",
+        "kind": "voice",
+        "expect": "real",
+        "level": "none",
+        "type": "unknown",
+        "why": [],
+        "p_scam": 0.362,
+        "voice_ai": 0.002,
+        "pass": true,
+        "seconds": 10.4,
+        "took_s": 0.9,
+        "heard": "जबकि हमारे माल के असी प्रतिशत पर केंद्री अमेरिका देशों द्वारा कर लगाया गया फिर भी हम आपका इलाज करते हैं"
+      }
+    ],
+    "markdown": "| File | Kind | Expected | Phone says | Why | Voice AI | Pass |\n|---|---|---|---|---|---|---|\n| call_01.wav | call | scam | warn (unknown) | family_emergency, urgency | 0.29 | ✓ |\n| call_02.wav | call | scam | warn (unknown) | authority | 0.05 | ✓ |\n| call_03.wav | call | scam | warn (unknown) | authority, urgency | 0.90 | ✓ |\n| call_04.wav | call | harmless | none | – | 0.32 | ✓ |\n| call_05.wav | call | harmless | none | – | 0.86 | ✓ |\n| call_06.wav | call | scam | warn (unknown) | – | 0.00 | ✓ |\n| call_07.wav | call | scam | scam (reward) | authority, money_ask, reward | 0.03 | ✓ |\n| call_08.wav | call | scam | scam (digital_arrest) | authority, threat, urgency | 0.01 | ✓ |\n| call_09.wav | call | harmless | watch | authority | 0.01 | ✓ |\n| call_10.wav | call | harmless | none | – | 0.04 | ✓ |\n| text_01.txt | text | scam | warn (otp_upi) | credentials, threat | – | ✓ |\n| text_02.txt | text | scam | warn (reward) | money_ask, reward | – | ✓ |\n| text_03.txt | text | scam | watch | credentials | – | ✗ |\n| text_04.txt | text | harmless | none | – | – | ✓ |\n| text_05.txt | text | harmless | watch | parcel_customs | – | ✓ |\n| text_06.txt | text | scam | warn (unknown) | threat | – | ✓ |\n| text_07.txt | text | scam | scam (digital_arrest) | authority, threat | – | ✓ |\n| text_08.txt | text | harmless | none | – | – | ✓ |\n| text_09.txt | text | scam | scam (bank_kyc) | money_ask, threat, urgency, verification_pretext | – | ✓ |\n| text_10.txt | text | harmless | watch | parcel_customs | – | ✓ |\n| voice_ai_01.wav | voice | ai | none | – | 0.11 | ✓ |\n| voice_ai_02.wav | voice | ai | watch | authority | 0.80 | ✓ |\n| voice_ai_03.wav | voice | ai | none | – | 0.07 | ✗ |\n| voice_ai_04.wav | voice | ai | none | – | 0.58 | ✓ |\n| voice_ai_05.wav | voice | ai | watch | authority | 0.57 | ✓ |\n| voice_real_01.wav | voice | real | none | – | 0.00 | ✓ |\n| voice_real_02.wav | voice | real | watch | authority | 0.06 | ✓ |\n| voice_real_03.wav | voice | real | none | – | 0.00 | ✓ |\n| voice_real_04.wav | voice | real | none | – | 0.00 | ✓ |\n| voice_real_05.wav | voice | real | none | – | 0.00 | ✓ |\n\n**28/30 passed**\n- text: 9/10\n- call: 10/10\n- voice: 9/10"
+  },
   "gates": {
+    "audio, clean: scams at warn ≥ 80%": "90% → met",
+    "audio, g711u: scams at warn ≥ 80%": "87% → met",
+    "audio, ota+g711u: scams at warn ≥ 80%": "58% → MISSED",
     "scams at warn ≥ 90% (Indian held-out sets pooled)": "95.5% → met",
     "harmless at warn ≤ 8%": "2.7% → met",
     "harmless at scam ≤ 1%": "0.0% → met"
   },
-  "seconds": 178.7,
+  "seconds": 178.3,
   "laptop_s1_legacy": {
     "note": "The old laptop voice model (cut from the demo path); kept for PLAN_VS_BUILT.",
     "benchmarks": [
