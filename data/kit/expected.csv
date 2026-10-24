@@ -1,0 +1,31 @@
+file,kind,expect,source,licence
+text_01.txt,text,scam,india_sms/suite/448,MIT
+text_02.txt,text,scam,india_sms/suite/549,MIT
+text_03.txt,text,scam,india_sms/suite/246,MIT
+text_04.txt,text,harmless,india_sms/suite/455,MIT
+text_05.txt,text,harmless,india_sms/suite/292,MIT
+text_06.txt,text,scam,hinglish_calls/170,Apache-2.0
+text_07.txt,text,scam,hinglish_calls/160,Apache-2.0
+text_08.txt,text,harmless,hinglish_calls/396,Apache-2.0
+text_09.txt,text,scam,bothbosu/test/24,Apache-2.0
+text_10.txt,text,harmless,bothbosu/test/198,Apache-2.0
+call_01.wav,call,scam,"hinglish_calls/629 (spoken by edge-tts, G.711)",Apache-2.0 text
+call_02.wav,call,scam,"hinglish_calls/532 (spoken by edge-tts, G.711)",Apache-2.0 text
+call_03.wav,call,scam,"hinglish_calls/265 (spoken by edge-tts, G.711)",Apache-2.0 text
+call_04.wav,call,harmless,"hinglish_calls/3 (spoken by edge-tts, G.711)",Apache-2.0 text
+call_05.wav,call,harmless,"hinglish_calls/179 (spoken by edge-tts, G.711)",Apache-2.0 text
+call_06.wav,call,scam,"bothbosu/test/113 (spoken by edge-tts, G.711)",Apache-2.0 text
+call_07.wav,call,scam,"bothbosu/test/149 (spoken by edge-tts, G.711)",Apache-2.0 text
+call_08.wav,call,scam,"bothbosu/test/25 (spoken by edge-tts, G.711)",Apache-2.0 text
+call_09.wav,call,harmless,"bothbosu/test/163 (spoken by edge-tts, G.711)",Apache-2.0 text
+call_10.wav,call,harmless,"bothbosu/test/252 (spoken by edge-tts, G.711)",Apache-2.0 text
+voice_real_01.wav,voice,real,google/fleurs hi_in validation,CC BY 4.0
+voice_real_02.wav,voice,real,google/fleurs hi_in validation,CC BY 4.0
+voice_real_03.wav,voice,real,google/fleurs hi_in validation,CC BY 4.0
+voice_real_04.wav,voice,real,google/fleurs hi_in validation,CC BY 4.0
+voice_real_05.wav,voice,real,google/fleurs hi_in validation,CC BY 4.0
+voice_ai_01.wav,voice,ai,edge-tts hi-IN reading a FLEURS sentence,generated
+voice_ai_02.wav,voice,ai,edge-tts hi-IN reading a FLEURS sentence,generated
+voice_ai_03.wav,voice,ai,edge-tts hi-IN reading a FLEURS sentence,generated
+voice_ai_04.wav,voice,ai,edge-tts hi-IN reading a FLEURS sentence,generated
+voice_ai_05.wav,voice,ai,edge-tts hi-IN reading a FLEURS sentence,generated

@@ -22,3 +22,4 @@ data/*.log
 data/indiacall/consent/
 data/indiacall/human_lags.json
 ml/runs/
+data/pack/
