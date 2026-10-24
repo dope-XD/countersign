@@ -86,7 +86,92 @@ Thresholds on the conversation model's p (set on dev only): watch 0.0102, warn 0
 | uci_sms / harmless (genuine) | 2906 | 0.8% (23/2906) [1–1%] | 0.0% (0/2906) | – | – |
 | uci_sms / scam (scam) | 630 | 69.7% (439/630) [66–73%] | 0.0% (0/630) | 1 turns | – |
 
+**Spot-check kit with the conversation check (data/kit: 30 public held-out items)** (`python -m ml.eval.kit data/kit --json models/eval/kit_conv.json`)
+
+| File | Kind | Expected | Phone says | Why | Voice AI | Pass |
+|---|---|---|---|---|---|---|
+| call_01.wav | call | scam | scam (unknown) | threat | 0.29 | ✓ |
+| call_02.wav | call | scam | scam (unknown) | secrecy | 0.05 | ✓ |
+| call_03.wav | call | scam | warn (unknown) | threat | 0.90 | ✓ |
+| call_04.wav | call | harmless | none | – | 0.32 | ✓ |
+| call_05.wav | call | harmless | none | – | 0.86 | ✓ |
+| call_06.wav | call | scam | scam (unknown) | threat | 0.00 | ✓ |
+| call_07.wav | call | scam | scam (reward) | reward, credentials | 0.03 | ✓ |
+| call_08.wav | call | scam | scam (unknown) | secrecy, verification_pretext | 0.01 | ✓ |
+| call_09.wav | call | harmless | none | – | 0.01 | ✓ |
+| call_10.wav | call | harmless | none | – | 0.04 | ✓ |
+| text_01.txt | text | scam | scam (otp_upi) | credentials | – | ✓ |
+| text_02.txt | text | scam | scam (job_task) | reward, job_task | – | ✓ |
+| text_03.txt | text | scam | watch | money_ask | – | ✗ |
+| text_04.txt | text | harmless | none | – | – | ✓ |
+| text_05.txt | text | harmless | none | – | – | ✓ |
+| text_06.txt | text | scam | scam (otp_upi) | credentials | – | ✓ |
+| text_07.txt | text | scam | scam (courier_customs) | parcel_customs, authority | – | ✓ |
+| text_08.txt | text | harmless | none | – | – | ✓ |
+| text_09.txt | text | scam | scam (unknown) | threat, money_ask | – | ✓ |
+| text_10.txt | text | harmless | none | – | – | ✓ |
+| voice_ai_01.wav | voice | ai | watch | – | 0.11 | ✓ |
+| voice_ai_02.wav | voice | ai | none | – | 0.80 | ✓ |
+| voice_ai_03.wav | voice | ai | watch | – | 0.07 | ✗ |
+| voice_ai_04.wav | voice | ai | watch | – | 0.58 | ✓ |
+| voice_ai_05.wav | voice | ai | none | – | 0.57 | ✓ |
+| voice_real_01.wav | voice | real | watch | – | 0.00 | ✓ |
+| voice_real_02.wav | voice | real | none | – | 0.06 | ✓ |
+| voice_real_03.wav | voice | real | watch | – | 0.00 | ✓ |
+| voice_real_04.wav | voice | real | watch | – | 0.00 | ✓ |
+| voice_real_05.wav | voice | real | watch | – | 0.00 | ✓ |
+
+**28/30 passed**
+- text: 9/10
+- call: 10/10
+- voice: 9/10
+
+**Audio end to end with the conversation check (our 59 spoken calls, fed segment by segment)** (`python -m ml.eval.asr_bakeoff --models omnilingual_300m --check conv --out models/eval/asr_bakeoff_conv.json`)
+
+59 calls (1177.4 s each channel), spoken by en-IN / hi-IN neural voices; WER on the listener's folded tokens.
+
+| Model | MB | RTF (4 threads, laptop) | Channel | WER | Cue recall | Scams at warn | Harmless at warn | Harmless at scam |
+|---|---|---|---|---|---|---|---|---|
+| omnilingual_300m | 365 | 0.047 | clean | 28% | 77% (122/159) | 66% (21/32) | 7% (2/27) | 4% (1/27) |
+| omnilingual_300m | 365 | 0.047 | g711u | 28% | 78% (124/159) | 62% (20/32) | 7% (2/27) | 4% (1/27) |
+| omnilingual_300m | 365 | 0.047 | ota+g711u | 58% | 47% (74/159) | 50% (16/32) | 11% (3/27) | 0% (0/27) |
+
 <!-- end conv_eval -->
+
+### The server's stronger check, tested live (25 Oct, 03:45–03:49)
+
+Audio streamed to the laptop's `/ws/listen` exactly as the phone sends it (100 ms frames, the emulator's test account),
+where the server runs Omnilingual-1B speech-to-text, the same conversation check and the 24-layer voice model:
+
+| Call (TTS-spoken, from `team_calls`) | Server's levels over the call | Result |
+|---|---|---|
+| Hindi digital arrest, 38 s | none → amber ("parcel / customs") → **red** ("keep it secret") in the second half of the call, two segments in a row at p ≥ 0.99 | a RED fraud case opened with a 20 s AES-encrypted clip, expiring after 30 days; no transcript stored |
+| Hinglish digital arrest, 28 s | amber ("asks for money"); p 0.99 on the last segment only | stays amber (red needs two in a row) |
+| English digital arrest, 52 s | watch for most of the call (p ≤ 0.05), amber only on the last segment | late: see failure case 1 |
+
+The voice model flagged every TTS voice as synthetic (0.99), which is right; it is one piece of evidence and never
+makes red on its own. On the phone (emulator), the Hinglish call reached amber after its first 11 words and a
+genuine bank fraud-alert call stayed at "none".
+
+### Named failure cases of the conversation check (what it gets wrong today)
+
+From the tables above, our 59 spoken calls (G.711, `models/eval/asr_percall_conv.json`) and the 30 adversarial calls:
+
+1. **English scam calls in a plain, scripted style.** Our own English digital-arrest, courier/customs, TRAI-SIM and
+   KYC/OTP calls stay at watch (p 0.03–0.22 at the end of the call) even though each one asks for money or a code. ICFD's English is bank-call
+   English; ours is longer and more formal. The old keyword path caught all four. Overall on our spoken calls the
+   conversation check reaches amber on 62% of scams (old path 88%): **this is where it is weaker than what it replaced.**
+2. **Polite paraphrases and scams with no tell-tale words** (`para_kyc_polite`, `para_investment_friendly`,
+   `no_cue_words_scam`): watch or nothing.
+3. **Talk about scams.** Relatives warning each other ("did you hear about the fake police calls…") and a Hindi news
+   discussion reach amber, and one reaches red. "It's not a scam" clears it in one tap and tells the family.
+4. **Short calls and single messages rarely reach red,** because red needs the risk held over two segments: the
+   card stops at amber and the user (or the family button) decides.
+5. **Long calls lose their oldest words** (the model reads the last ~1,200 characters).
+6. **Everything the speech-to-text mishears.** Over a loudspeaker (over the air + G.711) the scam rate at amber falls
+   to 50%.
+7. The earlier failure cases of the phone itself still hold: the caller is audible only on speaker, and echo
+   cancellation differs by phone maker (see "Named failure cases" at the end, for basic mode).
 
 ### Old path vs the conversation check on the same held-out ICFD calls
 
@@ -103,7 +188,8 @@ problem this change fixes. (`python -m ml.eval.conv_eval basic`, `docs/results_b
 ### Gates and honest notes for the conversation check
 
 - **Gate "≥ 90% of scams at amber" is missed** on ICFD's test split (87.8%), its unseen scam types (75.8% / 54.6%),
-  our 16 team scam calls (75%) and our adversarial scams (44%). The gate on false alarms holds: 2.3–4.5% of genuine
+  our 16 team scam calls (75% as text), our 59 spoken calls (62% of scams on a phone line) and our adversarial scams
+  (44%). The gate on false alarms holds: 2.3–4.5% of genuine
   ICFD calls and 0–7.7% of our harmless sets at amber, under 1% at red. We report the misses rather than tune on test.
 - **Two retrains after looking at dev (not test).** The first model put Hindi written in Latin and talk about scams
   high, so our sets were repeated 8× in training. Then the spot-check kit (a test set) showed that Hindi in
@@ -386,9 +472,9 @@ First 6 layers of AntiDeepfake W2V-Large + logistic head, ONNX int8 (126.9 MB). 
   for calls.
 - **Other Indian languages (Tamil, Bengali, …) are out of scope**: 4% recall. The app speaks English and Hindi.
 
-## Named failure cases
+## Named failure cases (basic mode)
 
-These are the ways it fails today, from the tables above and from testing on phones. Each one is in
+These are the ways basic mode fails today, from the tables above and from testing on phones. Each one is in
 `docs/ADVERSARIAL.md` with what we would change.
 
 1. **The caller isn't audible without speakerphone.** Android doesn't give apps the other side of a call; the

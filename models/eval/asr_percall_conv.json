@@ -1,0 +1,592 @@
+[
+ {
+  "id": "adversarial/genuine_bank_fraud_check",
+  "label": 0,
+  "audio_conv": "none",
+  "audio_basic": "warn",
+  "text_conv": "none",
+  "reasons": [],
+  "p": 0.006724029779434204
+ },
+ {
+  "id": "adversarial/genuine_bank_loan_followup",
+  "label": 0,
+  "audio_conv": "none",
+  "audio_basic": "none",
+  "text_conv": "none",
+  "reasons": [],
+  "p": 0.00783395767211914
+ },
+ {
+  "id": "adversarial/genuine_customer_care_callback",
+  "label": 0,
+  "audio_conv": "none",
+  "audio_basic": "none",
+  "text_conv": "none",
+  "reasons": [],
+  "p": 0.0068153440952301025
+ },
+ {
+  "id": "adversarial/genuine_delivery_hi",
+  "label": 0,
+  "audio_conv": "none",
+  "audio_basic": "watch",
+  "text_conv": "none",
+  "reasons": [],
+  "p": 0.0073089599609375
+ },
+ {
+  "id": "adversarial/genuine_delivery_otp",
+  "label": 0,
+  "audio_conv": "none",
+  "audio_basic": "watch",
+  "text_conv": "none",
+  "reasons": [],
+  "p": 0.00671917200088501
+ },
+ {
+  "id": "adversarial/genuine_doctor_appointment",
+  "label": 0,
+  "audio_conv": "none",
+  "audio_basic": "none",
+  "text_conv": "none",
+  "reasons": [],
+  "p": 0.006752282381057739
+ },
+ {
+  "id": "adversarial/genuine_electricity_hi",
+  "label": 0,
+  "audio_conv": "none",
+  "audio_basic": "watch",
+  "text_conv": "none",
+  "reasons": [],
+  "p": 0.007080674171447754
+ },
+ {
+  "id": "adversarial/genuine_insurance_renewal",
+  "label": 0,
+  "audio_conv": "none",
+  "audio_basic": "watch",
+  "text_conv": "none",
+  "reasons": [],
+  "p": 0.006762772798538208
+ },
+ {
+  "id": "adversarial/genuine_police_complaint",
+  "label": 0,
+  "audio_conv": "none",
+  "audio_basic": "watch",
+  "text_conv": "none",
+  "reasons": [],
+  "p": 0.006706148386001587
+ },
+ {
+  "id": "adversarial/genuine_police_verification",
+  "label": 0,
+  "audio_conv": "none",
+  "audio_basic": "watch",
+  "text_conv": "warn",
+  "reasons": [],
+  "p": 0.006960868835449219
+ },
+ {
+  "id": "adversarial/genuine_son_needs_money",
+  "label": 0,
+  "audio_conv": "watch",
+  "audio_basic": "watch",
+  "text_conv": "none",
+  "reasons": [],
+  "p": 0.03761562705039978
+ },
+ {
+  "id": "adversarial/misspell_digital_arrest",
+  "label": 1,
+  "audio_conv": "watch",
+  "audio_basic": "scam",
+  "text_conv": "warn",
+  "reasons": [
+   "secrecy"
+  ],
+  "p": 0.015731483697891235
+ },
+ {
+  "id": "adversarial/misspell_otp",
+  "label": 1,
+  "audio_conv": "warn",
+  "audio_basic": "scam",
+  "text_conv": "none",
+  "reasons": [
+   "sim_block"
+  ],
+  "p": 0.9899924397468567
+ },
+ {
+  "id": "adversarial/negation_abuse_no_money",
+  "label": 1,
+  "audio_conv": "warn",
+  "audio_basic": "warn",
+  "text_conv": "scam",
+  "reasons": [
+   "urgency"
+  ],
+  "p": 0.9657734036445618
+ },
+ {
+  "id": "adversarial/negation_abuse_safe_account",
+  "label": 1,
+  "audio_conv": "watch",
+  "audio_basic": "warn",
+  "text_conv": "watch",
+  "reasons": [],
+  "p": 0.03316739201545715
+ },
+ {
+  "id": "adversarial/no_cue_words_scam",
+  "label": 1,
+  "audio_conv": "none",
+  "audio_basic": "warn",
+  "text_conv": "none",
+  "reasons": [],
+  "p": 0.00909319519996643
+ },
+ {
+  "id": "adversarial/para_digital_arrest_soft",
+  "label": 1,
+  "audio_conv": "watch",
+  "audio_basic": "scam",
+  "text_conv": "watch",
+  "reasons": [
+   "money_ask"
+  ],
+  "p": 0.027839452028274536
+ },
+ {
+  "id": "adversarial/para_family_emergency",
+  "label": 1,
+  "audio_conv": "warn",
+  "audio_basic": "scam",
+  "text_conv": "none",
+  "reasons": [
+   "credentials"
+  ],
+  "p": 0.9918975830078125
+ },
+ {
+  "id": "adversarial/para_investment_friendly",
+  "label": 1,
+  "audio_conv": "none",
+  "audio_basic": "warn",
+  "text_conv": "watch",
+  "reasons": [],
+  "p": 0.007808119058609009
+ },
+ {
+  "id": "adversarial/para_job_task",
+  "label": 1,
+  "audio_conv": "warn",
+  "audio_basic": "warn",
+  "text_conv": "scam",
+  "reasons": [
+   "job_task"
+  ],
+  "p": 0.9927138686180115
+ },
+ {
+  "id": "adversarial/para_kyc_polite",
+  "label": 1,
+  "audio_conv": "none",
+  "audio_basic": "warn",
+  "text_conv": "watch",
+  "reasons": [],
+  "p": 0.006971418857574463
+ },
+ {
+  "id": "adversarial/relatives_discuss_digital_arrest",
+  "label": 0,
+  "audio_conv": "scam",
+  "audio_basic": "watch",
+  "text_conv": "scam",
+  "reasons": [
+   "threat"
+  ],
+  "p": 0.9929585456848145
+ },
+ {
+  "id": "adversarial/relatives_discuss_hi",
+  "label": 0,
+  "audio_conv": "watch",
+  "audio_basic": "watch",
+  "text_conv": "watch",
+  "reasons": [],
+  "p": 0.014534294605255127
+ },
+ {
+  "id": "adversarial/relatives_discuss_otp",
+  "label": 0,
+  "audio_conv": "watch",
+  "audio_basic": "watch",
+  "text_conv": "watch",
+  "reasons": [],
+  "p": 0.025246411561965942
+ },
+ {
+  "id": "adversarial/slowburn_courier",
+  "label": 1,
+  "audio_conv": "warn",
+  "audio_basic": "watch",
+  "text_conv": "watch",
+  "reasons": [
+   "authority",
+   "money_ask"
+  ],
+  "p": 0.47942450642585754
+ },
+ {
+  "id": "adversarial/slowburn_hi_reward",
+  "label": 1,
+  "audio_conv": "warn",
+  "audio_basic": "warn",
+  "text_conv": "warn",
+  "reasons": [
+   "money_ask"
+  ],
+  "p": 0.9912654757499695
+ },
+ {
+  "id": "adversarial/slowburn_trai",
+  "label": 1,
+  "audio_conv": "warn",
+  "audio_basic": "scam",
+  "text_conv": "warn",
+  "reasons": [
+   "threat"
+  ],
+  "p": 0.5156151652336121
+ },
+ {
+  "id": "adversarial/translit_hi_to_latin_arrest",
+  "label": 1,
+  "audio_conv": "warn",
+  "audio_basic": "scam",
+  "text_conv": "watch",
+  "reasons": [
+   "secrecy"
+  ],
+  "p": 0.7176506519317627
+ },
+ {
+  "id": "adversarial/translit_latin_to_hi_kyc",
+  "label": 1,
+  "audio_conv": "scam",
+  "audio_basic": "warn",
+  "text_conv": "scam",
+  "reasons": [
+   "sim_block"
+  ],
+  "p": 0.9930756688117981
+ },
+ {
+  "id": "adversarial/translit_mixed_script",
+  "label": 1,
+  "audio_conv": "warn",
+  "audio_basic": "warn",
+  "text_conv": "scam",
+  "reasons": [
+   "authority",
+   "money_ask"
+  ],
+  "p": 0.9927608966827393
+ },
+ {
+  "id": "team_calls/en_bank_kyc_otp",
+  "label": 1,
+  "audio_conv": "watch",
+  "audio_basic": "scam",
+  "text_conv": "warn",
+  "reasons": [],
+  "p": 0.040416449308395386
+ },
+ {
+  "id": "team_calls/en_ceo_vendor_payment",
+  "label": 1,
+  "audio_conv": "warn",
+  "audio_basic": "scam",
+  "text_conv": "scam",
+  "reasons": [
+   "secrecy",
+   "urgency"
+  ],
+  "p": 0.9468258619308472
+ },
+ {
+  "id": "team_calls/en_courier_customs",
+  "label": 1,
+  "audio_conv": "watch",
+  "audio_basic": "scam",
+  "text_conv": "watch",
+  "reasons": [],
+  "p": 0.030101895332336426
+ },
+ {
+  "id": "team_calls/en_delivery_otp",
+  "label": 0,
+  "audio_conv": "none",
+  "audio_basic": "watch",
+  "text_conv": "none",
+  "reasons": [],
+  "p": 0.006769627332687378
+ },
+ {
+  "id": "team_calls/en_digital_arrest",
+  "label": 1,
+  "audio_conv": "watch",
+  "audio_basic": "scam",
+  "text_conv": "warn",
+  "reasons": [
+   "secrecy"
+  ],
+  "p": 0.033063292503356934
+ },
+ {
+  "id": "team_calls/en_electricity",
+  "label": 1,
+  "audio_conv": "warn",
+  "audio_basic": "warn",
+  "text_conv": "scam",
+  "reasons": [
+   "remote_access"
+  ],
+  "p": 0.992241382598877
+ },
+ {
+  "id": "team_calls/en_genuine_bank_fraud_alert",
+  "label": 0,
+  "audio_conv": "none",
+  "audio_basic": "watch",
+  "text_conv": "none",
+  "reasons": [],
+  "p": 0.008622348308563232
+ },
+ {
+  "id": "team_calls/en_genuine_kyc_branch",
+  "label": 0,
+  "audio_conv": "none",
+  "audio_basic": "none",
+  "text_conv": "none",
+  "reasons": [],
+  "p": 0.0067138671875
+ },
+ {
+  "id": "team_calls/en_investment",
+  "label": 1,
+  "audio_conv": "warn",
+  "audio_basic": "scam",
+  "text_conv": "scam",
+  "reasons": [
+   "investment"
+  ],
+  "p": 0.9809048175811768
+ },
+ {
+  "id": "team_calls/en_mechanic_payment",
+  "label": 0,
+  "audio_conv": "none",
+  "audio_basic": "warn",
+  "text_conv": "none",
+  "reasons": [],
+  "p": 0.0068405866622924805
+ },
+ {
+  "id": "team_calls/en_news_discussion",
+  "label": 0,
+  "audio_conv": "watch",
+  "audio_basic": "watch",
+  "text_conv": "watch",
+  "reasons": [
+   "secrecy"
+  ],
+  "p": 0.014757633209228516
+ },
+ {
+  "id": "team_calls/en_short_digital_arrest_opening",
+  "label": 1,
+  "audio_conv": "none",
+  "audio_basic": "watch",
+  "text_conv": "watch",
+  "reasons": [],
+  "p": 0.00820457935333252
+ },
+ {
+  "id": "team_calls/en_telemarketing_card",
+  "label": 0,
+  "audio_conv": "none",
+  "audio_basic": "none",
+  "text_conv": "watch",
+  "reasons": [],
+  "p": 0.006853580474853516
+ },
+ {
+  "id": "team_calls/en_trai_sim",
+  "label": 1,
+  "audio_conv": "watch",
+  "audio_basic": "scam",
+  "text_conv": "warn",
+  "reasons": [
+   "secrecy",
+   "authority"
+  ],
+  "p": 0.22123783826828003
+ },
+ {
+  "id": "team_calls/hi_digital_arrest",
+  "label": 1,
+  "audio_conv": "scam",
+  "audio_basic": "scam",
+  "text_conv": "scam",
+  "reasons": [
+   "threat"
+  ],
+  "p": 0.9901659488677979
+ },
+ {
+  "id": "team_calls/hi_doctor",
+  "label": 0,
+  "audio_conv": "none",
+  "audio_basic": "watch",
+  "text_conv": "none",
+  "reasons": [],
+  "p": 0.006834566593170166
+ },
+ {
+  "id": "team_calls/hi_family_emergency",
+  "label": 1,
+  "audio_conv": "warn",
+  "audio_basic": "scam",
+  "text_conv": "warn",
+  "reasons": [
+   "investment"
+  ],
+  "p": 0.9253311157226562
+ },
+ {
+  "id": "team_calls/hi_lottery_kbc",
+  "label": 1,
+  "audio_conv": "scam",
+  "audio_basic": "warn",
+  "text_conv": "scam",
+  "reasons": [
+   "reward"
+  ],
+  "p": 0.9929245710372925
+ },
+ {
+  "id": "team_calls/hi_news_discussion",
+  "label": 0,
+  "audio_conv": "warn",
+  "audio_basic": "watch",
+  "text_conv": "scam",
+  "reasons": [
+   "credentials"
+  ],
+  "p": 0.989007830619812
+ },
+ {
+  "id": "team_calls/hi_police_verification_genuine",
+  "label": 0,
+  "audio_conv": "none",
+  "audio_basic": "watch",
+  "text_conv": "none",
+  "reasons": [],
+  "p": 0.006783097982406616
+ },
+ {
+  "id": "team_calls/hinglish_boss_genuine_reminder",
+  "label": 0,
+  "audio_conv": "none",
+  "audio_basic": "none",
+  "text_conv": "none",
+  "reasons": [],
+  "p": 0.006702214479446411
+ },
+ {
+  "id": "team_calls/hinglish_delivery_otp_abhi",
+  "label": 0,
+  "audio_conv": "none",
+  "audio_basic": "watch",
+  "text_conv": "none",
+  "reasons": [],
+  "p": 0.008561193943023682
+ },
+ {
+  "id": "team_calls/hinglish_digital_arrest",
+  "label": 1,
+  "audio_conv": "warn",
+  "audio_basic": "scam",
+  "text_conv": "scam",
+  "reasons": [
+   "threat"
+  ],
+  "p": 0.9909271001815796
+ },
+ {
+  "id": "team_calls/hinglish_family_emergency_spoofed",
+  "label": 1,
+  "audio_conv": "watch",
+  "audio_basic": "watch",
+  "text_conv": "none",
+  "reasons": [],
+  "p": 0.010292112827301025
+ },
+ {
+  "id": "team_calls/hinglish_family_plans",
+  "label": 0,
+  "audio_conv": "none",
+  "audio_basic": "none",
+  "text_conv": "none",
+  "reasons": [],
+  "p": 0.007036328315734863
+ },
+ {
+  "id": "team_calls/hinglish_job_task",
+  "label": 1,
+  "audio_conv": "scam",
+  "audio_basic": "scam",
+  "text_conv": "warn",
+  "reasons": [
+   "credentials",
+   "investment"
+  ],
+  "p": 0.9931723475456238
+ },
+ {
+  "id": "team_calls/hinglish_kyc_anydesk",
+  "label": 1,
+  "audio_conv": "warn",
+  "audio_basic": "scam",
+  "text_conv": "scam",
+  "reasons": [
+   "remote_access"
+  ],
+  "p": 0.2379494309425354
+ },
+ {
+  "id": "team_calls/hinglish_otp_refund",
+  "label": 1,
+  "audio_conv": "warn",
+  "audio_basic": "watch",
+  "text_conv": "scam",
+  "reasons": [
+   "secrecy"
+  ],
+  "p": 0.714532196521759
+ },
+ {
+  "id": "team_calls/hinglish_son_asks_money",
+  "label": 0,
+  "audio_conv": "watch",
+  "audio_basic": "watch",
+  "text_conv": "none",
+  "reasons": [],
+  "p": 0.01227065920829773
+ }
+]

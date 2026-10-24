@@ -2,6 +2,7 @@
 
     python -m ml.eval.asr_bakeoff                 # renders the test calls once (edge-tts, needs internet), then decodes
     python -m ml.eval.asr_bakeoff --quick         # 12 calls, clean + phone line only
+    python -m ml.eval.asr_bakeoff --models omnilingual_300m --check conv --out models/eval/asr_bakeoff_conv.json
 
 Test audio: our 27 hand-written calls and the 30 adversarial calls (data/listener/adversarial.jsonl), spoken by
 Microsoft's free neural voices (en-IN for English and Hinglish, hi-IN for Hindi), through three channels:
@@ -135,14 +136,19 @@ def vad_segments(x: np.ndarray) -> list[np.ndarray]:
     return segs or [x]
 
 
-def decode(rec, segs: list[np.ndarray]) -> str:
+def decode_parts(rec, segs: list[np.ndarray]) -> list[str]:
+    """One text per speech segment, as the phone hears a call."""
     out = []
     for s in segs:
         st = rec.create_stream()
         st.accept_waveform(16000, s)
         rec.decode_stream(st)
         out.append(st.result.text.strip())
-    return " ".join(t for t in out if t)
+    return [t for t in out if t]
+
+
+def decode(rec, segs: list[np.ndarray]) -> str:
+    return " ".join(decode_parts(rec, segs))
 
 
 def wer(ref: str, hyp: str) -> tuple[int, int]:
@@ -167,6 +173,7 @@ def main() -> int:
     ap.add_argument("--quick", action="store_true")
     ap.add_argument("--models", nargs="*", default=list(CANDIDATES))
     ap.add_argument("--out", default=str(OUT))
+    ap.add_argument("--check", choices=["basic", "conv"], default="basic", help="conv: the conversation check, fed segment by segment")
     a = ap.parse_args()
     rows = calls()
     chans = CHANNELS
@@ -178,18 +185,21 @@ def main() -> int:
     segs = {(r["id"], ch): vad_segments(through(audio[r["id"]], ch, seed=k)) for k, r in enumerate(rows) for ch in chans}
     secs = {r["id"]: len(audio[r["id"]]) / 16000 for r in rows}
     hyps: dict[str, dict] = {}
+    parts: dict[str, dict] = {}
     timing: dict[str, float] = {}
     for m in a.models:
         rec = recognizer(m)
         t0 = time.time()
-        hyps[m] = {f"{rid}|{ch}": decode(rec, s) for (rid, ch), s in segs.items()}
+        parts[m] = {f"{rid}|{ch}": decode_parts(rec, s) for (rid, ch), s in segs.items()}
+        hyps[m] = {k: " ".join(v) for k, v in parts[m].items()}
         timing[m] = (time.time() - t0) / (sum(secs.values()) * len(chans))
         print(f"{m}: RTF {timing[m]:.3f}", flush=True)
-    for p, parts in PAIRS.items():
-        if all(x in hyps for x in parts):
-            hyps[p] = {k: " ".join(hyps[x][k] for x in parts) for k in hyps[parts[0]]}
-            timing[p] = sum(timing[x] for x in parts)
-    res: dict = {"calls": len(rows), "channels": chans, "seconds_of_audio": round(sum(secs.values()), 1), "models": {}}
+    for p, pair in PAIRS.items():
+        if all(x in hyps for x in pair):
+            hyps[p] = {k: " ".join(hyps[x][k] for x in pair) for k in hyps[pair[0]]}
+            parts[p] = {k: [t for x in pair for t in parts[x][k]] for k in hyps[pair[0]]}
+            timing[p] = sum(timing[x] for x in pair)
+    res: dict = {"check": a.check, "calls": len(rows), "channels": chans, "seconds_of_audio": round(sum(secs.values()), 1), "models": {}}
     for m, hs in hyps.items():
         per = {}
         for ch in chans:
@@ -204,7 +214,12 @@ def main() -> int:
                 got = set(score_text(h).categories)
                 cue_all += len(want)
                 cue_hit += len(want & got)
-                lv.append((r["label"], analyze_text(h, min_words=12).level))
+                if a.check == "conv":
+                    from engine.listener.conversation import analyze
+
+                    lv.append((r["label"], analyze(parts[m][f"{r['id']}|{ch}"]).level))
+                else:
+                    lv.append((r["label"], analyze_text(h, min_words=12).level))
             pos = [x for y, x in lv if y == 1]
             neg = [x for y, x in lv if y == 0]
             per[ch] = {

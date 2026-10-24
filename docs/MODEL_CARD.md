@@ -25,6 +25,10 @@ trained on.
 - **Why it fired:** a second, unchanged e5-small (int8, 118 MB) embeds the segment that raised the risk; the closest
   of 17 written scam moves (English and Hinglish) names it, if it is close enough. The names map to the app's existing
   plain-words reasons in English and Hindi.
+- **Measured (held out):** genuine ICFD calls at amber 2.3% ("Clear Normal") and 4.5% ("Ambiguous"), at red under
+  1% (the old keyword path: 50% and 71%); ICFD scam calls at amber 88% (test split), 76% / 55% (unseen scam types);
+  our 59 spoken calls on a phone line: 62% of scams and 7% of harmless calls at amber (the old path: 88% and 7%).
+  Kit 28/30. The 90% gate is missed; see RESULTS.md for every failure case.
 - **Limits:** ICFD is synthetic and bank-centred; our real-call sets are small. Long calls lose their oldest words.
   Speech-to-text errors feed straight in (30% typo augmentation helps, but a badly heard call is a badly judged call).
 
