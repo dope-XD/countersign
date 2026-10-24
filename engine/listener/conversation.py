@@ -28,8 +28,7 @@ from pathlib import Path
 
 import numpy as np
 
-from engine.listener.classifier import tokens
-from engine.listener.rules import ASSETS, rules, scam_type
+from engine.listener.rules import ASSETS, normalize, rules, scam_type
 
 ROOT = Path(__file__).resolve().parents[2]
 MODELS = ROOT / "models"
@@ -107,7 +106,7 @@ def tokenizer() -> Tokenizer:
 
 # ---------------------------------------------------------------------------------------------------- text
 def segment_text(t: str) -> str:
-    return " ".join(tokens(t))
+    return " ".join(normalize(t))  # kept in its own script: e5 reads Devanagari Hindi natively
 
 
 def window(segments: list[str]) -> str:

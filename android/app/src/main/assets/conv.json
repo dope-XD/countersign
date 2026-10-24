@@ -30,12 +30,12 @@
     "long_call",
     "synthetic_voice"
   ],
-  "t_watch": 0.2213,
-  "t_warn": 0.9442,
-  "t_scam": 0.9442,
+  "t_watch": 0.0102,
+  "t_warn": 0.142,
+  "t_scam": 0.9855,
   "trusted": {
-    "t_watch": 0.9442,
-    "t_warn": 0.9846,
-    "t_scam": 0.9846
+    "t_watch": 0.142,
+    "t_warn": 0.9865,
+    "t_scam": 0.9932
   }
 }

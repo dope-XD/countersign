@@ -11,7 +11,8 @@ trained on.
   decides the call's level; nothing else does on its own.
 - **Model:** intfloat/multilingual-e5-small (12 layers, 384 wide, 118M parameters, MIT), mean pooling + one logistic
   output, fine-tuned for one epoch (AdamW 3e-5, fp16, class-weighted). Input: the last ~1,200 characters of the call
-  (≤ 320 tokens, oldest words dropped first), speakers not separated, Devanagari folded to Latin as the phone does.
+  (≤ 320 tokens, oldest words dropped first), speakers not separated, each script kept as it is (e5 reads Devanagari
+  Hindi natively; our earlier folding to rough Latin made Hindi transcripts unreadable to it, see RESULTS.md).
   ONNX fp32, 470 MB (int8, even per channel, moved p by up to 0.22 on dev texts and flipped decisions near the
   thresholds, so it is not shipped). Our Kotlin SentencePiece tokenizer gives the same
   ids as Hugging Face on every shared vector.

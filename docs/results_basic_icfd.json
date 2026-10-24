@@ -1,0 +1,99 @@
+{
+ "test_icfd": {
+  "icfd / Clear Fraud": {
+   "calls": 4499,
+   "reached_warn": {
+    "k": 4242,
+    "n": 4499,
+    "rate": 0.9429
+   },
+   "reached_scam": {
+    "k": 2317,
+    "n": 4499,
+    "rate": 0.515
+   }
+  }
+ },
+ "test_icfd_unseen": {
+  "icfd / Clear Fraud": {
+   "calls": 760,
+   "reached_warn": {
+    "k": 691,
+    "n": 760,
+    "rate": 0.9092
+   },
+   "reached_scam": {
+    "k": 264,
+    "n": 760,
+    "rate": 0.3474
+   }
+  },
+  "icfd / Subtle Fraud": {
+   "calls": 240,
+   "reached_warn": {
+    "k": 188,
+    "n": 240,
+    "rate": 0.7833
+   },
+   "reached_scam": {
+    "k": 54,
+    "n": 240,
+    "rate": 0.225
+   }
+  }
+ },
+ "test_icfd_heldout": {
+  "icfd / Ambiguous but Ultimately Normal": {
+   "calls": 511,
+   "reached_warn": {
+    "k": 362,
+    "n": 511,
+    "rate": 0.7084
+   },
+   "reached_scam": {
+    "k": 79,
+    "n": 511,
+    "rate": 0.1546
+   }
+  },
+  "icfd / Clear Fraud": {
+   "calls": 193,
+   "reached_warn": {
+    "k": 176,
+    "n": 193,
+    "rate": 0.9119
+   },
+   "reached_scam": {
+    "k": 104,
+    "n": 193,
+    "rate": 0.5389
+   }
+  },
+  "icfd / Clear Normal": {
+   "calls": 1019,
+   "reached_warn": {
+    "k": 510,
+    "n": 1019,
+    "rate": 0.5005
+   },
+   "reached_scam": {
+    "k": 91,
+    "n": 1019,
+    "rate": 0.0893
+   }
+  },
+  "icfd / Subtle Fraud": {
+   "calls": 370,
+   "reached_warn": {
+    "k": 335,
+    "n": 370,
+    "rate": 0.9054
+   },
+   "reached_scam": {
+    "k": 137,
+    "n": 370,
+    "rate": 0.3703
+   }
+  }
+ }
+}

@@ -2,6 +2,7 @@
 
     python -m ml.eval.conv_eval calibrate     # data/conv/dev.scored.parquet → android/app/src/main/assets/conv.json
     python -m ml.eval.conv_eval measure       # data/conv/test_*.scored.parquet → docs/results_conv.json (+ a table)
+    python -m ml.eval.conv_eval basic         # the old path (basic mode) on the same ICFD calls → docs/results_basic_icfd.json
 
 Each row of a scored file is one moment of a call (the call so far, its p from ml.conv_score). A call is replayed
 moment by moment through the Accumulator exactly as the phone would (repeated moments with no new words are
@@ -73,8 +74,9 @@ def calibrate() -> dict:
     cfg = dict(BASE_CFG)
 
     def cut(share: float, k: int) -> float:
-        # the stricter of the two groups (ICFD's genuine calls, ours), so the share holds for both
-        return round(max(float(np.quantile([x[k] for x in v], 1 - share)) for v in genuine.values() if v), 4)
+        # all genuine dev calls as one pool (taking the stricter group instead let 12 copies of one template of ours,
+        # relatives warning each other about scams, set every threshold; that failure is reported, not hidden)
+        return round(float(np.quantile([x[k] for v in genuine.values() for x in v], 1 - share)), 4)
 
     for name, tgt in (("main", TARGET), ("trusted", TRUSTED)):
         th = {"t_watch": cut(tgt["t_watch"], 0), "t_warn": cut(tgt["t_warn"], 0), "t_scam": cut(tgt["t_scam"], 1)}
@@ -172,7 +174,12 @@ def write_markdown(out: dict) -> None:
         "",
     ]
     for name, res in out["sets"].items():
-        L += [f"**{NAMES.get(name, name)}**", "", "| Calls | n | Reached amber (warn) | Reached red (scam) | Median time to amber | Amber before the ask |", "|---|---|---|---|---|---|"]
+        L += [
+            f"**{NAMES.get(name, name)}**",
+            "",
+            "| Calls | n | Reached amber (warn) | Reached red (scam) | Median time to amber | Amber before the ask |",
+            "|---|---|---|---|---|---|",
+        ]
         for k, r in res.items():
             lo, hi = wilson(r["reached_warn"]["k"], r["reached_warn"]["n"])
             unit = "s" if k.startswith("icfd") else " turns"
@@ -192,5 +199,38 @@ def write_markdown(out: dict) -> None:
         print("\n".join(L))
 
 
+def basic() -> dict:
+    """The old decision path (basic mode: cue rules + the n-gram classifier through fusion) on the same held-out ICFD
+    calls, fed turn by turn, for the old-vs-new table."""
+    from engine.listener.analyzer import LiveCall
+    from ml.conv_data import ICFD, icfd_turns, part
+
+    out = {}
+    for name, split, keep in (("test_icfd", "test", None), ("test_icfd_unseen", "cross_domain", None), ("test_icfd_heldout", "train", "test")):
+        cols = ["conversation_uid", "chunk_timestamp", "cumulative_transcript_json", "cumulative_text", "case_type"]
+        df = pd.concat([pd.read_parquet(f, columns=cols) for f in sorted(ICFD.glob(f"{split}-*.parquet"))], ignore_index=True)
+        if keep:
+            df = df[df["conversation_uid"].map(part) == keep]
+        df = df.sort_values("chunk_timestamp").drop_duplicates("conversation_uid", keep="last")
+        res: dict[str, list] = {}
+        for _, r in df.iterrows():
+            c, seen = LiveCall(), set()
+            for t in icfd_turns(r):
+                lvl = c.feed(t)
+                seen.add(lvl)
+            ct = str(r["case_type"]).replace("_", " ")
+            res.setdefault(f"icfd / {ct}", []).append(c.prev)
+        out[name] = {
+            k: {"calls": len(v), "reached_warn": rate(sum(x in ("warn", "scam") for x in v), len(v)), "reached_scam": rate(sum(x == "scam" for x in v), len(v))}
+            for k, v in sorted(res.items())
+        }
+    (ROOT / "docs" / "results_basic_icfd.json").write_text(json.dumps(out, indent=1) + "\n", encoding="utf-8")
+    for name, res in out.items():
+        print(name)
+        for k, r in res.items():
+            print(f"  {k:45} n={r['calls']:5} warn {r['reached_warn']['rate']} scam {r['reached_scam']['rate']}")
+    return out
+
+
 if __name__ == "__main__":
-    {"calibrate": calibrate, "measure": measure}[sys.argv[1]]()
+    {"calibrate": calibrate, "measure": measure, "basic": basic}[sys.argv[1]]()

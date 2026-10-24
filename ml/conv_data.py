@@ -10,7 +10,8 @@ security), with genuine calls ("Clear Normal", "Ambiguous but Ultimately Normal"
 prefixes of the call.
 
 Text is made the way the phone makes it: speaker names dropped (the phone can't tell who is talking), every turn
-normalised and Devanagari folded to Latin (engine/listener/classifier.tokens), turns joined with " | ", and only the
+normalised (engine/listener/rules.normalize) but kept in its own script: e5 reads Devanagari Hindi natively, while
+our rough Latin folding ("pulis", "fon") made Hindi transcripts unreadable to it. Turns joined with " | ", and only the
 last ~1,200 characters kept. ICFD's validation and test splits hold only fraud calls, so 10% of its train
 conversations (by id) go to dev and another 10% to a held-out test with genuine calls. ICFD's test, unseen-type and
 held-out parts, and every held-out set of ml/listener_data.py, are never in train or dev.
@@ -26,7 +27,7 @@ from pathlib import Path
 
 import pandas as pd
 
-from engine.listener.classifier import tokens
+from engine.listener.rules import normalize
 from ml import listener_data
 from ml.listener_clf import typos
 
@@ -40,7 +41,7 @@ SEED = 3
 
 
 def turn_text(t: str) -> str:
-    return " ".join(tokens(t))
+    return " ".join(normalize(t))
 
 
 def window(turns: list[str]) -> str:

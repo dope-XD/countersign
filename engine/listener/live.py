@@ -45,6 +45,7 @@ def conversation_call():
         return None
     return conversation.Call()
 
+
 RATE = 16000
 MAX_UTTERANCE_S = 8.0
 HEARTBEAT_S = 5.0

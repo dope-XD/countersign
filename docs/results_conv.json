@@ -1,0 +1,458 @@
+{
+ "thresholds": {
+  "t_watch": 0.0102,
+  "t_warn": 0.142,
+  "t_scam": 0.9855
+ },
+ "sets": {
+  "test_icfd": {
+   "icfd / Clear Fraud": {
+    "calls": 4499,
+    "scam": true,
+    "reached_watch": {
+     "k": 4362,
+     "n": 4499,
+     "rate": 0.9695
+    },
+    "reached_warn": {
+     "k": 3949,
+     "n": 4499,
+     "rate": 0.8778
+    },
+    "reached_scam": {
+     "k": 2696,
+     "n": 4499,
+     "rate": 0.5992
+    },
+    "median_t_to_warn": 45.0,
+    "median_s_warn_after_violation": 0.0,
+    "warned_before_violation": {
+     "k": 859,
+     "n": 3915,
+     "rate": 0.2194
+    }
+   }
+  },
+  "test_icfd_heldout": {
+   "icfd / Ambiguous but Ultimately Normal": {
+    "calls": 511,
+    "scam": false,
+    "reached_watch": {
+     "k": 64,
+     "n": 511,
+     "rate": 0.1252
+    },
+    "reached_warn": {
+     "k": 23,
+     "n": 511,
+     "rate": 0.045
+    },
+    "reached_scam": {
+     "k": 4,
+     "n": 511,
+     "rate": 0.0078
+    }
+   },
+   "icfd / Clear Fraud": {
+    "calls": 193,
+    "scam": true,
+    "reached_watch": {
+     "k": 193,
+     "n": 193,
+     "rate": 1.0
+    },
+    "reached_warn": {
+     "k": 192,
+     "n": 193,
+     "rate": 0.9948
+    },
+    "reached_scam": {
+     "k": 160,
+     "n": 193,
+     "rate": 0.829
+    },
+    "median_t_to_warn": 36.0,
+    "median_s_warn_after_violation": 0.0,
+    "warned_before_violation": {
+     "k": 28,
+     "n": 192,
+     "rate": 0.1458
+    }
+   },
+   "icfd / Clear Normal": {
+    "calls": 1019,
+    "scam": false,
+    "reached_watch": {
+     "k": 89,
+     "n": 1019,
+     "rate": 0.0873
+    },
+    "reached_warn": {
+     "k": 23,
+     "n": 1019,
+     "rate": 0.0226
+    },
+    "reached_scam": {
+     "k": 4,
+     "n": 1019,
+     "rate": 0.0039
+    }
+   },
+   "icfd / Subtle Fraud": {
+    "calls": 370,
+    "scam": true,
+    "reached_watch": {
+     "k": 370,
+     "n": 370,
+     "rate": 1.0
+    },
+    "reached_warn": {
+     "k": 366,
+     "n": 370,
+     "rate": 0.9892
+    },
+    "reached_scam": {
+     "k": 281,
+     "n": 370,
+     "rate": 0.7595
+    },
+    "median_t_to_warn": 36.0,
+    "median_s_warn_after_violation": 0.0,
+    "warned_before_violation": {
+     "k": 74,
+     "n": 353,
+     "rate": 0.2096
+    }
+   }
+  },
+  "test_icfd_unseen": {
+   "icfd / Clear Fraud": {
+    "calls": 760,
+    "scam": true,
+    "reached_watch": {
+     "k": 689,
+     "n": 760,
+     "rate": 0.9066
+    },
+    "reached_warn": {
+     "k": 576,
+     "n": 760,
+     "rate": 0.7579
+    },
+    "reached_scam": {
+     "k": 326,
+     "n": 760,
+     "rate": 0.4289
+    },
+    "median_t_to_warn": 51.0,
+    "median_s_warn_after_violation": 0.0,
+    "warned_before_violation": {
+     "k": 72,
+     "n": 561,
+     "rate": 0.1283
+    }
+   },
+   "icfd / Subtle Fraud": {
+    "calls": 240,
+    "scam": true,
+    "reached_watch": {
+     "k": 191,
+     "n": 240,
+     "rate": 0.7958
+    },
+    "reached_warn": {
+     "k": 131,
+     "n": 240,
+     "rate": 0.5458
+    },
+    "reached_scam": {
+     "k": 42,
+     "n": 240,
+     "rate": 0.175
+    },
+    "median_t_to_warn": 84.0,
+    "median_s_warn_after_violation": 0.0,
+    "warned_before_violation": {
+     "k": 21,
+     "n": 124,
+     "rate": 0.1694
+    }
+   }
+  },
+  "test_ours": {
+   "adversarial / harmless": {
+    "calls": 14,
+    "scam": false,
+    "reached_watch": {
+     "k": 3,
+     "n": 14,
+     "rate": 0.2143
+    },
+    "reached_warn": {
+     "k": 1,
+     "n": 14,
+     "rate": 0.0714
+    },
+    "reached_scam": {
+     "k": 0,
+     "n": 14,
+     "rate": 0.0
+    }
+   },
+   "adversarial / scam": {
+    "calls": 16,
+    "scam": true,
+    "reached_watch": {
+     "k": 14,
+     "n": 16,
+     "rate": 0.875
+    },
+    "reached_warn": {
+     "k": 7,
+     "n": 16,
+     "rate": 0.4375
+    },
+    "reached_scam": {
+     "k": 0,
+     "n": 16,
+     "rate": 0.0
+    },
+    "median_t_to_warn": 1.0
+   },
+   "bothbosu / harmless": {
+    "calls": 160,
+    "scam": false,
+    "reached_watch": {
+     "k": 9,
+     "n": 160,
+     "rate": 0.0563
+    },
+    "reached_warn": {
+     "k": 2,
+     "n": 160,
+     "rate": 0.0125
+    },
+    "reached_scam": {
+     "k": 0,
+     "n": 160,
+     "rate": 0.0
+    }
+   },
+   "bothbosu / scam": {
+    "calls": 160,
+    "scam": true,
+    "reached_watch": {
+     "k": 160,
+     "n": 160,
+     "rate": 1.0
+    },
+    "reached_warn": {
+     "k": 160,
+     "n": 160,
+     "rate": 1.0
+    },
+    "reached_scam": {
+     "k": 159,
+     "n": 160,
+     "rate": 0.9938
+    },
+    "median_t_to_warn": 3.0
+   },
+   "hinglish_calls / harmless": {
+    "calls": 22,
+    "scam": false,
+    "reached_watch": {
+     "k": 0,
+     "n": 22,
+     "rate": 0.0
+    },
+    "reached_warn": {
+     "k": 0,
+     "n": 22,
+     "rate": 0.0
+    },
+    "reached_scam": {
+     "k": 0,
+     "n": 22,
+     "rate": 0.0
+    }
+   },
+   "hinglish_calls / scam": {
+    "calls": 124,
+    "scam": true,
+    "reached_watch": {
+     "k": 124,
+     "n": 124,
+     "rate": 1.0
+    },
+    "reached_warn": {
+     "k": 124,
+     "n": 124,
+     "rate": 1.0
+    },
+    "reached_scam": {
+     "k": 0,
+     "n": 124,
+     "rate": 0.0
+    },
+    "median_t_to_warn": 1.0
+   },
+   "india_sms / harmless": {
+    "calls": 150,
+    "scam": false,
+    "reached_watch": {
+     "k": 5,
+     "n": 150,
+     "rate": 0.0333
+    },
+    "reached_warn": {
+     "k": 3,
+     "n": 150,
+     "rate": 0.02
+    },
+    "reached_scam": {
+     "k": 0,
+     "n": 150,
+     "rate": 0.0
+    }
+   },
+   "india_sms / scam": {
+    "calls": 150,
+    "scam": true,
+    "reached_watch": {
+     "k": 144,
+     "n": 150,
+     "rate": 0.96
+    },
+    "reached_warn": {
+     "k": 136,
+     "n": 150,
+     "rate": 0.9067
+    },
+    "reached_scam": {
+     "k": 0,
+     "n": 150,
+     "rate": 0.0
+    },
+    "median_t_to_warn": 1.0
+   },
+   "india_sms_other_lang / harmless": {
+    "calls": 549,
+    "scam": false,
+    "reached_watch": {
+     "k": 32,
+     "n": 549,
+     "rate": 0.0583
+    },
+    "reached_warn": {
+     "k": 1,
+     "n": 549,
+     "rate": 0.0018
+    },
+    "reached_scam": {
+     "k": 0,
+     "n": 549,
+     "rate": 0.0
+    }
+   },
+   "india_sms_other_lang / scam": {
+    "calls": 550,
+    "scam": true,
+    "reached_watch": {
+     "k": 437,
+     "n": 550,
+     "rate": 0.7945
+    },
+    "reached_warn": {
+     "k": 243,
+     "n": 550,
+     "rate": 0.4418
+    },
+    "reached_scam": {
+     "k": 0,
+     "n": 550,
+     "rate": 0.0
+    },
+    "median_t_to_warn": 1.0
+   },
+   "team_calls / harmless": {
+    "calls": 13,
+    "scam": false,
+    "reached_watch": {
+     "k": 1,
+     "n": 13,
+     "rate": 0.0769
+    },
+    "reached_warn": {
+     "k": 1,
+     "n": 13,
+     "rate": 0.0769
+    },
+    "reached_scam": {
+     "k": 0,
+     "n": 13,
+     "rate": 0.0
+    }
+   },
+   "team_calls / scam": {
+    "calls": 16,
+    "scam": true,
+    "reached_watch": {
+     "k": 15,
+     "n": 16,
+     "rate": 0.9375
+    },
+    "reached_warn": {
+     "k": 12,
+     "n": 16,
+     "rate": 0.75
+    },
+    "reached_scam": {
+     "k": 6,
+     "n": 16,
+     "rate": 0.375
+    },
+    "median_t_to_warn": 2.0
+   },
+   "uci_sms / harmless": {
+    "calls": 2906,
+    "scam": false,
+    "reached_watch": {
+     "k": 500,
+     "n": 2906,
+     "rate": 0.1721
+    },
+    "reached_warn": {
+     "k": 23,
+     "n": 2906,
+     "rate": 0.0079
+    },
+    "reached_scam": {
+     "k": 0,
+     "n": 2906,
+     "rate": 0.0
+    }
+   },
+   "uci_sms / scam": {
+    "calls": 630,
+    "scam": true,
+    "reached_watch": {
+     "k": 519,
+     "n": 630,
+     "rate": 0.8238
+    },
+    "reached_warn": {
+     "k": 439,
+     "n": 630,
+     "rate": 0.6968
+    },
+    "reached_scam": {
+     "k": 0,
+     "n": 630,
+     "rate": 0.0
+    },
+    "median_t_to_warn": 1.0
+   }
+  }
+ }
+}

@@ -20,8 +20,8 @@ const val CONV_MAX_CHARS = 1200
 const val CONV_SEP = " | "
 const val CONV_MAX_LEN = 320
 
-/** One segment as the model reads it: normalised, Devanagari folded to Latin, one space between words. */
-fun segmentText(t: String): String = clfTokens(t).joinToString(" ")
+/** One segment as the model reads it: normalised, kept in its own script (e5 reads Devanagari natively), one space between words. */
+fun segmentText(t: String): String = normalize(t).joinToString(" ")
 
 /** The last [CONV_MAX_CHARS] characters of the call so far, cut at a segment boundary where possible. */
 fun convWindow(segments: List<String>): String {
