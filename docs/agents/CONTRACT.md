@@ -113,7 +113,7 @@ The user pressed "I understand" on the pay guard. → `{"scam": null}`. The pay 
 
 The phone listens to its own calls (an accessibility service records the mic; on speaker it hears the caller too) and decides how much the call looks like a scam. **Nothing is ever played into the call.** How the phone does it: `docs/agents/platform.md`, "Call listener".
 
-**Levels:** `none` < `watch` (keep quiet) < `warn` (amber card) < `scam` (red card, family alarmed, pay guard on). `scam` always needs two independent sources (`cues`, `phone_ai`, `server`, `context`, `caller_check`), or the user pressing "Alert family" (`user`). One keyword never makes `scam`.
+**Levels:** `none` < `watch` (keep quiet) < `warn` (amber card) < `scam` (red card, family alarmed, pay guard on). `scam` needs either two kinds of evidence (what was said, from `cues` or an LLM judge, plus a strong context signal or the caller check), or at least four cue categories that include a request (money, a code or PIN, a remote-access app) and form a known scam pattern, or the user pressing "Alert family" (`user`). One keyword never makes `scam`; talk *about* scams ("did you see the news…") can't reach `scam` from cues alone. Exact thresholds: `fusion.json`. Phone code: `data/listen/ScamScorer.kt` and `Fusion.kt` (A owns them; C calls them).
 
 **Types:** `digital_arrest`, `bank_kyc`, `otp_upi`, `remote_access`, `family_emergency`, `courier_customs`, `trai_sim`, `job_task`, `investment`, `reward`, `impersonation`, `unknown`.
 

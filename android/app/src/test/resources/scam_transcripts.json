@@ -1,0 +1,672 @@
+{
+  "about": "Shared test transcripts for the call listener. The engine (engine/tests/test_listener.py) and the app (ScamScorerTest.kt) both check every one: with cues and context only (no LLM), the final level must be between min and max, and the type must match when given. 'expect' is what the Python reference produces (python -m engine.listener.fixtures --update) and the Kotlin port must match it exactly. Written from public I4C / RBI / Sanchar Saathi advisories; no real people.",
+  "transcripts": [
+    {
+      "id": "en_digital_arrest",
+      "lang": "en",
+      "label": "scam",
+      "min": "scam",
+      "max": "scam",
+      "type": "digital_arrest",
+      "context": [
+        "unknown_number"
+      ],
+      "turns": [
+        "Hello, am I speaking with Mrs Sunita Sharma?",
+        "This is inspector Rajesh Kumar from Mumbai police cyber crime branch.",
+        "A FedEx parcel in your name was seized by customs. It had five passports and MDMA drugs.",
+        "There is an arrest warrant against you for money laundering. This is a non bailable case.",
+        "You must stay on the video call on Skype for the investigation. Keep your camera on.",
+        "Do not tell anyone in your family, this is strictly confidential, a national secret.",
+        "To prove your innocence, transfer all your savings to the RBI safe account for verification. It is refundable."
+      ],
+      "expect": {
+        "level": "scam",
+        "type": "digital_arrest",
+        "categories": [
+          "authority",
+          "money_ask",
+          "parcel_customs",
+          "secrecy",
+          "threat",
+          "verification_pretext",
+          "video_move"
+        ]
+      }
+    },
+    {
+      "id": "hi_digital_arrest",
+      "lang": "hi",
+      "label": "scam",
+      "min": "scam",
+      "max": "scam",
+      "type": "digital_arrest",
+      "context": [],
+      "turns": [
+        "नमस्ते, मैं मुंबई पुलिस साइबर क्राइम से इंस्पेक्टर शर्मा बोल रहा हूं।",
+        "आपके नाम से एक पार्सल कस्टम ने जब्त किया है, उसमें ड्रग्स मिले हैं।",
+        "आपके खिलाफ मनी लॉन्ड्रिंग का केस दर्ज है, गिरफ्तारी का वारंट निकला है।",
+        "आपको अभी वीडियो कॉल पर रहना होगा, कैमरा चालू रखिए।",
+        "किसी को मत बताना, घरवालों को मत बताना, यह गोपनीय जांच है।",
+        "अपनी जमा राशि आरबीआई के खाते में ट्रांसफर कीजिए, जांच के बाद वापस मिल जाएगी।"
+      ],
+      "expect": {
+        "level": "scam",
+        "type": "digital_arrest",
+        "categories": [
+          "authority",
+          "money_ask",
+          "parcel_customs",
+          "secrecy",
+          "threat",
+          "urgency",
+          "video_move"
+        ]
+      }
+    },
+    {
+      "id": "hinglish_digital_arrest",
+      "lang": "hinglish",
+      "label": "scam",
+      "min": "scam",
+      "max": "scam",
+      "type": "digital_arrest",
+      "context": [
+        "video_call_unknown"
+      ],
+      "turns": [
+        "Madam main CBI officer bol raha hoon, Delhi police headquarters se.",
+        "Aapke Aadhaar se ek sim card liya gaya hai jo money laundering mein use hua hai.",
+        "Aapka arrest warrant nikla hai, aapko digital arrest mein rehna hoga.",
+        "Phone mat katna aur kisi ko mat batana.",
+        "Verification ke liye paise bhejo is account mein, abhi ke abhi."
+      ],
+      "expect": {
+        "level": "scam",
+        "type": "digital_arrest",
+        "categories": [
+          "authority",
+          "money_ask",
+          "secrecy",
+          "sim_block",
+          "threat",
+          "urgency",
+          "video_call_unknown",
+          "video_move"
+        ]
+      }
+    },
+    {
+      "id": "en_bank_kyc_otp",
+      "lang": "en",
+      "label": "scam",
+      "min": "scam",
+      "max": "scam",
+      "type": "bank_kyc",
+      "context": [
+        "unknown_number"
+      ],
+      "turns": [
+        "Good morning sir, I am calling from SBI head office.",
+        "Your KYC is pending and your account will be blocked today itself.",
+        "To update your KYC I have sent a six digit code to your mobile.",
+        "Please tell me the code you received, it is only for verification.",
+        "Sir quickly, otherwise your account will be frozen and the money transfer will stop."
+      ],
+      "expect": {
+        "level": "scam",
+        "type": "bank_kyc",
+        "categories": [
+          "credentials",
+          "money_ask",
+          "threat",
+          "urgency",
+          "verification_pretext"
+        ]
+      }
+    },
+    {
+      "id": "hinglish_kyc_anydesk",
+      "lang": "hinglish",
+      "label": "scam",
+      "min": "scam",
+      "max": "scam",
+      "type": "remote_access",
+      "context": [
+        "remote_app_opened"
+      ],
+      "turns": [
+        "Sir aapka KYC update karna hai warna account band ho jayega.",
+        "Aap Play Store se AnyDesk app download karo.",
+        "Jo nau digit ka code aaya hai woh mujhe bataiye.",
+        "Ab apna UPI pin daaliye, ek rupaye ka verification hoga."
+      ],
+      "expect": {
+        "level": "scam",
+        "type": "remote_access",
+        "categories": [
+          "credentials",
+          "remote_access",
+          "threat",
+          "verification_pretext"
+        ]
+      }
+    },
+    {
+      "id": "hi_family_emergency",
+      "lang": "hi",
+      "label": "scam",
+      "min": "scam",
+      "max": "scam",
+      "type": "family_emergency",
+      "context": [
+        "unknown_number"
+      ],
+      "turns": [
+        "मम्मी, मैं राहुल बोल रहा हूं, मेरा एक्सीडेंट हो गया है।",
+        "यह मेरे दोस्त का फोन है, मेरा फोन खराब हो गया।",
+        "अस्पताल वाले अभी पचास हजार रुपये मांग रहे हैं, तुरंत भेज दो।",
+        "पापा को मत बताना, वो परेशान हो जाएंगे। इस यूपीआई पर पैसे भेजो।"
+      ],
+      "expect": {
+        "level": "scam",
+        "type": "family_emergency",
+        "categories": [
+          "family_emergency",
+          "money_ask",
+          "secrecy",
+          "urgency"
+        ]
+      }
+    },
+    {
+      "id": "hinglish_family_emergency_spoofed",
+      "lang": "hinglish",
+      "label": "scam",
+      "min": "scam",
+      "max": "scam",
+      "type": "family_emergency",
+      "context": [
+        "caller_check_failed"
+      ],
+      "turns": [
+        "Mummy main hoon, bahut badi musibat mein hoon.",
+        "Police station mein hoon, zamanat ke liye paise chahiye.",
+        "Jaldi se GPay kar do, kisi ko mat batana."
+      ],
+      "expect": {
+        "level": "scam",
+        "type": "family_emergency",
+        "categories": [
+          "authority",
+          "family_emergency",
+          "money_ask",
+          "secrecy",
+          "urgency"
+        ]
+      }
+    },
+    {
+      "id": "en_trai_sim",
+      "lang": "en",
+      "label": "scam",
+      "min": "scam",
+      "max": "scam",
+      "type": "trai_sim",
+      "context": [
+        "international_number"
+      ],
+      "turns": [
+        "This is an automated call from TRAI, the telecom regulatory authority.",
+        "Your mobile number will be disconnected in two hours because it is being used for illegal activity.",
+        "Press nine to speak to the officer.",
+        "Sir, a case is registered against your number, I will connect you to Mumbai police."
+      ],
+      "expect": {
+        "level": "scam",
+        "type": "trai_sim",
+        "categories": [
+          "authority",
+          "international_number",
+          "sim_block",
+          "threat"
+        ]
+      }
+    },
+    {
+      "id": "en_courier_customs",
+      "lang": "en",
+      "label": "scam",
+      "min": "warn",
+      "max": "scam",
+      "type": "courier_customs",
+      "context": [
+        "unknown_number"
+      ],
+      "turns": [
+        "Hello, this is calling from DHL courier.",
+        "Your parcel from Taiwan is held at customs because it contains illegal items.",
+        "You need to pay the clearance fee of eighteen thousand rupees now, or a case will be filed."
+      ],
+      "expect": {
+        "level": "scam",
+        "type": "courier_customs",
+        "categories": [
+          "authority",
+          "money_ask",
+          "parcel_customs",
+          "threat"
+        ]
+      }
+    },
+    {
+      "id": "hinglish_job_task",
+      "lang": "hinglish",
+      "label": "scam",
+      "min": "warn",
+      "max": "scam",
+      "type": "job_task",
+      "context": [
+        "unknown_number"
+      ],
+      "turns": [
+        "Hello ma'am, part time job hai, ghar baithe kamai.",
+        "Bas YouTube videos like karne hain, har task ka commission milega.",
+        "Pehle prepaid task ke liye do hazaar rupees transfer karo, double wapas milega."
+      ],
+      "expect": {
+        "level": "warn",
+        "type": "job_task",
+        "categories": [
+          "job_task",
+          "money_ask"
+        ]
+      }
+    },
+    {
+      "id": "en_investment",
+      "lang": "en",
+      "label": "scam",
+      "min": "warn",
+      "max": "scam",
+      "type": "investment",
+      "context": [
+        "unknown_number"
+      ],
+      "turns": [
+        "Sir I am from a SEBI registered advisory, we give stock tips with guaranteed returns.",
+        "Join our telegram group and install our trading app.",
+        "Invest fifty thousand now and you will get daily profit, double your money in one month."
+      ],
+      "expect": {
+        "level": "warn",
+        "type": "investment",
+        "categories": [
+          "investment",
+          "job_task",
+          "money_ask"
+        ]
+      }
+    },
+    {
+      "id": "hi_lottery_kbc",
+      "lang": "hi",
+      "label": "scam",
+      "min": "warn",
+      "max": "scam",
+      "type": "reward",
+      "context": [
+        "international_number"
+      ],
+      "turns": [
+        "बधाई हो, आप कौन बनेगा करोड़पति की लॉटरी में पच्चीस लाख रुपये जीत गए हैं।",
+        "इनाम पाने के लिए पहले प्रोसेसिंग फीस जमा कीजिए।",
+        "जो ओटीपी आया है वह बताइए ताकि पैसा आपके खाते में भेजा जा सके।"
+      ],
+      "expect": {
+        "level": "scam",
+        "type": "reward",
+        "categories": [
+          "credentials",
+          "international_number",
+          "money_ask",
+          "reward"
+        ]
+      }
+    },
+    {
+      "id": "en_electricity",
+      "lang": "en",
+      "label": "scam",
+      "min": "warn",
+      "max": "scam",
+      "context": [
+        "unknown_number"
+      ],
+      "turns": [
+        "Dear customer, your electricity connection will be cut tonight at nine thirty because your bill is pending.",
+        "Please contact the electricity officer immediately.",
+        "Click the link I sent and pay the pending bill to avoid disconnection."
+      ],
+      "expect": {
+        "level": "scam",
+        "type": "remote_access",
+        "categories": [
+          "remote_access",
+          "threat",
+          "urgency",
+          "verification_pretext"
+        ]
+      }
+    },
+    {
+      "id": "hinglish_otp_refund",
+      "lang": "hinglish",
+      "label": "scam",
+      "min": "warn",
+      "max": "scam",
+      "type": "otp_upi",
+      "context": [
+        "unknown_number"
+      ],
+      "turns": [
+        "Sir aapka refund aana hai, galti se zyada payment ho gaya tha.",
+        "Main collect request bhej raha hoon, usko accept karo aur pin daalo.",
+        "OTP bata do jaldi, nahi to refund cancel ho jayega."
+      ],
+      "expect": {
+        "level": "scam",
+        "type": "otp_upi",
+        "categories": [
+          "credentials",
+          "money_ask",
+          "reward",
+          "urgency"
+        ]
+      }
+    },
+    {
+      "id": "en_short_digital_arrest_opening",
+      "lang": "en",
+      "label": "scam",
+      "min": "warn",
+      "max": "warn",
+      "type": "digital_arrest",
+      "context": [],
+      "turns": [
+        "This is the cyber crime branch, Delhi police.",
+        "There is a warrant against your Aadhaar number."
+      ],
+      "expect": {
+        "level": "warn",
+        "type": "digital_arrest",
+        "categories": [
+          "authority",
+          "threat"
+        ]
+      }
+    },
+    {
+      "id": "en_genuine_bank_fraud_alert",
+      "lang": "en",
+      "label": "benign",
+      "min": "none",
+      "max": "watch",
+      "context": [
+        "known_contact"
+      ],
+      "turns": [
+        "Hello, this is HDFC Bank calling about a card transaction of four thousand two hundred at Amazon.",
+        "If this was you, no action is needed.",
+        "Please remember the bank will never ask for your OTP, PIN or CVV on a call."
+      ],
+      "expect": {
+        "level": "watch",
+        "type": "otp_upi",
+        "categories": [
+          "credentials",
+          "money_ask"
+        ]
+      }
+    },
+    {
+      "id": "en_delivery_otp",
+      "lang": "en",
+      "label": "benign",
+      "min": "none",
+      "max": "watch",
+      "context": [
+        "unknown_number"
+      ],
+      "turns": [
+        "Hi, I'm from Amazon delivery, I'm at your gate.",
+        "Please tell me the OTP for the delivery so I can hand over the package."
+      ],
+      "expect": {
+        "level": "watch",
+        "type": "otp_upi",
+        "categories": [
+          "credentials",
+          "parcel_customs"
+        ]
+      }
+    },
+    {
+      "id": "hinglish_delivery_otp_abhi",
+      "lang": "hinglish",
+      "label": "benign",
+      "min": "none",
+      "max": "watch",
+      "context": [
+        "unknown_number"
+      ],
+      "turns": [
+        "Madam Flipkart se delivery hai, main neeche khada hoon.",
+        "OTP bata dijiye abhi, mujhe jaldi agla order dena hai."
+      ],
+      "expect": {
+        "level": "watch",
+        "type": "otp_upi",
+        "categories": [
+          "credentials",
+          "urgency"
+        ]
+      }
+    },
+    {
+      "id": "hinglish_son_asks_money",
+      "lang": "hinglish",
+      "label": "benign",
+      "min": "none",
+      "max": "watch",
+      "context": [
+        "caller_verified"
+      ],
+      "turns": [
+        "Mummy, rent ke liye do hazaar kam pad rahe hain.",
+        "GPay kar do please, main kal wapas kar dunga. Abhi class ja raha hoon."
+      ],
+      "expect": {
+        "level": "watch",
+        "type": "unknown",
+        "categories": [
+          "money_ask",
+          "urgency"
+        ]
+      }
+    },
+    {
+      "id": "hi_doctor",
+      "lang": "hi",
+      "label": "benign",
+      "min": "none",
+      "max": "watch",
+      "context": [
+        "known_contact"
+      ],
+      "turns": [
+        "नमस्ते, मैं सिटी अस्पताल से बोल रही हूं।",
+        "आपका कल सुबह दस बजे डॉक्टर के साथ अपॉइंटमेंट है, कृपया समय पर आइए।"
+      ],
+      "expect": {
+        "level": "watch",
+        "type": "unknown",
+        "categories": [
+          "family_emergency"
+        ]
+      }
+    },
+    {
+      "id": "en_news_discussion",
+      "lang": "en",
+      "label": "benign",
+      "min": "none",
+      "max": "warn",
+      "context": [
+        "caller_verified"
+      ],
+      "turns": [
+        "Did you read the news about the digital arrest scam?",
+        "Fraudsters pretend to be CBI officers on a video call and say there is an arrest warrant.",
+        "Then they ask people to transfer money. Be careful, never send money to anyone like that."
+      ],
+      "expect": {
+        "level": "warn",
+        "type": "digital_arrest",
+        "categories": [
+          "authority",
+          "money_ask",
+          "threat",
+          "video_move"
+        ]
+      }
+    },
+    {
+      "id": "hi_news_discussion",
+      "lang": "hi",
+      "label": "benign",
+      "min": "none",
+      "max": "warn",
+      "context": [
+        "caller_verified"
+      ],
+      "turns": [
+        "आजकल डिजिटल अरेस्ट वाली ठगी की खबर सुनी?",
+        "ठग पुलिस बनकर वीडियो कॉल करते हैं और पैसे ट्रांसफर करवाते हैं, सावधान रहना।"
+      ],
+      "expect": {
+        "level": "warn",
+        "type": "digital_arrest",
+        "categories": [
+          "authority",
+          "money_ask",
+          "video_move"
+        ]
+      }
+    },
+    {
+      "id": "en_genuine_kyc_branch",
+      "lang": "en",
+      "label": "benign",
+      "min": "none",
+      "max": "watch",
+      "context": [
+        "known_contact"
+      ],
+      "turns": [
+        "Hello, this is your branch manager from Canara Bank.",
+        "Your KYC documents are due for renewal. Please visit the branch with your Aadhaar and PAN when convenient."
+      ],
+      "expect": {
+        "level": "watch",
+        "type": "unknown",
+        "categories": [
+          "verification_pretext"
+        ]
+      }
+    },
+    {
+      "id": "en_telemarketing_card",
+      "lang": "en",
+      "label": "benign",
+      "min": "none",
+      "max": "warn",
+      "context": [
+        "unknown_number"
+      ],
+      "turns": [
+        "Sir, you have a pre-approved credit card offer with a higher credit card limit and no annual fee.",
+        "Shall I send the application link on WhatsApp? You can apply when you want."
+      ],
+      "expect": {
+        "level": "watch",
+        "type": "unknown",
+        "categories": [
+          "verification_pretext"
+        ]
+      }
+    },
+    {
+      "id": "hinglish_family_plans",
+      "lang": "hinglish",
+      "label": "benign",
+      "min": "none",
+      "max": "watch",
+      "context": [
+        "caller_verified"
+      ],
+      "turns": [
+        "Haan papa, Diwali pe ghar aa raha hoon.",
+        "Ticket book kar liya hai, train subah chhe baje hai. Mummy ko bol dena."
+      ],
+      "expect": {
+        "level": "none",
+        "type": "unknown",
+        "categories": []
+      }
+    },
+    {
+      "id": "en_mechanic_payment",
+      "lang": "en",
+      "label": "benign",
+      "min": "none",
+      "max": "watch",
+      "context": [
+        "known_contact"
+      ],
+      "turns": [
+        "Your car is ready, madam. The service cost is six thousand five hundred rupees.",
+        "You can pay by UPI when you pick it up this evening."
+      ],
+      "expect": {
+        "level": "watch",
+        "type": "unknown",
+        "categories": [
+          "money_ask"
+        ]
+      }
+    },
+    {
+      "id": "hi_police_verification_genuine",
+      "lang": "hi",
+      "label": "benign",
+      "min": "none",
+      "max": "warn",
+      "context": [
+        "known_contact"
+      ],
+      "turns": [
+        "नमस्ते, मैं थाने से बोल रहा हूं, आपके किरायेदार के पुलिस वेरिफिकेशन के बारे में।",
+        "कल दोपहर तक उनके आधार की कॉपी लेकर थाने आ जाइए।"
+      ],
+      "expect": {
+        "level": "watch",
+        "type": "unknown",
+        "categories": [
+          "authority",
+          "verification_pretext"
+        ]
+      }
+    }
+  ]
+}

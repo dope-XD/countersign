@@ -70,6 +70,8 @@ dependencies {
     implementation("com.google.zxing:core:3.5.4") // draws the family invite QR code
     implementation("com.google.android.gms:play-services-code-scanner:16.1.0") // scans it, without a camera permission
 
+    testImplementation("junit:junit:4.13.2")
+    testImplementation("org.json:json:20240303") // real org.json for JVM tests (ScamScorerTest); Android supplies it on the phone
     androidTestImplementation("androidx.test:runner:1.7.0")
     androidTestImplementation("androidx.test.ext:junit:1.3.0")
 }
