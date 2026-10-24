@@ -269,4 +269,5 @@
     <string name="alarm_boss_payment">कोई बॉस बनकर पेमेंट माँग रहा है।</string>
     <string name="why_boss_pretext">खुद को बॉस बताया, मीटिंग में होने की बात</string>
     <string name="why_payment_redirect">नया खाता या तुरंत ट्रांसफ़र</string>
+    <string name="prompt_doing_server_done">हमारे सुरक्षित सर्वर पर दोबारा जाँचा: वह भी सहमत है।</string>
 </resources>

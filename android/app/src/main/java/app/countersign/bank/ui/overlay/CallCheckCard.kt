@@ -63,6 +63,7 @@ import app.countersign.bank.data.Member
 import app.countersign.bank.data.Outcome
 import app.countersign.bank.data.RingState
 import app.countersign.bank.data.RiskLevel
+import app.countersign.bank.data.RiskSource
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.material3.TextButton
 import app.countersign.bank.ui.components.whyLine
@@ -289,7 +290,8 @@ private fun Prompter(state: CallCheckUi) {
     val doing = buildList {
         if (state.cleared) return@buildList
         when {
-            level == RiskLevel.SCAM -> add(R.string.prompt_doing_scam)
+            // at red the card above already says the family is alerted: say what the server did instead
+            level == RiskLevel.SCAM -> if (state.risk?.sources?.contains(RiskSource.SERVER) == true) add(R.string.prompt_doing_server_done)
             state.serverCheck -> add(R.string.prompt_doing_server)
             level == RiskLevel.WARN -> add(R.string.prompt_doing_warn)
             else -> add(R.string.prompt_doing_listening)

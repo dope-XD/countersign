@@ -285,4 +285,5 @@
     <string name="alarm_boss_payment">Someone is pretending to be the boss and asking for a payment.</string>
     <string name="why_boss_pretext">says they are your boss, busy in a meeting</string>
     <string name="why_payment_redirect">a new account or urgent transfer</string>
+    <string name="prompt_doing_server_done">Checked again on our secure server: it agrees.</string>
 </resources>

@@ -1,38 +1,62 @@
 # Plan vs built
 
-What the Round 1 plan and our finale disclosure (section 3) promised, against what is in the repository now. Every
-"built" links to the code and to a test or measurement.
+Our Round 1 submission was a three-page architecture: *End-to-end system and data flow*, *Detection logic*, and
+*Human review, escalation, security and privacy*. Every row below is a promise from those pages, with what is in the
+repository now and the evidence (code, a test or a measurement). "Changed" means built differently, with the reason.
 
-> **Round 1 48-hour plan text: to be pasted by the team.** The rows under "Round 1 plan" are filled in once it is here;
-> the rows below cover the finale plan we declared at check-in and the final-build plan of 24 Oct, 19:30.
+## Page 1: system and data flow
 
-## Round 1 plan
-
-| Promise | Status | Evidence / reason |
+| Round 1 promise | Status | What is built / why it changed |
 |---|---|---|
-| *(team to paste each promise)* | | |
+| Runs in a trusted cloud boundary; hears only calls the bank receives and voice notes the customer shares | **Built, widened** | The engine runs on a team laptop today (`engine/app.py`, reached through a tunnel), the stand-in for the bank's cloud. On site we added the customer's own phone as a listener (Entry B), because most Indian scams reach the victim on their personal number, not the bank's |
+| Entry A: caller → contact centre / IVR (Amazon Connect or SIP, tracks forked at 8 kHz) → ingest | **Built** (before the finale) | `/ws/caller`, `integrations/connect`, `engine/ingest/connect.py`; the web caller page stands in for a phone line |
+| Ingest: VAD, 4 s windows every 2 s, audio in memory only | **Built** | `engine/session.py`; and the same rule on the phone (`Speech.kt`, Silero VAD) and in `/ws/listen` |
+| S1 synthetic speech, S2 speaker drift, S3 liveness, S4 context | **Built** | `engine/signals/`; S1 is now the AntiDeepfake W2V-Large (the ensemble's second model was on the GPU laptop), loaded with its calibration. On the phone: a 6-layer version of the same model (`ml/voice_clone.py`) |
+| Fusion → calibrated score, tier and reason codes | **Built, extended** | Bank side `engine/fusion.py`; call side `fusion.json` (cues + our classifier + context + voice + server), Kotlin = Python on shared vectors |
+| Policy engine: tier × context × requested action | **Built** | `engine/policy.py`, `policy.yaml`; `test_api.py` |
+| Agent console (Voice Trust Card) → fraud desk (human analyst) | **Built** | `web/src/pages/Agent.tsx`, `FraudDesk.tsx`; served by the laptop engine at `/agent`, `/fraud` |
+| Step-up: approval request to the customer's registered phone, passkey signature | **Built** | `engine/stepup/devicekeys.py`; the app's ring screen and fingerprint (`ApprovalActivity`, `RingScreen.kt`) |
+| Case store + audit log; reporting (NCRP / 1930, DoT DIP) | **Built / partly** | `engine/cases.py`, audit table; the 1930 / DIP report is drafted in the case, not filed to a live API |
+| B1 guard on the customer's phone (call active + new payee + unusual amount) | **Built, changed** | The pay guard (`PayGuardScreen.kt`, `Overlay.kt`) stops payment apps during a call the caller check or the listener flags. It doesn't see payee or amount (only the bank's app can) |
+| B2 voice notes the customer chooses to share, scored, verdict in plain words | **Built, changed** | "Check a recording or message" (`CheckScreen.kt`): any recording or text, checked on the phone itself, nothing uploaded |
+| B3 Family Circle: "did you ask for this payment?" | **Built, widened** | The caller check asks the claimed member's phone directly; the family alarm rings them; a **work circle** covers a boss or colleague ordering a payment |
 
-## Finale plan (declared at check-in) and the final build
+## Page 2: detection logic
 
-| Promise | Status | Evidence / reason |
+| Round 1 promise | Status | Evidence |
 |---|---|---|
-| Caller check: is the claimed family member's phone really on this call? | **Built** | `engine/callcheck.py`, `CallCheckCard.kt`; `engine/tests/test_calls.py` |
-| Scam-pattern scorer on the phone (cue categories, scam types, negations) | **Built** | `ScamScorer.kt` = `engine/listener/rules.py`; `ScamScorerTest`, `test_listener.py` |
-| Fuse cues, caller check and context: "scam" needs two kinds of evidence | **Built** | `Fusion.kt` = `fusion.py`; `AnalyzerTest`, `test_listener.py` |
-| Warn and scam cards that say why they fired; one-tap "I know this caller" | **Built** | `CallCheckCard.kt` (`whyLine`), `notAScam`, `POST /api/m/scam-alert/clear`; `test_relay.py` |
-| Pay guard over UPI apps | **Built** | `PayGuardScreen.kt`, `Overlay.kt` |
-| Family alarm that rings, Call / Message; SMS when their app is off | **Built** | `FamilyAlarmScreen.kt`, `FamilyAlarmActivity.kt`, `ScamAlert.kt`; `test_relay.py` |
-| Evaluation of the listener on public data | **Built, beyond plan** | `ml.eval.run_all`, `docs/RESULTS.md`: held-out sets, leave-one-dataset-out, false positives, failure cases |
-| Server "stronger check": speech-to-text + a local LLM judge on the laptop | **Cut** | The team decided everything runs on the phone: the laptop tunnel had been down since 16:40 and was a single point of failure. Our own on-phone classifier took the judge's slot (PRs #58, #66 closed) |
-| S1 voice model on the laptop | **Replaced** | Over a speakerphone its EER was 24–40%. Replaced by a small on-phone voice-clone check (first K layers + our head, ONNX int8), which can only raise amber (`ml/voice_clone.py`, RESULTS.md) |
-| On-phone LLM (Gemma 3n) | **Cut** | 3–4 GB RAM and slow on a mid-range phone; our classifier is measurable and fast (#43 closed) |
-| Bank-side flows (agent console, kill switch, payments) | **Cut earlier** | Removed in #33; the product is the family app |
+| S1 XLS-R + SLS, fine-tuned on phone codecs and Indic | **Replaced (before the finale)** | AntiDeepfake models won the phone-channel benchmark (`docs/ML.md`) |
+| S2 ECAPA drift, no stored voiceprint | **Built** | `engine/signals/s2_drift.py` (loads on the laptop) |
+| S3 random challenge, reply timing + ASR | **Built** | `engine/signals/s3_liveness.py`, agent console "challenge" |
+| S4 caller ID, SIM swap, FRI, live app session | **Built (mocked sources)** | `engine/signals/s4_context.py`; telco and DoT feeds are simulated in the demo panel (`/demo`) |
+| Logistic fusion, GREEN < 0.30 / AMBER / RED ≥ 0.70, top-3 reason codes | **Built** | `engine/fusion.py`; the same 0.70 RED cut-off is used for S1 in `/ws/listen` |
+| Tier × request table (balance … change mobile, add payee, raise limit) | **Built** | `engine/policy.yaml` |
+| "Which layer stops which attacker", performance targets (p95 ≤ 300 ms per window on one GPU) | **Measured** | `models/eval/load_rtx5070-laptop*.json` (before the finale); `docs/ADVERSARIAL.md` |
+| Design expectations "to be measured at the finale" | **Measured** | `docs/RESULTS.md`: held-out sets, false positives, the spot-check kit, named failure cases |
 
-## Added in the final build (not in either plan)
+## Page 3: human review, escalation, security and privacy
 
-| What | Why | Evidence |
+| Round 1 promise | Status | Evidence |
 |---|---|---|
-| Our scam classifier (char n-grams, logistic regression), Kotlin = Python | a measurable, fast model of our own in the judge slot | `ml/listener_clf.py`, `ScamClassifierTest` |
-| On-phone speech-to-text chosen by a bake-off | the phone has to understand Hinglish without a server | `ml/eval/asr_bakeoff.py`, `models/eval/asr_bakeoff.json` |
-| "Check a recording or message" on the phone | the jury's spot-check kit runs on the phone itself | `CheckScreen.kt`, `ml/eval/kit.py` |
-| The relay with no ML (Render) | phone-to-phone messages without the laptop | `engine/relay.py`, `test_relay.py` |
+| L0 automatic (can hold, never refuse service) → L1 agent (can't override RED) → L2 analyst (decide in 15 min) | **Built** | `policy.py`, agent console, fraud desk |
+| Fraud confirmed / false alarm / unsure outcomes; two analysts before a label enters training | **Built / partly** | `cases.resolve`; on the phone, "Not a scam" keeps an ids-only record for weekly review (`/api/metrics`); no automatic retraining |
+| Raw call audio: not kept, 20 s rolling memory buffer | **Built** | `session.py`, `live.py`, `Speech.kt` |
+| Evidence clip ≤ 20 s for RED only, AES-256, deleted after 30 days | **Built** | `cases.store_clip`; `/ws/listen` opens a RED case with the clip (tested with the kit scam call) |
+| Scores, tier, reason codes, model version kept | **Built** | case store; `model_version` on every case |
+| Speaker embeddings memory only; voiceprints never collected; challenge transcripts not kept | **Built** | S2 per call; transcripts never stored (phone or server) |
+| Call state on the customer's phone checked on the phone; only "guard fired" sent | **Built** | `CallContext.kt`; only context ids and scam-alert ids leave the phone |
+| Family Circle: both consent, either can remove | **Built** | invite + confirm; "Remove from family" |
+| Attacks on Countersign (stream injection, probing, insiders, poisoned labels, outages) | **Built / described** | TLS through the tunnel, device tokens, rate limits, role-gated clip access with audit; the phone keeps working alone when the server is down |
+| DPDP, CERT-In, RBI rules | **Described** | `docs/DEPLOY.md` |
+| Fairness: no group above 2× the overall false-positive rate | **Measured per language** | `docs/RESULTS.md`, "Per language" |
+
+## Changed or cut on site, and why
+
+| What | Why |
+|---|---|
+| **The customer's own phone became a listener** (Entry B grew from voice notes to live calls) | Round 1 could only protect calls into the bank. Most "digital arrest", KYC and fake-relative scams call the victim directly, so the phone now listens on speaker, explains itself in plain words, and alarms the family |
+| **Hybrid detection** instead of all-server | The phone checks every call itself (on-device processing, a rubric safeguard); only calls it already finds suspicious go to the server's stronger check. Less audio leaves the phone, and the phone still works when the server is down |
+| The local LLM judge and the earlier "stronger check for every call" | Replaced by our own classifier: measurable on held-out data, fast, and it runs on the phone |
+| On-phone LLM (Gemma 3n) | 3–4 GB of RAM and slow on a mid-range phone |
+| The bank's virtual voice agent, payments, kill switch, paid APIs (ElevenLabs, LLM APIs) | Removed in PR #33: not needed for detection, and they cost money per call |
+| Amazon Connect as the live demo entry | Kept in the code; the demo uses the web caller page and real phones, which don't need an AWS account on stage |

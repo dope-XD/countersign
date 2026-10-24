@@ -31,7 +31,7 @@ Three models and one rule set run on the phone; none of them sends anything off 
 
 - **Intended use:** warn a person and their family during a call, and let them check a recording or message. Not for identifying people, and not as evidence against anyone.
 - **Human in the loop:** the family member and the user decide; "Not a scam" clears any card in one tap, tells the family, and keeps one ids-only record for weekly human review (`/api/metrics`).
-- **Privacy:** audio and words stay on the phone and are dropped after scoring; only levels, scam types and cue ids are sent.
+- **Privacy:** every call is checked on the phone. Only calls the phone already finds suspicious are streamed to the detection server, which holds audio in memory and drops it; a confirmed scam keeps a 20 s AES-256 clip for the fraud desk for 30 days (Round 1 plan). Transcripts are never stored anywhere.
 - **Fairness:** false positives reported per language (en, hi, Hinglish) in RESULTS.md; target no language above 2× the overall false-positive rate. Other Indian languages are out of scope (4% recall) and said so.
 
 ## Legacy: the laptop voice model (S1), cut on site

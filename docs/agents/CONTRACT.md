@@ -2,7 +2,7 @@
 
 The engine (A) implements this; `RealRepository` (C) calls it; screens (B) see it only through `data/Models.kt` and `data/Repository.kt`. Only A edits this file, through a `contract-change` issue (`PROTOCOL.md`).
 
-- **Relay:** the app talks to a small relay (`engine/relay.py`, no ML) on a free host; its URL is in `docs/DEPLOY.md` and `BuildConfig.DEFAULT_SERVER`. **All scam analysis happens on the phone**; the relay only passes family links, caller checks, scam alerts and the family alarm between phones. Locally: `uvicorn engine.relay:app --port 8000`.
+- **Server:** the detection server (`engine/app.py` on a team laptop now, reached through a tunnel; the bank's servers later). It also passes family links, caller checks, scam alerts and the family alarm between phones. `engine/relay.py` is the same messaging without detection, for a free host. The phone checks every call itself first (hybrid; `/ws/listen`).
 - **Auth:** every `/api/m/*` call except `signup` and `claim` sends `X-Device-Token: <token>` (from sign-up) and `ngrok-skip-browser-warning: 1`.
 - **Errors:** non-2xx with `{"detail": "One sentence a user can read."}`. Show it as is.
 - **Times:** server times are Unix seconds (float). `Models.kt` turns them into epoch milliseconds.
