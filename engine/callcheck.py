@@ -132,14 +132,15 @@ def _seen(customer_id: str) -> float:
 def evaluate(check: dict) -> str:
     asker, claimed = check["asker"], check["member"]
     t = _ring_time(check)
-    theirs = _calls(claimed).values()
+    # a call of theirs that had already ended when Mom's phone rang can't be this call
+    theirs = [c for c in _calls(claimed).values() if c["end"] is None or c["end"] >= t]
     with_me = [c for c in theirs if c["peer"] == asker and t - BEFORE_S <= c["start"] <= t + AFTER_S]
     if with_me:
         old = time.time() - (world.customer(asker).family.get(claimed) or {}).get("since", 0.0) >= NEW_LINK_S
         return "verified" if old else "likely"
     if any(c["outgoing"] and c["peer"] is None and t - BEFORE_S <= c["start"] <= t + AFTER_S for c in theirs):
         return "likely"
-    if any(c["start"] <= t + AFTER_S and (c["end"] is None or c["end"] >= t) for c in theirs):
+    if any(c["start"] <= t + AFTER_S for c in theirs):
         return "not_with_you"
     if time.time() - _seen(claimed) <= ONLINE_S:
         return "not_them"

@@ -65,6 +65,15 @@ def test_his_phone_dialling_an_unmatched_number_at_that_moment_is_likely(fam):
     assert check(mom, son, matched=False, via="manual")["verdict"] == "likely"
 
 
+def test_a_call_he_already_hung_up_does_not_count(fam, quick):
+    mom, son = fam
+    ev(son, "s1", "outgoing", peer=mom.id, elapsed_ms=10_000)
+    ev(son, "s1", "ended", elapsed_ms=3_000)  # he hung up; then someone else rings Mom with his number
+    ev(mom, "m2", "ringing", peer=son.id)
+    c = check(mom, son, call_id="m2")
+    assert c["verdict"] == "not_them" and c["spoof_suspected"]
+
+
 def test_his_phone_on_a_different_call_is_not_with_you(fam, quick):
     mom, son = fam
     ev(son, "s1", "outgoing", peer=None, elapsed_ms=180_000)  # a call he started 3 minutes ago, still going
