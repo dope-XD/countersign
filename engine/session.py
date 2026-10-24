@@ -95,7 +95,7 @@ class CallSession:
     id: str
     caller_cli: str
     language: str = "unknown"
-    source: str = "softphone"  # softphone | connect | app (a call from the CS Bank app, answered by the virtual agent)
+    source: str = "softphone"  # softphone | connect (Amazon Connect)
     customer_id: str | None = None
     started: float = field(default_factory=time.time)
     status: str = "ringing"  # ringing | live | ended
@@ -117,8 +117,6 @@ class CallSession:
     timeline: list[dict] = field(default_factory=list)
     caller_ws: object = None
     agent_wss: set = field(default_factory=set)
-    vad_listeners: list = field(default_factory=list)  # the virtual agent hears the caller through these
-    typed_turns: object = None  # attack mode: what the "fraudster" types for the clone to say (an asyncio.Queue)
     _next_window_pos: int = WINDOW
     _scoring: bool = False
 
@@ -284,14 +282,10 @@ class CallSession:
         return last is not None and time.time() - last < 2.0
 
     def _on_caller_vad(self, kind: str, pos: int) -> None:
-        for listen in self.vad_listeners:
-            listen(kind, pos)
         c = self.challenge
         if c is None or c.done:
             return
         if kind == "onset" and c.reply_onset_wall is None:
-            if self.source == "app" and c.agent_end_wall is None:
-                return  # the virtual agent is still reading the request out (the phone sends silence meanwhile)
             if self._agent_mic_live() and (self.agent.vad.in_speech or c.agent_end_wall is None):
                 return  # the agent is still reading the challenge (or this is its echo)
             wall = self.caller.wall_at(pos)

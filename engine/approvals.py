@@ -83,7 +83,7 @@ def _record_human_lag(call_id: str | None) -> None:
     """An approved request means the caller was the real customer, so their liveness reply
     delay is a genuine human sample for the IndiaCall simulator."""
     cs = calls.get(call_id) if call_id else None
-    if not cs or cs.source == "app" or not cs.liveness or cs.liveness.get("lag_s") is None or settings.eval_mode:
+    if not cs or not cs.liveness or cs.liveness.get("lag_s") is None or settings.eval_mode:
         return
     p = indiacall.ROOT / "human_lags.json"
     p.parent.mkdir(parents=True, exist_ok=True)

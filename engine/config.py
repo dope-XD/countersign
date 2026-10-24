@@ -69,22 +69,9 @@ class Settings:
     connect_secret: str = _env("CONNECT_SECRET", "")
     connect_aws_profile: str = _env("CONNECT_AWS_PROFILE", "")
 
-    # CS Bank app files (engine/mobile.py): the APK offered for download (app/cs-bank.apk) and the
-    # cloned-voice clips the app's attack mode can play into a call (app/samples/*.wav, consented
-    # clones only, labelled in app/samples/labels.json).
+    # The app's APK, offered for download at /download/cs-bank.apk (app/cs-bank.apk).
     app_dir: Path = Path(_env("APP_DIR", str(ROOT / "data" / "app")))
     eval_mode: bool = _env("EVAL", "0") == "1"
-
-    # The virtual agent that answers calls from the CS Bank app (engine/agent/). Every service is
-    # optional: without ElevenLabs the phone reads the agent's lines itself and faster-whisper
-    # transcribes the caller on our GPU; without an LLM the agent understands callers by keywords.
-    elevenlabs_key: str = os.environ.get("ELEVENLABS_API_KEY", "")
-    tts_voice: str = _env("TTS_VOICE", "")  # an ElevenLabs voice id; pick an Indian English voice in their library
-    tts_model: str = _env("TTS_MODEL", "eleven_flash_v2_5")
-    stt: str = _env("STT", "elevenlabs")  # elevenlabs | local (faster-whisper here: caller audio never leaves our server)
-    # JSON list of OpenAI-compatible chat providers, tried in order: [{"base_url", "model", "key_env"}].
-    # Empty = Groq, Gemini and Mistral, whichever of GROQ_API_KEY, GEMINI_API_KEY, MISTRAL_API_KEY are set.
-    llm_providers: str = _env("LLM_PROVIDERS", "")
 
     # Mock KMS: a 32-byte hex key. Generated on first run if absent.
     evidence_key_hex: str = _env("EVIDENCE_KEY", "")

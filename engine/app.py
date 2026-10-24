@@ -19,8 +19,7 @@ from contextlib import asynccontextmanager
 from fastapi import APIRouter, Depends, FastAPI, File, Form, HTTPException, Request, Response, UploadFile, WebSocket, WebSocketDisconnect
 from fastapi.responses import FileResponse, JSONResponse
 
-from engine import approvals, auth, callcheck, cases, guard, indiacall, mobile, policy, schemas
-from engine.agent import dialog
+from engine import approvals, auth, callcheck, cases, indiacall, mobile, policy, schemas
 from engine.config import settings
 from engine.db import db
 from engine.fingerprint import replay_index
@@ -60,7 +59,6 @@ async def _housekeeping() -> None:
     n = 0
     while True:
         await asyncio.sleep(5)
-        guard.tick()  # payment holds, unanswered family checks, kill switches
         callcheck.prune()
         n += 1
         if n % 120 == 0:
@@ -92,11 +90,6 @@ async def _policy_err(_r, e):
 @app.exception_handler(devicekeys.StepUpError)
 async def _stepup_err(_r, e):
     return JSONResponse({"error": str(e)}, status_code=404 if str(e).startswith("no such") else 400)
-
-
-@app.exception_handler(guard.GuardError)
-async def _guard_err(_r, e):
-    return JSONResponse({"error": str(e)}, status_code=e.status)
 
 
 @app.exception_handler(cases.CaseError)
@@ -178,9 +171,8 @@ async def staff_me(request: Request):
 
 # ============================================================== caller softphone (public)
 @app.websocket("/ws/caller")
-async def ws_caller(ws: WebSocket, cli: str = "", lang: str = "unknown", agent: str = ""):
-    """A caller's phone line. `agent=1` (the CS Bank app) is answered by the virtual agent; otherwise
-    a human agent answers on /agent. The calling number is whatever the caller claims, as on a
+async def ws_caller(ws: WebSocket, cli: str = "", lang: str = "unknown"):
+    """A caller's phone line (the browser softphone), answered by a human agent on /agent. The calling number is whatever the caller claims, as on a
     real line: an attacker can spoof it, which is why nothing risky rests on it."""
     await ws.accept()
     if calls.live_count() >= settings.max_live_calls:
@@ -191,10 +183,9 @@ async def ws_caller(ws: WebSocket, cli: str = "", lang: str = "unknown", agent: 
     cli = cli.strip()
     if cli and cli[0].isdigit():
         cli = "+" + cli  # a raw "+" in a query string arrives as a space
-    cs = calls.create(cli or "+910000000000", lang, source="app" if agent == "1" else "softphone")
+    cs = calls.create(cli or "+910000000000", lang, source="softphone")
     cs.caller_ws = ws
     await _send(ws, json.dumps({"type": "call", "id": cs.id}))
-    va = dialog.start_virtual_agent(cs, lambda m: _send(ws, json.dumps(m)), lambda b: _send(ws, data=b)) if cs.source == "app" else None
 
     async def pinger():
         while not cs.ended and await _send(ws, json.dumps({"type": "ping", "t": time.time()})):
@@ -221,17 +212,10 @@ async def ws_caller(ws: WebSocket, cli: str = "", lang: str = "unknown", agent: 
                     cs.caller_rtt = 0.8 * cs.caller_rtt + 0.2 * rtt if cs.caller_rtt else rtt
                 elif data.get("type") == "hangup":
                     break
-                elif data.get("type") == "typed" and cs.typed_turns is not None and isinstance(data.get("text"), str):
-                    # attack mode: a fraudster types and their voice clone speaks; the clip is the voice, this is the words
-                    cs.typed_turns.put_nowait(data["text"][:300])
-                elif data.get("type") == "read_done" and va:
-                    cs.agent_done_reading()  # the phone finished speaking the virtual agent's challenge
     except WebSocketDisconnect:
         pass
     finally:
         ping_task.cancel()
-        if va:
-            va.cancel()
         cs.end()
 
 

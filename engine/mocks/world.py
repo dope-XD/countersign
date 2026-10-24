@@ -37,7 +37,6 @@ class Customer:
     check_channel: str = "notify"  # how family checks reach this customer: "ring" | "notify"
     share_call_status: bool = False  # tell family "on a call: yes/no", only while they are checking with me
     card_last4: str = ""
-    kill_switch: dict | None = None  # {"since": t, "off_at": t or None} while digital payments are blocked
 
     @property
     def first_name(self) -> str:
@@ -48,9 +47,6 @@ class Customer:
         link = self.family.get(other_id) or {}
         other = world.customer(other_id)
         return link.get("label") or (other.first_name if other else other_id)
-
-    def blocked(self) -> bool:
-        return bool(self.kill_switch)
 
 
 SEED: dict[str, Customer] = {
