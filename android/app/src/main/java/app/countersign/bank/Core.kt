@@ -3,6 +3,8 @@ package app.countersign.bank
 import android.app.Application
 import android.content.Context
 import android.content.SharedPreferences
+import app.countersign.bank.data.RealRepository
+import app.countersign.bank.data.Repo
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.withContext
@@ -19,6 +21,8 @@ class CsApp : Application() {
         super.onCreate()
         Prefs.init(this)
         Notify.channels(this)
+        // -Pcountersign.fake=true keeps the scripted FakeRepository, for building screens without a server
+        if (!BuildConfig.FAKE) Repo.instance = RealRepository(this)
     }
 }
 
@@ -45,6 +49,11 @@ object Prefs {
     val signedIn: Boolean get() = token != null && customerId != null
 
     fun signOut() = p.edit().remove("token").remove("customer").apply()
+
+    /** Whether the app has shown the system prompt for [permission] before. */
+    fun asked(permission: String): Boolean = p.getBoolean("asked:$permission", false)
+
+    fun markAsked(permission: String) = p.edit().putBoolean("asked:$permission", true).apply()
 }
 
 /** Events from the bank (approvals, payment results, family requests) for whichever screen is open. */

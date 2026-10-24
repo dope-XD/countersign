@@ -14,14 +14,13 @@ import android.os.Looper
 import android.telephony.TelephonyCallback
 import android.telephony.TelephonyManager
 import android.util.Log
+import app.countersign.bank.data.RealRepository
+import app.countersign.bank.data.Repo
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.launch
-import okhttp3.Response
-import okhttp3.WebSocket
-import okhttp3.WebSocketListener
 import org.json.JSONObject
 
 /**
@@ -30,7 +29,8 @@ import org.json.JSONObject
  * 1. Tells the bank when this phone is on a call, and whether the call came in or went out.
  *    Only the fact of the call: never the number, never the audio. The payment guard uses it, and
  *    family members see "on a call: yes/no" only while they are checking with you (if you share).
- * 2. Keeps a websocket to the bank open, so family checks and approvals ring or notify at once.
+ * 2. Keeps the app alive with RealRepository's events socket open, so family checks and
+ *    approvals ring or notify at once.
  */
 class CallWatchService : Service() {
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Main)
@@ -45,22 +45,13 @@ class CallWatchService : Service() {
     private var onCall = false
     private var kind = "phone"
 
-    private var events: WebSocket? = null
-    private var retries = 0
-    private var stopped = false
-
     private val poll = object : Runnable {
         override fun run() {
             update() // some phones don't report every audio mode change
             main.postDelayed(this, 2000)
         }
     }
-    private val heartbeat = object : Runnable {
-        override fun run() {
-            events?.send("hb") // tells the bank the app is alive ("Rahul's app was online 5 s ago")
-            main.postDelayed(this, 20_000)
-        }
-    }
+    private val real get() = Repo.instance as? RealRepository
 
     override fun onBind(intent: Intent?): IBinder? = null
 
@@ -74,18 +65,16 @@ class CallWatchService : Service() {
             startForeground(Notify.WATCH_ID, Notify.watch(this, false))
         }
         watchCalls()
-        connect()
-        main.postDelayed(heartbeat, 20_000)
+        real?.connect()
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int = START_STICKY
 
     override fun onDestroy() {
-        stopped = true
         main.removeCallbacksAndMessages(null)
         phoneCallback?.let { phone.unregisterTelephonyCallback(it) }
         modeListener?.let { audio.removeOnModeChangedListener(it) }
-        events?.close(1000, "bye")
+        real?.disconnect()
         scope.cancel()
         super.onDestroy()
     }
@@ -131,53 +120,6 @@ class CallWatchService : Service() {
                 Api.post("/api/m/call-state", JSONObject().put("state", state).put("kind", kind).put("direction", direction))
             } catch (e: ApiError) {
                 Log.w(TAG, "call state not sent: ${e.message}")
-            }
-        }
-    }
-
-    // ------------------------------------------------------------------ bank events
-    private fun connect() {
-        val cid = Prefs.customerId
-        if (stopped || cid == null) return
-        val url = Prefs.server.replaceFirst(Regex("^http"), "ws") + "/ws/events?topics=app:$cid"
-        events = Api.http.newWebSocket(Api.request("").url(url).build(), object : WebSocketListener() {
-            override fun onOpen(webSocket: WebSocket, response: Response) {
-                retries = 0
-            }
-
-            override fun onMessage(webSocket: WebSocket, text: String) {
-                main.post { onEvent(text) }
-            }
-
-            override fun onFailure(webSocket: WebSocket, t: Throwable, response: Response?) {
-                Log.w(TAG, "events dropped: $t")
-                reconnect()
-            }
-
-            override fun onClosed(webSocket: WebSocket, code: Int, reason: String) = reconnect()
-        })
-    }
-
-    private fun reconnect() {
-        if (stopped) return
-        val delay = minOf(30_000L, 1000L shl minOf(retries++, 5))
-        main.postDelayed({ connect() }, delay)
-    }
-
-    private fun onEvent(text: String) {
-        val e = try {
-            JSONObject(text)
-        } catch (x: Exception) {
-            return
-        }
-        Bus.events.tryEmit(e)
-        when (e.optString("type")) {
-            "approval" -> Notify.approval(this, e.getJSONObject("approval"))
-            "alert" -> Notify.news(this, e.optString("title"), e.optString("body"))
-            "family_request" -> Notify.news(this, "${e.optString("name")} wants to join your family", "Open CS Bank to confirm. Only accept people you know in person.")
-            "family_joined" -> Notify.news(this, "You're now family with ${e.optString("name")}", "They can check with you before paying under pressure, and you with them.")
-            "payment" -> if (!App.visible && e.optString("message").isNotEmpty()) {
-                Notify.news(this, "Payment ${e.getJSONObject("payment").optString("amount_text")}", e.optString("message"))
             }
         }
     }

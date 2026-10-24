@@ -64,7 +64,7 @@ object Notify {
         val pi = PendingIntent.getActivity(c, a.id.hashCode(), open, PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT)
         val ring = a.deliver == "ring"
         val title = when (a.kind) {
-            "family_ping" -> "Family check: ${a.question}"
+            "family_ping", "call_check" -> "Family check: ${a.question}"
             "kill_switch_off" -> a.question
             else -> "CS Bank: ${a.question}"
         }

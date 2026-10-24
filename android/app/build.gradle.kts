@@ -3,8 +3,10 @@ plugins {
     id("org.jetbrains.kotlin.plugin.compose")
 }
 
-// The bank server the app talks to by default; the sign-up screen can change it.
-val defaultServer = (findProperty("countersign.server") as String?) ?: "https://countersign-demo.ngrok-free.app"
+// The server the app talks to by default (the dev server in docs/agents/CONTRACT.md); the sign-up screen can change it.
+val defaultServer = (findProperty("countersign.server") as String?) ?: "https://pseudoskeletal-yung-implausibly.ngrok-free.dev"
+// -Pcountersign.fake=true: scripted data (FakeRepository) instead of the server.
+val fake = (findProperty("countersign.fake") as String?)?.toBoolean() ?: false
 
 android {
     namespace = "app.countersign.bank"
@@ -17,6 +19,8 @@ android {
         versionCode = 2
         versionName = "1.0"
         buildConfigField("String", "DEFAULT_SERVER", "\"$defaultServer\"")
+        buildConfigField("boolean", "FAKE", "$fake")
+        testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
 
     // One demo signing key in the repo, so every teammate's build installs over the others'.
@@ -60,4 +64,7 @@ dependencies {
     implementation("com.squareup.okhttp3:okhttp:4.12.0")
     implementation("com.google.zxing:core:3.5.4") // draws the family invite QR code
     implementation("com.google.android.gms:play-services-code-scanner:16.1.0") // scans it, without a camera permission
+
+    androidTestImplementation("androidx.test:runner:1.7.0")
+    androidTestImplementation("androidx.test.ext:junit:1.3.0")
 }
