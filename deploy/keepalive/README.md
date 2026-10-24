@@ -9,6 +9,10 @@ It uses 144 of the free plan's 100,000 requests a day.
 
 ## Deploy (once, from this folder)
 
+First open **Workers & Pages** once in the Cloudflare dashboard. That creates the account's workers.dev subdomain, and
+until it exists Cloudflare refuses the schedule (403, code 10063). The Worker itself has no public address
+(`workers_dev: false`).
+
 ```bash
 npx wrangler login
 ```
@@ -17,6 +21,8 @@ npx wrangler login
 npx wrangler deploy
 ```
 
-Check it: Cloudflare dashboard → **Workers & Pages** → **countersign-keepalive** → **Logs**. You should see `{"ok":true,"status":200,...}` every 10 minutes. You can also open the Worker's `*.workers.dev` address to run a ping by hand.
+Check it: Cloudflare dashboard → **Workers & Pages** → **countersign-keepalive** → **Logs**. You should see `{"ok":true,"status":200,...}` every 10 minutes.
+
+To run one ping by hand, run `npx wrangler dev` in this folder and open http://localhost:8787.
 
 If the relay ever moves, change `RELAY` in `worker.js` and deploy again.

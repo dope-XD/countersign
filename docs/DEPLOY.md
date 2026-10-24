@@ -38,8 +38,9 @@ Each free plan has one catch, and each is covered:
 2. **Render:** New → Blueprint → this repository (`render.yaml`). On the service's **Environment** tab:
    - `DATABASE_URL` = that string (`sync: false`, so it's never in git).
    - `COUNTERSIGN_SECRET` is generated. **Never change it**: it signs every phone's token.
-3. **Keep-alive:** in `deploy/keepalive/`, run `npx wrangler login`, then `npx wrangler deploy`. Its logs should show a 200
-   every 10 minutes.
+3. **Keep-alive:** open **Workers & Pages** once in the Cloudflare dashboard (until then Cloudflare refuses the schedule
+   with 403, code 10063). Then, in `deploy/keepalive/`, run `npx wrangler login`, then `npx wrangler deploy`. Its logs
+   should show a 200 every 10 minutes.
 4. **Check:** `/health` → `"ok": true, "db": "postgres"`.
 
 | What you see | Cause | Fix |

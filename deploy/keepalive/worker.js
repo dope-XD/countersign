@@ -9,7 +9,7 @@ export default {
     ctx.waitUntil(ping());
   },
 
-  // Open the Worker's URL to run a ping by hand.
+  // A ping by hand: `npx wrangler dev`, then open http://localhost:8787 (the deployed Worker has no public address).
   async fetch() {
     const result = await ping();
     return Response.json(result, { status: result.ok ? 200 : 502 });
