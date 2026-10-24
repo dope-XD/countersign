@@ -6,8 +6,8 @@ plugins {
     id("org.jetbrains.kotlin.plugin.compose")
 }
 
-// The server the app talks to by default (the dev server in docs/agents/CONTRACT.md); the sign-up screen can change it.
-val defaultServer = (findProperty("countersign.server") as String?) ?: "https://pseudoskeletal-yung-implausibly.ngrok-free.dev"
+// The server the app talks to by default: the relay on Render (render.yaml); the sign-up screen can change it.
+val defaultServer = (findProperty("countersign.server") as String?) ?: "https://countersign-relay.onrender.com"
 // -Pcountersign.fake=true: scripted data (FakeRepository) instead of the server.
 
 // On-phone speech-to-text and VAD: sherpa-onnx's Android AAR with onnxruntime linked in statically (so it can't clash
