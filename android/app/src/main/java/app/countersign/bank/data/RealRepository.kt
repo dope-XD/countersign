@@ -14,6 +14,7 @@ import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
 import android.os.PowerManager
+import android.os.SystemClock
 import android.provider.Settings
 import android.util.Log
 import androidx.activity.ComponentActivity
@@ -33,6 +34,8 @@ import app.countersign.bank.str
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.channels.Channel
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharedFlow
@@ -183,6 +186,47 @@ class RealRepository(private val app: Application) : Repository {
     /** The phone's own call, from [CallWatchService]: null when it ends. */
     fun setCall(c: LiveCall?) {
         _call.value = c?.copy(check = c.check ?: _call.value?.takeIf { it.id == c.id }?.check)
+    }
+
+    // This phone's calls, from CallWatchService: sent one at a time, in order, each saying how long it waited.
+    private val outbox = Channel<suspend () -> Unit>(Channel.UNLIMITED)
+
+    init {
+        scope.launch { for (send in outbox) send() }
+    }
+
+    /** [event]: ringing, outgoing, answered or ended. [peer]: the family member whose number it is, else null. */
+    fun callEvent(callId: String, event: String, kind: String, peer: Member?) {
+        val at = SystemClock.elapsedRealtime()
+        outbox.trySend {
+            retrying("call event $event") {
+                val body = JSONObject().put("call_id", callId).put("event", event).put("kind", kind)
+                    .put("peer", peer?.id ?: JSONObject.NULL).put("elapsed_ms", SystemClock.elapsedRealtime() - at)
+                Api.post("/api/m/call-event", body)
+            }
+        }
+    }
+
+    /** A family member's number is ringing: ask at once whether it's really their phone. */
+    fun autoCheck(callId: String, member: Member) {
+        outbox.trySend {
+            retrying("auto check") {
+                val body = JSONObject().put("call_id", callId).put("claimed", member.id).put("number_matched", true).put("via", "auto")
+                takeCheck(parseCheck(Api.post("/api/m/checks", body)))
+            }
+        }
+    }
+
+    private suspend fun retrying(what: String, send: suspend () -> Unit) {
+        for (attempt in 0 until 3) {
+            try {
+                return send()
+            } catch (e: ApiError) {
+                Log.w(TAG, "$what not sent: ${e.message}")
+                if (e.code in 400..499) return // the engine refused it: sending again won't help
+                delay(1000L shl attempt)
+            }
+        }
     }
 
     private fun takeCheck(c: Check) {

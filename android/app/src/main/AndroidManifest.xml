@@ -67,5 +67,24 @@
                 android:name="android.app.PROPERTY_SPECIAL_USE_FGS_SUBTYPE"
                 android:value="Tells the bank when the customer is on a phone or internet call, so payments made under a caller's pressure can be paused, and rings for family checks and the bank's approval requests." />
         </service>
+
+        <!-- Read the number of a call to match it against the family list; every call goes through untouched. -->
+        <service
+            android:name=".CallScreener"
+            android:exported="true"
+            android:permission="android.permission.BIND_SCREENING_SERVICE">
+            <intent-filter>
+                <action android:name="android.telecom.CallScreeningService" />
+            </intent-filter>
+        </service>
+
+        <service
+            android:name=".CallRedirector"
+            android:exported="true"
+            android:permission="android.permission.BIND_CALL_REDIRECTION_SERVICE">
+            <intent-filter>
+                <action android:name="android.telecom.CallRedirectionService" />
+            </intent-filter>
+        </service>
     </application>
 </manifest>

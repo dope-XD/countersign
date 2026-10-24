@@ -13,27 +13,22 @@ import android.os.IBinder
 import android.os.Looper
 import android.telephony.TelephonyCallback
 import android.telephony.TelephonyManager
-import android.util.Log
+import app.countersign.bank.data.LiveCall
+import app.countersign.bank.data.Member
 import app.countersign.bank.data.RealRepository
 import app.countersign.bank.data.Repo
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.SupervisorJob
-import kotlinx.coroutines.cancel
-import kotlinx.coroutines.launch
-import org.json.JSONObject
+import java.util.UUID
 
 /**
  * Runs while the app is signed in. Two jobs:
  *
- * 1. Tells the bank when this phone is on a call, and whether the call came in or went out.
- *    Only the fact of the call: never the number, never the audio. The payment guard uses it, and
- *    family members see "on a call: yes/no" only while they are checking with you (if you share).
+ * 1. Tells the engine when a call on this phone rings, goes out, is answered and ends
+ *    (`/api/m/call-event`). Never the number or the audio: only which family member's number it
+ *    was ([FamilyNumbers]), or nothing. A family member's number ringing starts a check at once.
  * 2. Keeps the app alive with RealRepository's events socket open, so family checks and
  *    approvals ring or notify at once.
  */
 class CallWatchService : Service() {
-    private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Main)
     private val main = Handler(Looper.getMainLooper())
     private lateinit var phone: TelephonyManager
     private lateinit var audio: AudioManager
@@ -41,9 +36,11 @@ class CallWatchService : Service() {
     private var modeListener: AudioManager.OnModeChangedListener? = null
 
     private var callState = TelephonyManager.CALL_STATE_IDLE
-    private var rangFirst = false // RINGING before OFFHOOK: someone called us
-    private var onCall = false
-    private var kind = "phone"
+
+    /** The call going on now, as reported to the engine. */
+    private class Current(val id: String, val kind: String, val incoming: Boolean, val peer: Member?, var answered: Boolean)
+
+    private var current: Current? = null
 
     private val poll = object : Runnable {
         override fun run() {
@@ -75,15 +72,12 @@ class CallWatchService : Service() {
         phoneCallback?.let { phone.unregisterTelephonyCallback(it) }
         modeListener?.let { audio.removeOnModeChangedListener(it) }
         real?.disconnect()
-        scope.cancel()
         super.onDestroy()
     }
 
     // ------------------------------------------------------------------ calls
     private inner class PhoneState : TelephonyCallback(), TelephonyCallback.CallStateListener {
         override fun onCallStateChanged(state: Int) {
-            if (state == TelephonyManager.CALL_STATE_RINGING) rangFirst = true
-            if (state == TelephonyManager.CALL_STATE_IDLE) rangFirst = false
             callState = state
             update()
         }
@@ -99,34 +93,52 @@ class CallWatchService : Service() {
 
     private fun update() {
         val mode = audio.mode
-        val normal = callState == TelephonyManager.CALL_STATE_OFFHOOK || mode == AudioManager.MODE_IN_CALL
         val internet = mode == AudioManager.MODE_IN_COMMUNICATION || (Build.VERSION.SDK_INT >= 33 && mode == AudioManager.MODE_COMMUNICATION_REDIRECT)
-        val now = (normal || internet) && !BankCall.active // our own call to the bank isn't "a caller pressuring you"
-        if (now == onCall) return
-        onCall = now
-        if (now) kind = if (normal) "phone" else "internet"
-        val direction = when {
-            kind == "internet" -> "unknown"
-            rangFirst -> "incoming"
-            else -> "outgoing"
+        val c = current
+        when {
+            BankCall.active -> {} // our own call to the bank isn't a caller pressuring you
+            // without the phone permission, the ringtone audio mode still says a call is ringing
+            callState == TelephonyManager.CALL_STATE_RINGING || (c == null && mode == AudioManager.MODE_RINGTONE) -> if (c == null) {
+                start("ringing", "phone", incoming = true, peer = family(FamilyNumbers.takeIncoming()))
+            }
+            callState == TelephonyManager.CALL_STATE_OFFHOOK || mode == AudioManager.MODE_IN_CALL -> when {
+                c == null -> start("outgoing", "phone", incoming = false, peer = family(FamilyNumbers.takeOutgoing()))
+                c.incoming && !c.answered -> answered(c)
+            }
+            // WhatsApp-style calls: no ringing state and no number, so just "on a call" and "ended"
+            internet -> if (c == null) start("answered", "internet", incoming = false, peer = null)
+            c != null -> end(c)
         }
-        report(if (now) "active" else "ended", kind, direction)
-        getSystemService(android.app.NotificationManager::class.java).notify(Notify.WATCH_ID, Notify.watch(this, now))
     }
 
-    private fun report(state: String, kind: String, direction: String) {
-        scope.launch {
-            try {
-                Api.post("/api/m/call-state", JSONObject().put("state", state).put("kind", kind).put("direction", direction))
-            } catch (e: ApiError) {
-                Log.w(TAG, "call state not sent: ${e.message}")
-            }
-        }
+    private fun family(number: String?): Member? = FamilyNumbers.match(number, Repo.instance.home.value?.family.orEmpty())
+
+    private fun start(event: String, kind: String, incoming: Boolean, peer: Member?) {
+        val c = Current(UUID.randomUUID().toString(), kind, incoming, peer, answered = event == "answered")
+        current = c
+        real?.callEvent(c.id, event, kind, peer)
+        if (incoming && peer != null) real?.autoCheck(c.id, peer)
+        real?.setCall(LiveCall(c.id, incoming, c.answered, peer, null))
+        showOnCall(true)
     }
+
+    private fun answered(c: Current) {
+        c.answered = true
+        real?.callEvent(c.id, "answered", c.kind, c.peer)
+        real?.setCall(LiveCall(c.id, c.incoming, true, c.peer, null))
+    }
+
+    private fun end(c: Current) {
+        current = null
+        real?.callEvent(c.id, "ended", c.kind, c.peer)
+        real?.setCall(null)
+        showOnCall(false)
+    }
+
+    private fun showOnCall(onCall: Boolean) =
+        getSystemService(android.app.NotificationManager::class.java).notify(Notify.WATCH_ID, Notify.watch(this, onCall))
 
     companion object {
-        private const val TAG = "CallWatch"
-
         fun start(c: Context) {
             if (Prefs.signedIn) c.startForegroundService(Intent(c, CallWatchService::class.java))
         }
