@@ -68,6 +68,16 @@
             android:turnScreenOn="true"
             android:taskAffinity="app.countersign.bank.approval" />
 
+        <!-- "Mummy may be on a scam call": full screen over the lock screen, like an incoming call -->
+        <activity
+            android:name=".FamilyAlarmActivity"
+            android:exported="false"
+            android:excludeFromRecents="true"
+            android:launchMode="singleTop"
+            android:showWhenLocked="true"
+            android:turnScreenOn="true"
+            android:taskAffinity="app.countersign.bank.alarm" />
+
         <service
             android:name=".CallWatchService"
             android:exported="false"

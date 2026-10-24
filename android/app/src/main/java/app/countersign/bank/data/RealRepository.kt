@@ -21,13 +21,19 @@ import androidx.activity.ComponentActivity
 import androidx.fragment.app.FragmentActivity
 import app.countersign.bank.Api
 import app.countersign.bank.ApiError
+import app.countersign.bank.AudioFile
 import app.countersign.bank.Bus
+import app.countersign.bank.CallRisk
 import app.countersign.bank.CallWatchService
 import app.countersign.bank.DeviceKey
 import app.countersign.bank.ListenService
+import app.countersign.bank.ModelPack
 import app.countersign.bank.Notify
 import app.countersign.bank.Prefs
+import app.countersign.bank.R
 import app.countersign.bank.Ringer
+import app.countersign.bank.Speech
+import app.countersign.bank.VoiceCheck
 import app.countersign.bank.dbl
 import app.countersign.bank.obj
 import app.countersign.bank.objects
@@ -43,9 +49,11 @@ import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import okhttp3.Response
 import okhttp3.WebSocket
 import okhttp3.WebSocketListener
+import org.json.JSONArray
 import org.json.JSONObject
 import java.util.UUID
 
@@ -72,6 +80,7 @@ class RealRepository(private val app: Application) : Repository {
 
     init {
         checkPermissions()
+        ModelPack.refresh(app)
         // the user comes back from a system prompt or settings page: see what they granted
         app.registerActivityLifecycleCallbacks(object : Application.ActivityLifecycleCallbacks {
             override fun onActivityResumed(activity: Activity) = checkPermissions()
@@ -187,14 +196,85 @@ class RealRepository(private val app: Application) : Repository {
 
     /** The phone's own call, from [CallWatchService]: null when it ends. */
     fun setCall(c: LiveCall?) {
-        _call.value = c?.copy(check = c.check ?: _call.value?.takeIf { it.id == c.id }?.check)
+        val same = _call.value?.takeIf { it.id == c?.id }
+        _call.value = c?.copy(check = c.check ?: same?.check, risk = c.risk ?: same?.risk, cleared = c.cleared || same?.cleared == true)
         refreshListen()
     }
 
     /**
-     * True once something can make sense of the call's audio: the on-phone speech model (#42) or
-     * the stronger check's socket (#39). Until then the listener says NO_MODEL, not LISTENING.
+     * `POST /api/m/scam-alert` (ids only, no words, no audio): turns on the pay guard and alarms
+     * the family. Returns the members to text from this phone (their app is offline). Throws when
+     * the relay can't be reached, so the caller can text everyone instead.
      */
+    suspend fun scamAlert(callId: String, risk: Risk): List<String> {
+        val body = JSONObject().put("call_id", callId).put("level", risk.level.wire).put("type", risk.type.wire)
+            .put("cues", JSONArray(risk.cues)).put("sources", JSONArray(risk.sources.map { it.wire }.sorted()))
+        val r = Api.post("/api/m/scam-alert", body)
+        r.obj("scam")?.let { s -> _home.update { it?.copy(scam = parseScam(s)) } }
+        return r.optJSONArray("text_these")?.let { a -> (0 until a.length()).map { a.getString(it) } }.orEmpty()
+    }
+
+    /** "Alert family" on the call card: this call is a scam, now. [app.countersign.bank.ScamAlert] sends it. */
+    override suspend fun alertFamily() {
+        CallRisk.update { alertFamily() }
+    }
+
+    /**
+     * "Not a scam" / "I know this caller": the listener goes quiet for this call at once (on the phone), then the
+     * relay turns the pay guard off and tells the family. If the relay can't be reached the call still stays cleared.
+     */
+    override suspend fun notAScam(reason: FalseAlarmReason) {
+        val c = _call.value ?: return
+        val risk = c.risk
+        CallRisk.update { clear() }
+        _call.update { it?.copy(risk = null, cleared = true) }
+        val body = JSONObject().put("call_id", c.id).put("reason", reason.wire).put("level", risk?.level?.wire ?: "warn")
+            .put("type", risk?.type?.wire ?: "unknown").put("cues", JSONArray(risk?.cues.orEmpty().filter { Regex("[a-z_]{1,40}").matches(it) }))
+            .put("sources", JSONArray(risk?.sources.orEmpty().filter { it != RiskSource.USER }.map { it.wire }.sorted()))
+        val r = Api.post("/api/m/scam-alert/clear", body)
+        _home.update { it?.copy(scam = r.obj("scam")?.let { s -> parseScam(s) }) }
+    }
+
+    /** Opens SMS to the member with "cut that call" filled in; WhatsApp if there's no SMS app. */
+    override fun messageMember(memberId: String) {
+        val m = _home.value?.family?.firstOrNull { it.id == memberId } ?: return
+        val text = app.getString(R.string.alarm_message, m.label)
+        val sms = Intent(Intent.ACTION_SENDTO, Uri.parse("smsto:${m.mobile}")).putExtra("sms_body", text).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+        runCatching { app.startActivity(sms) }.onFailure {
+            val wa = Intent(Intent.ACTION_VIEW, Uri.parse("https://wa.me/${m.mobile.filter(Char::isDigit)}?text=${Uri.encode(text)}"))
+            runCatching { app.startActivity(wa.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)) }
+        }
+    }
+
+    /** From [CallRisk]: how much [callId] looks like a scam right now. */
+    fun setRisk(callId: String, risk: Risk?, cleared: Boolean = false) {
+        _call.update { c -> if (c?.id == callId) c.copy(risk = risk, cleared = cleared) else c }
+    }
+
+    // ---- "Check a recording or message": the same analyzer as a live call, all on the phone
+    override suspend fun checkText(text: String): Analysis = withContext(Dispatchers.Default) {
+        if (text.isBlank()) throw ApiError(app.getString(R.string.check_empty), 0)
+        CallRisk.analyzer(app).text(text.trim())
+    }
+
+    override suspend fun checkRecording(uri: Uri): Analysis = withContext(Dispatchers.Default) {
+        val audio = AudioFile.decode16k(app, uri)
+        val heard = Speech.transcribe(app, audio) ?: throw ApiError(app.getString(R.string.check_need_models), 0)
+        if (heard.isBlank()) throw ApiError(app.getString(R.string.check_no_speech), 0)
+        val voice = VoiceCheck.score(app, audio)
+        CallRisk.analyzer(app).text(heard, voiceClone = voice, seconds = audio.size / 16_000f, minWords = 12)
+    }
+
+    // ---- the family alarm on this phone
+    private val _alarm = MutableStateFlow<FamilyAlarmUi?>(null)
+    override val alarm: StateFlow<FamilyAlarmUi?> = _alarm
+
+    override fun dismissAlarm() {
+        _alarm.value = null
+        Notify.cancelAlarm(app)
+    }
+
+    /** True once the model pack is on the phone; until then the listener says NO_MODEL, not LISTENING. */
     @Volatile var analysisReady = false
         set(v) {
             field = v
@@ -217,6 +297,13 @@ class RealRepository(private val app: Application) : Repository {
                 },
             )
         }
+    }
+
+    override val modelState: StateFlow<ModelState> get() = ModelPack.state
+
+    override suspend fun downloadModels() {
+        ModelPack.download(app)
+        analysisReady = Speech.ready(app)
     }
 
     override suspend fun setListening(listenCalls: Boolean?, smsFallback: Boolean?): Me {
@@ -441,6 +528,22 @@ class RealRepository(private val app: Application) : Repository {
                 }
                 "spoof_alert" -> _events.tryEmit(AppEvent.SpoofAlert(e.optString("label").ifEmpty { e.optString("by") }, ms(e.optDouble("at"))))
                 "scam" -> _home.update { it?.copy(scam = e.obj("scam")?.let { s -> parseScam(s) }) }
+                "family_alarm" -> {
+                    val a = FamilyAlarmUi(
+                        e.optString("from"), e.optString("label"),
+                        ScamType.entries.firstOrNull { it.wire == e.optString("scam_type") } ?: ScamType.UNKNOWN, ms(e.optDouble("at")),
+                    )
+                    _alarm.value = a
+                    _events.tryEmit(AppEvent.FamilyAlarm(a.memberId, a.label, a.type, a.at))
+                    Notify.familyAlarm(app, a)
+                }
+                "family_alarm_cleared" -> {
+                    val reason = FalseAlarmReason.entries.firstOrNull { it.wire == e.optString("reason") } ?: FalseAlarmReason.NOT_A_SCAM
+                    val from = e.optString("from")
+                    _alarm.update { a -> if (a?.memberId == from) a.copy(cleared = reason) else a }
+                    _events.tryEmit(AppEvent.FamilyAlarmCleared(from, e.optString("label"), reason, ms(e.optDouble("at"))))
+                    Notify.familyAlarmCleared(app, e.optString("label"))
+                }
                 "family_request" -> {
                     _events.tryEmit(AppEvent.FamilyRequest(e.optString("customer_id"), e.optString("name")))
                     Notify.news(app, "${e.optString("name")} wants to join your family", "Open the app to confirm. Only accept people you know in person.")

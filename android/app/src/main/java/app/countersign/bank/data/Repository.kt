@@ -65,6 +65,12 @@ interface Repository {
 
     // ---- the call listener (CONTRACT.md, "Call listener"). Defaults keep older implementations building.
 
+    /** The family alarm showing on this phone ("Mummy may be on a scam call"), or null. Set by family_alarm / family_alarm_cleared. */
+    val alarm: StateFlow<FamilyAlarmUi?> get() = NO_ALARM
+
+    /** OK on the alarm screen. */
+    fun dismissAlarm() {}
+
     /** The model pack (speech-to-text + voice check). */
     val modelState: StateFlow<ModelState> get() = NO_MODEL_NEEDED
 
@@ -94,6 +100,7 @@ interface Repository {
 }
 
 private val NO_MODEL_NEEDED = kotlinx.coroutines.flow.MutableStateFlow(ModelState(ModelStatus.NOT_NEEDED))
+private val NO_ALARM = kotlinx.coroutines.flow.MutableStateFlow<FamilyAlarmUi?>(null)
 
 /** Which repository the app uses. FakeRepository until C's RealRepository lands. */
 object Repo {

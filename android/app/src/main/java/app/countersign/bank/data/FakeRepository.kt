@@ -84,7 +84,11 @@ class FakeRepository(start: Scenario = Scenario.IDLE) : Repository {
     override val modelState: StateFlow<ModelState> = _model
 
     /** The family alarm currently showing on this phone (FAMILY_ALARM), for the alarm screen. */
-    val alarm = MutableStateFlow<FamilyAlarmUi?>(null)
+    override val alarm = MutableStateFlow<FamilyAlarmUi?>(null)
+
+    override fun dismissAlarm() {
+        alarm.value = null
+    }
 
     /** The result the next checkRecording / checkText returns in the CHECK_RECORDING_* scenarios, for previews. */
     var lastAnalysis: Analysis? = null
