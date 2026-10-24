@@ -29,7 +29,11 @@ VOICE = ROOT / "models" / "voice_clone"
 
 def build() -> dict:
     OUT.mkdir(parents=True, exist_ok=True)
-    files = {"asr_omnilingual.int8.onnx": OMNI / "model.int8.onnx", "asr_omnilingual_tokens.txt": OMNI / "tokens.txt", "silero_vad.onnx": ASR / "silero_vad.onnx"}
+    files = {
+        "asr_omnilingual.int8.onnx": OMNI / "model.int8.onnx",
+        "asr_omnilingual_tokens.txt": OMNI / "tokens.txt",
+        "silero_vad.onnx": ASR / "silero_vad.onnx",
+    }
     manifest: dict = {
         "name": NAME,
         "asr": [{"name": "omnilingual_300m", "kind": "omnilingual", "model": "asr_omnilingual.int8.onnx", "tokens": "asr_omnilingual_tokens.txt"}],
@@ -62,7 +66,21 @@ def release(pack: dict) -> None:
     z = OUT / f"{NAME}.zip"
     exists = subprocess.run(["gh", "release", "view", TAG, "-R", REPO], capture_output=True).returncode == 0
     if not exists:
-        subprocess.run(["gh", "release", "create", TAG, "-R", REPO, "--title", "Model pack v1", "--notes", f"The on-phone model pack ({pack['size_mb']} MB, sha256 {pack['sha256']}). Built by `python -m ml.pack_models`."], check=True)
+        subprocess.run(
+            [
+                "gh",
+                "release",
+                "create",
+                TAG,
+                "-R",
+                REPO,
+                "--title",
+                "Model pack v1",
+                "--notes",
+                f"The on-phone model pack ({pack['size_mb']} MB, sha256 {pack['sha256']}). Built by `python -m ml.pack_models`.",
+            ],
+            check=True,
+        )
     subprocess.run(["gh", "release", "upload", TAG, str(z), "--clobber", "-R", REPO], check=True)
 
 

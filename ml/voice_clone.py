@@ -225,6 +225,7 @@ class Exported:
     def module(model, k: int, lr, mu, sd):
         import torch
         import torch.nn as nn
+
         class M(nn.Module):
             def __init__(self):
                 super().__init__()
@@ -328,7 +329,11 @@ def main() -> int:
         fr = int(((pp >= thr) & (yy == 0)).sum())
         fk = int(((pp >= thr) & (yy == 1)).sum())
         nr, nf = int((yy == 0).sum()), int((yy == 1).sum())
-        res["sets"][f"{key[0]} | {key[1]}"] = {"eer": round(e, 4), "real_flagged": [fr, nr, [round(v, 3) for v in wilson(fr, nr)]], "fakes_caught": [fk, nf, [round(v, 3) for v in wilson(fk, nf)]]}
+        res["sets"][f"{key[0]} | {key[1]}"] = {
+            "eer": round(e, 4),
+            "real_flagged": [fr, nr, [round(v, 3) for v in wilson(fr, nr)]],
+            "fakes_caught": [fk, nf, [round(v, 3) for v in wilson(fk, nf)]],
+        }
     lines = [
         f"First {k} layers of AntiDeepfake W2V-Large + logistic head, ONNX int8 ({meta['size_mb']} MB), threshold {thr:.2f} (5% of real dev voices flagged). Dev EER by depth: "
         + ", ".join(f"K={kk}: {100 * sweep[kk]['dev_eer']:.1f}%" for kk in LAYERS)
@@ -340,7 +345,9 @@ def main() -> int:
     for name, d in res["sets"].items():
         s, ch = name.split(" | ")
         rf, fc = d["real_flagged"], d["fakes_caught"]
-        lines.append(f"| {s} | {ch} | {100 * d['eer']:.1f}% | {100 * rf[0] / max(1, rf[1]):.0f}% ({rf[0]}/{rf[1]}) | {100 * fc[0] / max(1, fc[1]):.0f}% ({fc[0]}/{fc[1]}) |")
+        lines.append(
+            f"| {s} | {ch} | {100 * d['eer']:.1f}% | {100 * rf[0] / max(1, rf[1]):.0f}% ({rf[0]}/{rf[1]}) | {100 * fc[0] / max(1, fc[1]):.0f}% ({fc[0]}/{fc[1]}) |"
+        )
     res["markdown"] = "\n".join(lines)
     res["seconds"] = round(time.time() - t0)
     EVAL.write_text(json.dumps(res, indent=2) + "\n", encoding="utf-8")

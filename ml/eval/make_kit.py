@@ -79,11 +79,26 @@ def main() -> None:
     pick = lambda src, label, k, maxw=120: rng.sample([r for r in rows if r["source"] == src and r["label"] == label and len(r["text"].split()) <= maxw], k)  # noqa: E731
     out = []
     # 10 texts
-    texts = pick("india_sms", 1, 3) + pick("india_sms", 0, 2) + pick("hinglish_calls", 1, 2) + pick("hinglish_calls", 0, 1) + pick("bothbosu", 1, 1) + pick("bothbosu", 0, 1)
+    texts = (
+        pick("india_sms", 1, 3)
+        + pick("india_sms", 0, 2)
+        + pick("hinglish_calls", 1, 2)
+        + pick("hinglish_calls", 0, 1)
+        + pick("bothbosu", 1, 1)
+        + pick("bothbosu", 0, 1)
+    )
     for i, r in enumerate(texts, 1):
         f = f"text_{i:02d}.txt"
         (KIT / f).write_text(r["text"] + "\n", encoding="utf-8")
-        out.append({"file": f, "kind": "text", "expect": "scam" if r["label"] else "harmless", "source": r["id"], "licence": "MIT" if r["source"] == "india_sms" else "Apache-2.0"})
+        out.append(
+            {
+                "file": f,
+                "kind": "text",
+                "expect": "scam" if r["label"] else "harmless",
+                "source": r["id"],
+                "licence": "MIT" if r["source"] == "india_sms" else "Apache-2.0",
+            }
+        )
     # 10 calls: Hinglish and BothBosu test scripts, spoken, over a phone line
     calls = pick("hinglish_calls", 1, 3) + pick("hinglish_calls", 0, 2) + pick("bothbosu", 1, 3, 160) + pick("bothbosu", 0, 2, 160)
     for i, r in enumerate(calls, 1):
@@ -92,7 +107,15 @@ def main() -> None:
         mp3 = KIT / f"call_{i:02d}.mp3"
         _tts(text, ["en-IN-PrabhatNeural", "en-IN-NeerjaNeural"][i % 2], mp3)
         _to_phone_wav(mp3, KIT / f, seed=i)
-        out.append({"file": f, "kind": "call", "expect": "scam" if r["label"] else "harmless", "source": r["id"] + " (spoken by edge-tts, G.711)", "licence": "Apache-2.0 text"})
+        out.append(
+            {
+                "file": f,
+                "kind": "call",
+                "expect": "scam" if r["label"] else "harmless",
+                "source": r["id"] + " (spoken by edge-tts, G.711)",
+                "licence": "Apache-2.0 text",
+            }
+        )
     # 10 voices: 5 real (FLEURS hi validation), 5 AI (edge-tts reading other FLEURS sentences)
     real = _fleurs_hi(10, rng)
     for i, (x, _) in enumerate(real[:5], 1):

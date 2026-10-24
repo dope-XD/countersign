@@ -36,7 +36,9 @@ def load_audio(p: Path) -> np.ndarray:
     try:
         x, sr = sf.read(str(p), dtype="float32", always_2d=False)
     except Exception:
-        raw = subprocess.run(["ffmpeg", "-nostdin", "-v", "error", "-i", str(p), "-ac", "1", "-ar", "16000", "-f", "f32le", "-"], capture_output=True, check=True).stdout
+        raw = subprocess.run(
+            ["ffmpeg", "-nostdin", "-v", "error", "-i", str(p), "-ac", "1", "-ar", "16000", "-f", "f32le", "-"], capture_output=True, check=True
+        ).stdout
         return np.frombuffer(raw, dtype=np.float32)
     x = x.mean(axis=1) if x.ndim > 1 else x
     return resample(x, sr, 16000).astype(np.float32)
@@ -116,7 +118,10 @@ def table(rows: list[dict]) -> str:
         L.append(f"| {r['file']} | {r['kind']} | {r['expect']} | {says} | {', '.join(r['why']) or '–'} | {v} | {mark} |")
     judged = [r for r in rows if r["pass"] is not None]
     L.append("")
-    L.append(f"**{sum(r['pass'] for r in judged)}/{len(judged)} passed**" + (f" ({len(rows) - len(judged)} without an expected answer)" if len(judged) < len(rows) else ""))
+    L.append(
+        f"**{sum(r['pass'] for r in judged)}/{len(judged)} passed**"
+        + (f" ({len(rows) - len(judged)} without an expected answer)" if len(judged) < len(rows) else "")
+    )
     for k in ("text", "call", "voice"):
         ks = [r for r in judged if r["kind"] == k]
         if ks:
