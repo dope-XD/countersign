@@ -20,8 +20,6 @@ data class Me(
     val shareCallStatus: Boolean,
     /** Listen to calls and warn about scams (the call listener). */
     val listenCalls: Boolean = true,
-    /** Also send call audio to the bank's own server for a stronger check, when it's reachable. */
-    val strongerCheck: Boolean = true,
     /** Text family from this phone's SIM if their app is offline when a scam call is detected. */
     val smsFallback: Boolean = true,
 )
@@ -124,6 +122,8 @@ data class LiveCall(
     val onSpeaker: Boolean = false,
     /** How much this call looks like a scam, from everything the listener has heard and seen so far. */
     val risk: Risk? = null,
+    /** The user said "Not a scam" / "I know this caller": risk is none and the listener stays quiet until the call ends. */
+    val cleared: Boolean = false,
 )
 
 /* ---- the call listener (docs/agents/CONTRACT.md, "Call listener") ---- */
@@ -135,7 +135,7 @@ enum class ListenState {
     /** Mic and accessibility not granted. */
     NO_PERMISSION,
 
-    /** The speech model hasn't been downloaded and the server isn't reachable. */
+    /** The model pack (speech-to-text + voice check) hasn't been downloaded yet. */
     NO_MODEL,
 
     /** Can hear only this phone's owner: ask for speaker. */
@@ -165,9 +165,14 @@ enum class ScamType(val wire: String) {
 
 /** Where the evidence came from. `scam` always needs at least two of these (or USER). */
 enum class RiskSource(val wire: String) {
+    /** Scam cue words (scam_patterns.json). */
     CUES("cues"),
+
+    /** Our scam classifier on the transcript (data/listen/ScamClassifier.kt). */
     PHONE_AI("phone_ai"),
-    SERVER("server"),
+
+    /** The voice-clone model thinks the caller's voice is AI-made. Can raise warn, never scam on its own. */
+    VOICE("voice"),
     CONTEXT("context"),
     CALLER_CHECK("caller_check"),
     USER("user"),
@@ -185,8 +190,31 @@ data class Risk(
 
 enum class ModelStatus { NOT_NEEDED, MISSING, DOWNLOADING, READY, FAILED }
 
-/** The on-phone speech model for the app's language. */
+/** The one model pack: on-phone speech-to-text (Hindi + English) and the voice-clone check. Downloaded once. */
 data class ModelState(val status: ModelStatus, val progress: Float = 0f, val sizeMb: Int = 0)
+
+/** Why the user said a warn or scam card was wrong. */
+enum class FalseAlarmReason(val wire: String) { KNOW_CALLER("know_caller"), NOT_A_SCAM("not_a_scam") }
+
+/**
+ * "Check a recording or message": the same on-phone pipeline as a live call, on a file or pasted text.
+ * Nothing leaves the phone.
+ */
+data class Analysis(
+    val level: RiskLevel,
+    val type: ScamType,
+    /** The scam classifier's probability, or null when it abstained (under ~25 words). */
+    val pScam: Float?,
+    /** Cue and context ids that fired, for "why it fired". */
+    val cues: List<String>,
+    val sources: Set<RiskSource>,
+    /** How likely the voice is AI-made, 0..1; null for text, or when there was too little speech. */
+    val voiceClone: Float?,
+    /** What the phone heard (a recording) or the text as given. Shown to the user only; never sent. */
+    val transcript: String,
+    /** Length of the recording in seconds; 0 for text. */
+    val seconds: Float = 0f,
+)
 
 /** Everything the app asks for, in the order onboarding shows them. */
 enum class Permission {
@@ -227,6 +255,9 @@ sealed interface AppEvent {
 
     /** A family member's phone thinks they're on a scam call right now. */
     data class FamilyAlarm(val memberId: String, val label: String, val type: ScamType, val at: Long) : AppEvent
+
+    /** The member said it was a false alarm ("Not a scam" / "I know this caller"). */
+    data class FamilyAlarmCleared(val memberId: String, val label: String, val reason: FalseAlarmReason, val at: Long) : AppEvent
 }
 
 /* ---- state for the two overlay composables C shows from a service (docs/agents/ui.md) ---- */
@@ -244,10 +275,15 @@ data class CallCheckUi(
     val onSpeaker: Boolean = false,
     /** Show the amber card at WARN and the red one at SCAM, next to the caller check's verdict. */
     val risk: Risk? = null,
+    /** The user said it's not a scam: show "Cleared" briefly, then nothing more for this call. */
+    val cleared: Boolean = false,
 )
 
-/** The full-screen alarm on a family member's phone: "Mummy may be on a scam call". */
-data class FamilyAlarmUi(val memberId: String, val label: String, val type: ScamType, val at: Long)
+/**
+ * The full-screen alarm on a family member's phone: "Mummy may be on a scam call".
+ * [cleared] set: Mummy said it was a false alarm, so the screen says so and offers only OK.
+ */
+data class FamilyAlarmUi(val memberId: String, val label: String, val type: ScamType, val at: Long, val cleared: FalseAlarmReason? = null)
 
 /** The red screen over a payment app while [scam] is on. */
 data class PayGuardUi(val scam: Scam, val appName: String?)

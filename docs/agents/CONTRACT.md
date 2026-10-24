@@ -2,7 +2,7 @@
 
 The engine (A) implements this; `RealRepository` (C) calls it; screens (B) see it only through `data/Models.kt` and `data/Repository.kt`. Only A edits this file, through a `contract-change` issue (`PROTOCOL.md`).
 
-- **Dev server:** `https://pseudoskeletal-yung-implausibly.ngrok-free.dev` (the ngrok account's free fixed domain), A's laptop. It's down when A posts so on Standup. Locally: `http://<A's LAN IP>:8000`.
+- **Relay:** the app talks to a small relay (`engine/relay.py`, no ML) on a free host; its URL is in `docs/DEPLOY.md` and `BuildConfig.DEFAULT_SERVER`. **All scam analysis happens on the phone**; the relay only passes family links, caller checks, scam alerts and the family alarm between phones. Locally: `uvicorn engine.relay:app --port 8000`.
 - **Auth:** every `/api/m/*` call except `signup` and `claim` sends `X-Device-Token: <token>` (from sign-up) and `ngrok-skip-browser-warning: 1`.
 - **Errors:** non-2xx with `{"detail": "One sentence a user can read."}`. Show it as is.
 - **Times:** server times are Unix seconds (float). `Models.kt` turns them into epoch milliseconds.
@@ -17,7 +17,7 @@ The engine (A) implements this; `RealRepository` (C) calls it; screens (B) see i
 ```
 → `{"token": "c_ab12.1767225600.9f…", "me": Me}`
 
-`Me` = `{"id": "c_ab12", "name": "Sunita Sharma", "mobile": "+919876543210", "lang": "hi", "check_channel": "ring", "share_call_status": true, "listen_calls": true, "stronger_check": true, "sms_fallback": true}`
+`Me` = `{"id": "c_ab12", "name": "Sunita Sharma", "mobile": "+919876543210", "lang": "hi", "check_channel": "ring", "share_call_status": true, "listen_calls": true, "sms_fallback": true}`
 
 409 if the number already has an account; 429 if too many sign-ups from this phone.
 
@@ -25,7 +25,7 @@ The engine (A) implements this; `RealRepository` (C) calls it; screens (B) see i
 `{"customer_id": "sunita", "public_key": "…", "device": "Team phone"}` → same as sign-up.
 
 ### `POST /api/m/prefs`
-Any of `{"lang": "en"|"hi", "check_channel": "ring"|"notify", "share_call_status": bool, "listen_calls": bool, "stronger_check": bool, "sms_fallback": bool}` → `Me`
+Any of `{"lang": "en"|"hi", "check_channel": "ring"|"notify", "share_call_status": bool, "listen_calls": bool, "sms_fallback": bool}` → `Me`
 
 ## Home
 
@@ -113,7 +113,13 @@ The user pressed "I understand" on the pay guard. → `{"scam": null}`. The pay 
 
 The phone listens to its own calls (an accessibility service records the mic; on speaker it hears the caller too) and decides how much the call looks like a scam. **Nothing is ever played into the call.** How the phone does it: `docs/agents/platform.md`, "Call listener".
 
-**Levels:** `none` < `watch` (keep quiet) < `warn` (amber card) < `scam` (red card, family alarmed, pay guard on). `scam` needs either two kinds of evidence (what was said, from `cues` or an LLM judge, plus a strong context signal or the caller check), or at least four cue categories that include a request (money, a code or PIN, a remote-access app) and form a known scam pattern, or the user pressing "Alert family" (`user`). One keyword never makes `scam`; talk *about* scams ("did you see the news…") can't reach `scam` from cues alone. Exact thresholds: `fusion.json`. Phone code: `data/listen/ScamScorer.kt` and `Fusion.kt` (A owns them; C calls them).
+**Levels:** `none` < `watch` (keep quiet) < `warn` (amber card) < `scam` (red card, family alarmed, pay guard on). `scam` needs either two kinds of evidence (what was said, from `cues` or our scam classifier, plus a strong context signal or the caller check), or at least four cue categories that include a request (money, a code or PIN, a remote-access app) and form a known scam pattern, or the classifier very sure *and* at least two cue categories, or the user pressing "Alert family" (`user`). One keyword never makes `scam`, and neither does one model on its own; talk *about* scams ("did you see the news…") can't reach `scam` from cues alone. The voice-clone check (`synthetic_voice`) can raise `warn`, never `scam`. Exact thresholds: `fusion.json`.
+
+**Everything runs on the phone** (`data/listen/`): speech-to-text (sherpa-onnx), `ScamScorer.kt` (cues), `ScamClassifier.kt` (our classifier, `p_scam` on the transcript; abstains under ~25 words), the voice-clone model (ONNX), `Fusion.kt`, and `Analyzer.kt`, which puts them together for a live call and for "Check a recording or message". Python twins (`engine/listener/`, `ml/listener_clf.py`) give the same answers on shared test vectors, so `python -m ml.eval.kit` reproduces the phone's verdicts on a laptop.
+
+**False alarms.** "Not a scam" / "I know this caller" on a warn or scam card (`Repository.notAScam(reason)`): for this call the risk goes to none (`LiveCall.cleared`), the listener stays quiet, the pay guard goes off, and the family gets `family_alarm_cleared` if they were alarmed. One ids-only feedback record is kept for human review and counted as a false positive in `/api/metrics`.
+
+**Check a recording or message** (`Repository.checkRecording(uri)` / `checkText(text)` → `Analysis`): the same pipeline on an audio file or pasted text, entirely on the phone. Nothing is uploaded.
 
 **Types:** `digital_arrest`, `bank_kyc`, `otp_upi`, `remote_access`, `family_emergency`, `courier_customs`, `trai_sim`, `job_task`, `investment`, `reward`, `impersonation`, `unknown`.
 
@@ -123,29 +129,30 @@ The phone listens to its own calls (an accessibility service records the mic; on
 Sent once when a call first reaches `scam` (or the user presses "Alert family"). **Ids only: no words, no audio.**
 ```json
 {"call_id": "local-uuid", "level": "scam", "type": "digital_arrest",
- "cues": ["authority", "threat", "secrecy", "money_ask"], "sources": ["cues", "server"]}
+ "cues": ["authority", "threat", "secrecy", "money_ask"], "sources": ["cues", "phone_ai"]}
 ```
 → `{"scam": Scam, "alarmed": ["c_cd34"], "text_these": ["c_ef56"]}`
 - Turns on scam context (`Scam.reason` = `listener:digital_arrest`), so the pay guard shows.
 - `alarmed`: members who got a `family_alarm` event. `text_these`: members whose app is offline. If `sms_fallback` is on, the phone texts them from its own SIM. If the request fails (no internet), the phone texts every member.
 - A second alert for the same `call_id` doesn't alarm anyone again.
 
-### `WS /ws/listen?token=<device token>&call_id=<id>&lang=en|hi`
-The stronger check, only when `stronger_check` is on and the server is reachable. Audio goes to the bank's own server only, is never stored, and is dropped when the socket closes.
-- Phone → server, binary: 16 kHz mono 16-bit little-endian PCM, 20–200 ms per frame, only while the call is active.
-- Phone → server, text: `{"type": "context", "signals": ["unknown_number", "remote_app_opened"], "caller_check": "not_them"}` whenever context changes.
-- Server → phone, text, every few seconds and on change:
+### `POST /api/m/scam-alert/clear`
+"Not a scam" / "I know this caller". **Ids only.**
 ```json
-{"type": "listen_verdict", "level": "warn", "scam_type": "digital_arrest", "p_scam": 0.71,
- "cues": ["authority", "threat"], "abstain": false, "at": 1761300150.0}
+{"call_id": "local-uuid", "reason": "know_caller", "level": "warn", "type": "bank_kyc",
+ "cues": ["authority", "verification_pretext"], "sources": ["cues", "phone_ai"]}
 ```
-The phone fuses this with its own result (`fusion.json`). The server's verdict outweighs the phone's when both are present.
+→ `{"scam": null, "cleared": ["c_cd34"]}`
+- `reason`: `know_caller` or `not_a_scam`. `level`: what the card showed (`watch`, `warn` or `scam`).
+- Turns the listener's pay guard off. Family alarmed for this `call_id` get `family_alarm_cleared`; `cleared` lists them.
+- Keeps one feedback record (reason, level, type, cue ids, sources, time) for human review. No words, no audio.
+- A later `scam-alert` for the same `call_id` alarms nobody.
 
 ### Context signal ids (sent in `context`, also used on the phone)
-`unknown_number`, `international_number`, `video_call_unknown`, `remote_app_opened` (AnyDesk, TeamViewer, RustDesk, QuickSupport), `payment_app_opened`, `long_call` (over 15 minutes), `caller_check_failed`.
+`unknown_number`, `international_number`, `video_call_unknown`, `remote_app_opened` (AnyDesk, TeamViewer, RustDesk, QuickSupport), `payment_app_opened`, `long_call` (over 15 minutes), `caller_check_failed`, `synthetic_voice` (the voice-clone model on the first ~20 s of the caller's speech; warn at most).
 
-### `GET /api/m/models` → `[{"name": "shruti-hi-en", "lang": "hi", "size_mb": 30, "sha256": "…", "url": "/download/models/shruti-hi-en.zip"}]`
-The on-phone speech models for each language. The app downloads its language's model once during onboarding.
+### `GET /api/m/models` → `[{"name": "countersign-pack-v1", "size_mb": 180, "sha256": "…", "url": "https://github.com/dope-XD/countersign/releases/download/models-v1/countersign-pack-v1.zip", "parts": ["asr-hi", "asr-en", "vad", "voice"]}]`
+One model pack for every language: speech-to-text (Hindi-capable + English), Silero VAD and the voice-clone model. The app downloads it once (`Repository.downloadModels()`, progress in `modelState`) and checks the sha256. The scam classifier and the cue rules are small and ship inside the APK.
 
 ## Approvals (the ring screen)
 
@@ -175,6 +182,7 @@ One JSON object per message; `type` says which.
 | `family_request` | `{"customer_id": "c_ef56", "name": "Priya Sharma"}` | notification + home |
 | `family_joined` | `{"customer_id": "c_cd34", "name": "Rahul Sharma"}` | notification + home |
 | `family_alarm` | `{"from": "c_ab12", "label": "Mummy", "scam_type": "digital_arrest", "level": "scam", "at": 1761300155.0}` | full-screen alarm: "Mummy may be on a scam call", with Call / Message / OK |
+| `family_alarm_cleared` | `{"from": "c_ab12", "label": "Mummy", "reason": "know_caller", "at": 1761300190.0}` | the alarm screen turns to "False alarm: Mummy says it's fine", with OK |
 | `online` | `{"member": "c_cd34", "online": false}` | the face's dot. **Not sent yet**: refresh `home` for now. |
 
 ## Test accounts on the dev server

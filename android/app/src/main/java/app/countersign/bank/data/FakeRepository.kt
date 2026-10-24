@@ -37,6 +37,21 @@ enum class Scenario {
     LISTEN_SCAM_AND_NOT_THEM,
     FAMILY_ALARM,
     MODEL_DOWNLOADING,
+
+    /** A warn on a genuine bank call: the user presses "I know this caller". */
+    LISTEN_FALSE_ALARM,
+
+    /** The family alarm after Mummy said it was a false alarm. */
+    FAMILY_ALARM_CLEARED,
+
+    /** The caller's voice sounds AI-made: a warn with no scam words yet. */
+    VOICE_CLONE_WARN,
+
+    /** Check a recording: [lastAnalysis] is a digital-arrest scam. */
+    CHECK_RECORDING_SCAM,
+
+    /** Check a recording: [lastAnalysis] is a harmless delivery call. */
+    CHECK_RECORDING_SAFE,
 }
 
 /**
@@ -71,6 +86,10 @@ class FakeRepository(start: Scenario = Scenario.IDLE) : Repository {
     /** The family alarm currently showing on this phone (FAMILY_ALARM), for the alarm screen. */
     val alarm = MutableStateFlow<FamilyAlarmUi?>(null)
 
+    /** The result the next checkRecording / checkText returns in the CHECK_RECORDING_* scenarios, for previews. */
+    var lastAnalysis: Analysis? = null
+        private set
+
     var scenario: Scenario = start
         private set
 
@@ -87,7 +106,8 @@ class FakeRepository(start: Scenario = Scenario.IDLE) : Repository {
         _home.value = if (s == Scenario.NEW_USER) null else baseHome()
         _call.value = null
         alarm.value = null
-        _model.value = ModelState(ModelStatus.READY, 1f, 30)
+        lastAnalysis = null
+        _model.value = ModelState(ModelStatus.READY, 1f, PACK_MB)
         val call = "call-1"
         fun unknown(listen: ListenState, risk: Risk? = null, speaker: Boolean = true) =
             LiveCall(call, true, true, null, null, listen = listen, onSpeaker = speaker, risk = risk)
@@ -128,7 +148,7 @@ class FakeRepository(start: Scenario = Scenario.IDLE) : Repository {
             Scenario.LISTEN_WARN_DIGITAL_ARREST ->
                 _call.value = unknown(ListenState.LISTENING, risk(RiskLevel.WARN, ScamType.DIGITAL_ARREST, "authority", "threat"))
             Scenario.LISTEN_SCAM -> {
-                val r = risk(RiskLevel.SCAM, ScamType.DIGITAL_ARREST, "authority", "threat", "secrecy", "money_ask", sources = setOf(RiskSource.CUES, RiskSource.SERVER))
+                val r = risk(RiskLevel.SCAM, ScamType.DIGITAL_ARREST, "authority", "threat", "secrecy", "money_ask", sources = setOf(RiskSource.CUES, RiskSource.PHONE_AI))
                 _call.value = unknown(ListenState.LISTENING, r)
                 _home.update { h -> h?.copy(scam = Scam("chk_l", "", "", "listener:digital_arrest", now + 600_000)) }
             }
@@ -144,9 +164,23 @@ class FakeRepository(start: Scenario = Scenario.IDLE) : Repository {
                 _events.tryEmit(AppEvent.FamilyAlarm(a.memberId, a.label, a.type, a.at))
             }
             Scenario.MODEL_DOWNLOADING -> {
-                _model.value = ModelState(ModelStatus.DOWNLOADING, 0.35f, 30)
+                _model.value = ModelState(ModelStatus.DOWNLOADING, 0.35f, PACK_MB)
                 _call.value = unknown(ListenState.NO_MODEL)
             }
+            Scenario.LISTEN_FALSE_ALARM ->
+                _call.value = unknown(ListenState.LISTENING, risk(RiskLevel.WARN, ScamType.BANK_KYC, "authority", "verification_pretext", "urgency"))
+            Scenario.FAMILY_ALARM_CLEARED -> {
+                val a = FamilyAlarmUi(papa.id, papa.label, ScamType.DIGITAL_ARREST, now - 40_000, cleared = FalseAlarmReason.KNOW_CALLER)
+                alarm.value = a
+                _events.tryEmit(AppEvent.FamilyAlarmCleared(a.memberId, a.label, FalseAlarmReason.KNOW_CALLER, now))
+            }
+            Scenario.VOICE_CLONE_WARN ->
+                _call.value = unknown(
+                    ListenState.LISTENING,
+                    risk(RiskLevel.WARN, ScamType.UNKNOWN, "synthetic_voice", sources = setOf(RiskSource.VOICE)),
+                )
+            Scenario.CHECK_RECORDING_SCAM -> lastAnalysis = SCAM_ANALYSIS
+            Scenario.CHECK_RECORDING_SAFE -> lastAnalysis = SAFE_ANALYSIS
         }
     }
 
@@ -274,11 +308,10 @@ class FakeRepository(start: Scenario = Scenario.IDLE) : Repository {
         _model.value = ModelState(ModelStatus.READY, 1f, 30)
     }
 
-    override suspend fun setListening(listenCalls: Boolean?, strongerCheck: Boolean?, smsFallback: Boolean?): Me {
+    override suspend fun setListening(listenCalls: Boolean?, smsFallback: Boolean?): Me {
         val h = _home.value ?: error("Not signed in.")
         val m = h.me.copy(
             listenCalls = listenCalls ?: h.me.listenCalls,
-            strongerCheck = strongerCheck ?: h.me.strongerCheck,
             smsFallback = smsFallback ?: h.me.smsFallback,
         )
         _home.value = h.copy(me = m)
@@ -293,4 +326,50 @@ class FakeRepository(start: Scenario = Scenario.IDLE) : Repository {
     }
 
     override fun messageMember(memberId: String) {}
+
+    override suspend fun notAScam(reason: FalseAlarmReason) {
+        delay(300)
+        _call.update { it?.copy(risk = null, cleared = true) }
+        _home.update { it?.copy(scam = null) }
+    }
+
+    override suspend fun checkRecording(uri: android.net.Uri): Analysis {
+        delay(2_500)
+        return lastAnalysis ?: SCAM_ANALYSIS
+    }
+
+    override suspend fun checkText(text: String): Analysis {
+        delay(600)
+        lastAnalysis?.let { return it }
+        // a stand-in for the real analyzer: a few loud words make a scam, anything else is safe
+        val loud = listOf("police", "arrest", "otp", "kyc", "anydesk", "पुलिस", "गिरफ्तार").filter { it in text.lowercase() }
+        return if (loud.size >= 2) SCAM_ANALYSIS.copy(transcript = text, voiceClone = null, seconds = 0f) else SAFE_ANALYSIS.copy(transcript = text, voiceClone = null, seconds = 0f)
+    }
+
+    companion object {
+        const val PACK_MB = 180
+
+        val SCAM_ANALYSIS = Analysis(
+            level = RiskLevel.SCAM,
+            type = ScamType.DIGITAL_ARREST,
+            pScam = 0.94f,
+            cues = listOf("authority", "threat", "secrecy", "money_ask"),
+            sources = setOf(RiskSource.CUES, RiskSource.PHONE_AI),
+            voiceClone = 0.12f,
+            transcript = "This is inspector Sharma from Mumbai police. Your Aadhaar is linked to a money laundering case. " +
+                "Do not tell anyone. Transfer the money to the safe account now or you will be arrested.",
+            seconds = 41f,
+        )
+
+        val SAFE_ANALYSIS = Analysis(
+            level = RiskLevel.NONE,
+            type = ScamType.UNKNOWN,
+            pScam = 0.04f,
+            cues = emptyList(),
+            sources = emptySet(),
+            voiceClone = 0.08f,
+            transcript = "Hello madam, I'm outside your building with the parcel from Amazon. Should I leave it with the guard?",
+            seconds = 12f,
+        )
+    }
 }

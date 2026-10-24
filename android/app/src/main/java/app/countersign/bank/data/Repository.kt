@@ -65,17 +65,29 @@ interface Repository {
 
     // ---- the call listener (CONTRACT.md, "Call listener"). Defaults keep older implementations building.
 
-    /** The on-phone speech model for the app's language. */
+    /** The model pack (speech-to-text + voice check). */
     val modelState: StateFlow<ModelState> get() = NO_MODEL_NEEDED
 
-    /** Download the speech model; [modelState] reports progress. */
+    /** Download the model pack once; [modelState] reports progress. */
     suspend fun downloadModels() {}
 
-    suspend fun setListening(listenCalls: Boolean? = null, strongerCheck: Boolean? = null, smsFallback: Boolean? = null): Me =
-        error("Not built yet.")
+    suspend fun setListening(listenCalls: Boolean? = null, smsFallback: Boolean? = null): Me = error("Not built yet.")
 
     /** "Alert family" on the call card: treat this call as a scam now and alarm the family. */
     suspend fun alertFamily() {}
+
+    /**
+     * "Not a scam" / "I know this caller" on a warn or scam card. For this call: risk goes to none, the listener
+     * stays quiet, the pay guard goes off, the family gets family_alarm_cleared if they were alarmed, and one
+     * ids-only feedback record is kept for human review.
+     */
+    suspend fun notAScam(reason: FalseAlarmReason) {}
+
+    /** "Check a recording": an audio file the user picked, through the same on-phone pipeline as a call. */
+    suspend fun checkRecording(uri: android.net.Uri): Analysis = error("Not built yet.")
+
+    /** "Check a message": pasted or typed text (an SMS, a WhatsApp message, what a caller said). */
+    suspend fun checkText(text: String): Analysis = error("Not built yet.")
 
     /** Open SMS (or WhatsApp) to this member with the prefilled "cut that call" message. */
     fun messageMember(memberId: String) {}

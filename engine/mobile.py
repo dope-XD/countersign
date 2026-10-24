@@ -75,7 +75,6 @@ class Prefs(BaseModel):
     check_channel: str | None = Field(default=None, pattern="^(ring|notify)$")
     share_call_status: bool | None = None
     listen_calls: bool | None = None
-    stronger_check: bool | None = None
     sms_fallback: bool | None = None
 
 
@@ -169,7 +168,6 @@ def _me_json(cust: Customer) -> dict:
         "check_channel": cust.check_channel,
         "share_call_status": cust.share_call_status,
         "listen_calls": cust.listen_calls,
-        "stronger_check": cust.stronger_check,
         "sms_fallback": cust.sms_fallback,
     }
 
@@ -230,7 +228,7 @@ async def prefs(body: Prefs, request: Request) -> dict:
         cust.language = f"{body.lang}-IN"
     if body.check_channel is not None:
         cust.check_channel = body.check_channel
-    for k in ("share_call_status", "listen_calls", "stronger_check", "sms_fallback"):
+    for k in ("share_call_status", "listen_calls", "sms_fallback"):
         if getattr(body, k) is not None:
             setattr(cust, k, getattr(body, k))
     world.save(cust)

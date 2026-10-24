@@ -244,7 +244,7 @@ def alert(phone, call_id="m1", **kw):
         "level": "scam",
         "type": "digital_arrest",
         "cues": ["authority", "threat", "secrecy", "money_ask"],
-        "sources": ["cues", "server"],
+        "sources": ["cues", "phone_ai"],
     } | kw
     return phone.post("/api/m/scam-alert", body)
 
@@ -300,8 +300,42 @@ def test_a_caller_check_scam_keeps_its_reason(fam, quick):
     assert alert(mom).json()["scam"]["reason"] == "not_them"
 
 
+def clear(phone, call_id="m1", **kw):
+    body = {"call_id": call_id, "reason": "know_caller", "level": "scam", "type": "digital_arrest", "cues": ["authority", "threat"]} | kw
+    return phone.post("/api/m/scam-alert/clear", body)
+
+
+def test_not_a_scam_turns_off_the_pay_guard_and_tells_the_family(fam):
+    mom, son = fam
+    son.get("/api/m/home")
+    alert(mom)
+    q = hub.subscribe(f"app:{son.id}")
+    r = clear(mom)
+    assert r.status_code == 200, r.text
+    assert r.json()["scam"] is None and r.json()["cleared"] == [son.id]
+    assert mom.get("/api/m/home").json()["scam"] is None
+    msgs = []
+    while not q.empty():
+        msgs.append(q.get_nowait())
+    hub.unsubscribe(q)
+    cleared = [m for m in msgs if '"family_alarm_cleared"' in m]
+    assert len(cleared) == 1 and '"label": "Mom"' in cleared[0] and '"reason": "know_caller"' in cleared[0]
+
+
+def test_not_a_scam_keeps_one_ids_only_record_and_silences_the_call(fam):
+    mom, son = fam
+    son.get("/api/m/home")
+    n = len(callcheck.false_alarms)
+    clear(mom, call_id="w1", level="warn", type="bank_kyc")  # a warn: nobody was alarmed yet
+    assert len(callcheck.false_alarms) == n + 1
+    rec = callcheck.false_alarms[-1]
+    assert rec["reason"] == "know_caller" and rec["type"] == "bank_kyc" and set(rec) == {"at", "call_id", "reason", "level", "type", "cues", "sources"}
+    assert alert(mom, call_id="w1").json()["alarmed"] == []  # a later alert on the same call stays quiet
+    assert clear(mom, cues=["he said the bank"]).status_code == 422
+
+
 def test_listener_settings_round_trip(fam):
     mom, _ = fam
     me = mom.post("/api/m/prefs", {"listen_calls": False, "sms_fallback": False}).json()
-    assert me["listen_calls"] is False and me["sms_fallback"] is False and me["stronger_check"] is True
+    assert me["listen_calls"] is False and me["sms_fallback"] is False
     assert mom.get("/api/m/home").json()["me"]["listen_calls"] is False
