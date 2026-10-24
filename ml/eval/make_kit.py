@@ -84,8 +84,8 @@ def main() -> None:
         + pick("india_sms", 0, 2)
         + pick("hinglish_calls", 1, 2)
         + pick("hinglish_calls", 0, 1)
-        + pick("bothbosu", 1, 1)
-        + pick("bothbosu", 0, 1)
+        + pick("bothbosu", 1, 1, 400)
+        + pick("bothbosu", 0, 1, 400)
     )
     for i, r in enumerate(texts, 1):
         f = f"text_{i:02d}.txt"
@@ -100,7 +100,7 @@ def main() -> None:
             }
         )
     # 10 calls: Hinglish and BothBosu test scripts, spoken, over a phone line
-    calls = pick("hinglish_calls", 1, 3) + pick("hinglish_calls", 0, 2) + pick("bothbosu", 1, 3, 160) + pick("bothbosu", 0, 2, 160)
+    calls = pick("hinglish_calls", 1, 3) + pick("hinglish_calls", 0, 2) + pick("bothbosu", 1, 3, 260) + pick("bothbosu", 0, 2, 260)
     for i, r in enumerate(calls, 1):
         f = f"call_{i:02d}.wav"
         text = listener_data.re.sub(r"\b(caller|receiver)\s*:", "", r["text"], flags=listener_data.re.I)
