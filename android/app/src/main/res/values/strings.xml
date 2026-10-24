@@ -44,4 +44,14 @@
     <string name="card_dont_send_money">Don\'t send this caller money.</string>
     <string name="action_ring_member">Ring %1$s</string>
     <string name="action_call_member">Call %1$s</string>
+    <!-- Pay guard (red, over payment apps). %1$s is the member, or the payment app's name -->
+    <string name="guard_title">Stop. This caller isn\'t %1$s.</string>
+    <string name="guard_line">Don\'t send money or share an OTP.</string>
+    <string name="guard_line_app">Don\'t send money in %1$s or share an OTP.</string>
+    <string name="action_understood">I understand</string>
+
+    <!-- Ring screen (the asked member's phone). %1$s is who's asking: "Mummy" -->
+    <string name="ring_question">Is it you on %1$s\'s call?</string>
+    <string name="ring_detail">Someone on %1$s\'s call says they\'re you.</string>
+    <string name="ring_yes_hint">We\'ll ask for your fingerprint.</string>
 </resources>
