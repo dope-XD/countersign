@@ -14,6 +14,7 @@ import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
 import android.os.PowerManager
+import android.os.SystemClock
 import android.provider.Settings
 import android.util.Log
 import androidx.activity.ComponentActivity
@@ -33,6 +34,8 @@ import app.countersign.bank.str
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.channels.Channel
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharedFlow
@@ -185,6 +188,47 @@ class RealRepository(private val app: Application) : Repository {
         _call.value = c?.copy(check = c.check ?: _call.value?.takeIf { it.id == c.id }?.check)
     }
 
+    // This phone's calls, from CallWatchService: sent one at a time, in order, each saying how long it waited.
+    private val outbox = Channel<suspend () -> Unit>(Channel.UNLIMITED)
+
+    init {
+        scope.launch { for (send in outbox) send() }
+    }
+
+    /** [event]: ringing, outgoing, answered or ended. [peer]: the family member whose number it is, else null. */
+    fun callEvent(callId: String, event: String, kind: String, peer: Member?) {
+        val at = SystemClock.elapsedRealtime()
+        outbox.trySend {
+            retrying("call event $event") {
+                val body = JSONObject().put("call_id", callId).put("event", event).put("kind", kind)
+                    .put("peer", peer?.id ?: JSONObject.NULL).put("elapsed_ms", SystemClock.elapsedRealtime() - at)
+                Api.post("/api/m/call-event", body)
+            }
+        }
+    }
+
+    /** A family member's number is ringing: ask at once whether it's really their phone. */
+    fun autoCheck(callId: String, member: Member) {
+        outbox.trySend {
+            retrying("auto check") {
+                val body = JSONObject().put("call_id", callId).put("claimed", member.id).put("number_matched", true).put("via", "auto")
+                takeCheck(parseCheck(Api.post("/api/m/checks", body)))
+            }
+        }
+    }
+
+    private suspend fun retrying(what: String, send: suspend () -> Unit) {
+        for (attempt in 0 until 3) {
+            try {
+                return send()
+            } catch (e: ApiError) {
+                Log.w(TAG, "$what not sent: ${e.message}")
+                if (e.code in 400..499) return // the engine refused it: sending again won't help
+                delay(1000L shl attempt)
+            }
+        }
+    }
+
     private fun takeCheck(c: Check) {
         _call.update { lc -> if (lc != null && (lc.id == c.callId || lc.check?.id == c.id)) lc.copy(check = c) else lc }
         _home.update { h -> h?.copy(checks = (listOf(c) + h.checks.filterNot { it.id == c.id }).sortedByDescending { it.createdAt }.take(10)) }
@@ -220,7 +264,8 @@ class RealRepository(private val app: Application) : Repository {
         val granted = buildSet {
             if (has(Manifest.permission.READ_PHONE_STATE)) add(Permission.PHONE)
             if (role(RoleManager.ROLE_CALL_SCREENING)) add(Permission.CALL_SCREENING)
-            if (role(RoleManager.ROLE_CALL_REDIRECTION)) add(Permission.CALL_REDIRECTION)
+            @Suppress("DEPRECATION")
+            if (has(Manifest.permission.PROCESS_OUTGOING_CALLS)) add(Permission.OUTGOING_CALLS)
             if (app.getSystemService(NotificationManager::class.java).areNotificationsEnabled()) add(Permission.NOTIFICATIONS)
             if (Settings.canDrawOverlays(app)) add(Permission.OVERLAY)
             if (ops.unsafeCheckOpNoThrow(AppOpsManager.OPSTR_GET_USAGE_STATS, android.os.Process.myUid(), app.packageName) == AppOpsManager.MODE_ALLOWED) {
@@ -255,7 +300,10 @@ class RealRepository(private val app: Application) : Repository {
         when (permission) {
             Permission.PHONE -> ask(Manifest.permission.READ_PHONE_STATE)
             Permission.CALL_SCREENING -> askRole(RoleManager.ROLE_CALL_SCREENING)
-            Permission.CALL_REDIRECTION -> askRole(RoleManager.ROLE_CALL_REDIRECTION)
+            // never asked for any more: a redirection app can cancel calls on a slow phone (#32)
+            Permission.CALL_REDIRECTION -> {}
+            @Suppress("DEPRECATION")
+            Permission.OUTGOING_CALLS -> ask(Manifest.permission.PROCESS_OUTGOING_CALLS)
             Permission.NOTIFICATIONS ->
                 if (Build.VERSION.SDK_INT >= 33 && !has(Manifest.permission.POST_NOTIFICATIONS)) {
                     ask(Manifest.permission.POST_NOTIFICATIONS)
@@ -267,7 +315,7 @@ class RealRepository(private val app: Application) : Repository {
             Permission.FULL_SCREEN -> if (Build.VERSION.SDK_INT >= 34) open(Settings.ACTION_MANAGE_APP_USE_FULL_SCREEN_INTENT)
             Permission.BATTERY -> open(Settings.ACTION_REQUEST_IGNORE_BATTERY_OPTIMIZATIONS)
             // added by the call-listener contract change; agent C implements these
-            Permission.OUTGOING_CALLS, Permission.MICROPHONE, Permission.ACCESSIBILITY, Permission.SMS -> {}
+            Permission.MICROPHONE, Permission.ACCESSIBILITY, Permission.SMS -> {}
         }
     }
 

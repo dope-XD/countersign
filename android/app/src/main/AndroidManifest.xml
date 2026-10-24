@@ -3,8 +3,14 @@
     xmlns:tools="http://schemas.android.com/tools">
 
     <uses-permission android:name="android.permission.INTERNET" />
-    <!-- Call state only (idle / ringing / in a call). The app never reads numbers or call audio. -->
+    <!-- A SIM makes the caller check work; internet calls are watched without one. -->
+    <uses-feature
+        android:name="android.hardware.telephony"
+        android:required="false" />
+    <!-- Call state (idle / ringing / in a call). -->
     <uses-permission android:name="android.permission.READ_PHONE_STATE" />
+    <!-- The number this phone dials, matched against the family list on the phone; it never leaves it. -->
+    <uses-permission android:name="android.permission.PROCESS_OUTGOING_CALLS" />
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE_SPECIAL_USE" />
@@ -67,5 +73,25 @@
                 android:name="android.app.PROPERTY_SPECIAL_USE_FGS_SUBTYPE"
                 android:value="Tells the bank when the customer is on a phone or internet call, so payments made under a caller's pressure can be paused, and rings for family checks and the bank's approval requests." />
         </service>
+
+        <!-- Read the number of a call to match it against the family list; every call goes through untouched. -->
+        <service
+            android:name=".CallScreener"
+            android:exported="true"
+            android:permission="android.permission.BIND_SCREENING_SERVICE">
+            <intent-filter>
+                <action android:name="android.telecom.CallScreeningService" />
+            </intent-filter>
+        </service>
+
+        <!-- The number this phone dials, read only: it never changes or cancels the call. -->
+        <receiver
+            android:name=".OutgoingCalls"
+            android:exported="true"
+            android:permission="android.permission.PROCESS_OUTGOING_CALLS">
+            <intent-filter>
+                <action android:name="android.intent.action.NEW_OUTGOING_CALL" />
+            </intent-filter>
+        </receiver>
     </application>
 </manifest>
