@@ -64,6 +64,8 @@ _checks: dict[str, dict] = {}
 _scam: dict[str, dict] = {}  # asker -> the check that made this call a scam
 _last_event: dict[str, float] = {}
 _alerts: dict[tuple[str, str], str] = {}  # (customer, call id) -> scam-alert id: the family is alarmed once per call
+_cleared: set[tuple[str, str]] = set()  # (customer, call id) the user said was not a scam
+false_alarms: deque[dict] = deque(maxlen=1000)  # ids-only feedback records for human review (counted in /api/metrics)
 
 
 # ------------------------------------------------------------------ bodies
@@ -86,7 +88,7 @@ SCAM_TYPES = (
     "digital_arrest", "bank_kyc", "otp_upi", "remote_access", "family_emergency", "courier_customs",
     "trai_sim", "job_task", "investment", "reward", "impersonation", "unknown",
 )  # fmt: skip
-SOURCES = ("cues", "phone_ai", "server", "context", "caller_check", "user")
+SOURCES = ("cues", "phone_ai", "voice", "context", "caller_check", "user")
 
 
 class ScamAlert(BaseModel):
@@ -118,6 +120,13 @@ class ScamAlert(BaseModel):
         if any(s not in SOURCES for s in v):
             raise ValueError("unknown source")
         return v
+
+
+class NotAScam(ScamAlert):
+    """The user pressed "Not a scam" or "I know this caller" on a warn or scam card. Ids only."""
+
+    reason: str = Field(pattern="^(know_caller|not_a_scam)$")
+    level: str = Field(default="warn", pattern="^(watch|warn|scam)$")
 
 
 class NewCheck(BaseModel):
@@ -428,6 +437,8 @@ async def scam_alert(body: ScamAlert, request: Request) -> dict:
     text them from its own SIM."""
     me = _me(request)
     key = (me.id, body.call_id)
+    if key in _cleared:  # the user already said this call is fine
+        return {"scam": scam_for(me.id), "alarmed": [], "text_these": []}
     first = key not in _alerts
     aid = _alerts.setdefault(key, new_id("lsn"))
     if me.id not in _scam:  # a caller-check scam on this call already has the pay guard on: keep its reason
@@ -457,3 +468,38 @@ async def scam_alert(body: ScamAlert, request: Request) -> dict:
             (alarmed if now - seen(fid) <= ONLINE_S else text_these).append(fid)
         db.audit(me.id, "family_alarmed", aid, online=alarmed, offline=text_these)
     return {"scam": scam_for(me.id), "alarmed": alarmed, "text_these": text_these}
+
+
+@router.post("/scam-alert/clear")
+async def scam_alert_clear(body: NotAScam, request: Request) -> dict:
+    """A false alarm: the pay guard goes off, family who were alarmed for this call get family_alarm_cleared, and one
+    ids-only feedback record is kept for human review. Later alerts for the same call don't alarm anyone."""
+    me = _me(request)
+    key = (me.id, body.call_id)
+    _cleared.add(key)
+    aid = _alerts.get(key)
+    s = _scam.get(me.id)
+    if s and (s.get("call_id") == body.call_id or s["check_id"] == aid):
+        _scam.pop(me.id, None)
+        hub.publish(f"app:{me.id}", {"type": "scam", "scam": None})
+    told = []
+    if aid:
+        now = time.time()
+        for fid in me.family:
+            member = world.customer(fid)
+            if member is None:
+                continue
+            hub.publish(f"app:{fid}", {"type": "family_alarm_cleared", "from": me.id, "label": member.label_for(me.id), "reason": body.reason, "at": now})
+            told.append(fid)
+    record = {
+        "at": time.time(),
+        "call_id": body.call_id,
+        "reason": body.reason,
+        "level": body.level,
+        "type": body.type,
+        "cues": body.cues,
+        "sources": body.sources,
+    }
+    false_alarms.append(record)
+    db.audit(me.id, "false_alarm", aid or body.call_id, **{k: v for k, v in record.items() if k not in ("at", "call_id")})
+    return {"scam": scam_for(me.id), "cleared": told}

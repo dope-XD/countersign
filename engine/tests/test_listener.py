@@ -3,7 +3,7 @@
 import pytest
 
 from engine.listener import fixtures
-from engine.listener.fusion import Judge, Verdict, fuse
+from engine.listener.fusion import Judge, fuse
 from engine.listener.rules import CallScorer, normalize, score_text, word_matches
 
 TRANSCRIPTS = fixtures.load()["transcripts"]
@@ -76,12 +76,11 @@ def test_trusted_caller_needs_more_evidence():
     assert fuse(cues, {"caller_verified"}).level == "watch"
 
 
-def test_server_verdict_decides_but_user_alert_stands():
-    cues = score_text("this is the police, there is a warrant")
-    server = Verdict("watch", "unknown", [], ["server"])
-    assert fuse(cues, server=server).level == "watch"
-    assert fuse(cues, server=server, user=True).level == "scam"
-    assert "server" in fuse(cues, server=Verdict("scam", "digital_arrest", [], ["server"])).sources
+def test_synthetic_voice_warns_but_never_makes_scam_alone():
+    cues = score_text("hello madam how are you")
+    v = fuse(cues, context={"synthetic_voice"})
+    assert v.level == "warn" and v.sources == ["voice"]
+    assert fuse(cues, context={"synthetic_voice"}, judge=Judge(0.99)).level != "scam"
 
 
 def test_levels_never_go_down():

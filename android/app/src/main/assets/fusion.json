@@ -1,16 +1,17 @@
 {
-  "version": 1,
-  "about": "How the call listener turns evidence into a level (docs/agents/CONTRACT.md, 'Call listener'). Same logic in data/listen/Fusion.kt and engine/listener/fusion.py. Levels never go down during a call. 'strong' = a category that isn't weak; 'discussion' never counts as a category.",
+  "version": 2,
+  "about": "How the call listener turns evidence into a level (docs/agents/CONTRACT.md, 'Call listener'). Same logic in data/listen/Fusion.kt and engine/listener/fusion.py. Evidence: cue categories (scam_patterns.json), our scam classifier's p_scam on the transcript ('clf', abstains under ~25 words), context signals from the phone, the voice-clone check (context id 'synthetic_voice': warn at most, never scam on its own) and the user. Levels never go down during a call, except when the user says 'Not a scam'. 'strong' = a category that isn't weak; 'discussion' never counts as a category.",
   "watch": {
     "min_categories": 1
   },
   "warn": {
     "min_strong": 2,
-    "llm_p": 0.6,
-    "llm_min_categories": 1,
+    "clf_p": 0.6,
+    "clf_min_categories": 1,
     "context_alone": [
       "caller_check_failed",
-      "remote_app_opened"
+      "remote_app_opened",
+      "synthetic_voice"
     ]
   },
   "scam": {
@@ -18,14 +19,14 @@
     "cues_need_action": true,
     "cues_need_type": true,
     "discussion_blocks_cues": true,
-    "llm_p": 0.8,
-    "llm_min_categories": 2,
     "strong_context": [
       "remote_app_opened",
       "caller_check_failed",
       "video_call_unknown",
       "international_number"
-    ]
+    ],
+    "clf_p": 0.8,
+    "clf_min_categories": 2
   },
   "context_as_category": [
     "long_call",
@@ -36,6 +37,5 @@
     "caller_verified",
     "known_contact"
   ],
-  "trusted_extra": 1,
-  "server_fresh_s": 15
+  "trusted_extra": 1
 }

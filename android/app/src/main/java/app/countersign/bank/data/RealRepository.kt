@@ -219,10 +219,9 @@ class RealRepository(private val app: Application) : Repository {
         }
     }
 
-    override suspend fun setListening(listenCalls: Boolean?, strongerCheck: Boolean?, smsFallback: Boolean?): Me {
+    override suspend fun setListening(listenCalls: Boolean?, smsFallback: Boolean?): Me {
         val body = JSONObject()
         listenCalls?.let { body.put("listen_calls", it) }
-        strongerCheck?.let { body.put("stronger_check", it) }
         smsFallback?.let { body.put("sms_fallback", it) }
         val me = parseMe(Api.post("/api/m/prefs", body).let { it.obj("me") ?: it })
         _home.update { it?.copy(me = me) }
@@ -474,7 +473,6 @@ class RealRepository(private val app: Application) : Repository {
         channel = CheckChannel.entries.firstOrNull { it.wire == o.optString("check_channel") } ?: CheckChannel.RING,
         shareCallStatus = o.optBoolean("share_call_status", true),
         listenCalls = o.optBoolean("listen_calls", true),
-        strongerCheck = o.optBoolean("stronger_check", true),
         smsFallback = o.optBoolean("sms_fallback", true),
     )
 

@@ -1,4 +1,4 @@
-"""Fusion: cues, the LLM judge, context signals and the server's verdict → one level (fusion.json).
+"""Fusion: cues, our scam classifier, context signals and the voice check → one level (fusion.json).
 
 Port of record for data/listen/Fusion.kt. Levels never go down during a call.
 """
@@ -22,7 +22,7 @@ def config(path: Path = ASSETS / "fusion.json") -> dict:
 
 @dataclass(frozen=True)
 class Judge:
-    """What an LLM judge said about the transcript so far."""
+    """What the scam classifier (ml/listener_clf.py) said about the transcript so far."""
 
     p_scam: float
     type: str = "unknown"
@@ -45,7 +45,6 @@ def fuse(
     cues: Result,
     context: set[str] | frozenset[str] = frozenset(),
     judge: Judge | None = None,
-    server: Verdict | None = None,
     user: bool = False,
     prev: str = "none",
 ) -> Verdict:
@@ -63,14 +62,18 @@ def fuse(
 
     w = f["warn"]
     warn_cues = len(strong) >= w["min_strong"] + extra
-    warn_llm = bool(j and j.p_scam >= w["llm_p"] and len(cats) >= w["llm_min_categories"])
+    warn_clf = bool(j and j.p_scam >= w["clf_p"] and len(cats) >= w["clf_min_categories"])
     warn_ctx = set(context) & set(w["context_alone"])
-    if warn_cues or warn_llm or warn_ctx:
+    if warn_cues or warn_clf or warn_ctx:
         level = "warn"
-        if warn_llm:
+        if warn_clf:
             sources.add("phone_ai")
-        if warn_ctx:
-            sources.add("caller_check" if "caller_check_failed" in warn_ctx else "context")
+        if "caller_check_failed" in warn_ctx:
+            sources.add("caller_check")
+        if "synthetic_voice" in warn_ctx:
+            sources.add("voice")
+        if warn_ctx - {"caller_check_failed", "synthetic_voice"}:
+            sources.add("context")
 
     s = f["scam"]
     scam_cues = (
@@ -79,15 +82,15 @@ def fuse(
         and (not s["cues_need_type"] or cues.type != "unknown")
         and not (s["discussion_blocks_cues"] and cues.discussion)
     )
-    scam_llm = bool(j and j.p_scam >= s["llm_p"] and len(cats) >= s["llm_min_categories"])
+    scam_clf = bool(j and j.p_scam >= s["clf_p"] and len(cats) >= s["clf_min_categories"])
     strong_ctx = set(context) & set(s["strong_context"])
-    # two independent kinds of evidence: what was said (cues or the judge) and what the phone saw
-    scam_ctx = bool(strong_ctx) and (warn_cues or warn_llm)
-    if scam_cues or scam_llm or scam_ctx or user:
+    # two independent kinds of evidence: what was said (cues or the classifier) and what the phone saw
+    scam_ctx = bool(strong_ctx) and (warn_cues or warn_clf)
+    if scam_cues or scam_clf or scam_ctx or user:
         level = "scam"
         if scam_ctx:
             sources.add("caller_check" if "caller_check_failed" in strong_ctx else "context")
-        if scam_llm:
+        if scam_clf:
             sources.add("phone_ai")
         if user:
             sources.add("user")
@@ -98,11 +101,5 @@ def fuse(
     if kind == "unknown" and "caller_check_failed" in context:
         kind = "impersonation"
 
-    if server is not None:
-        # the server heard the same call with a stronger model and the same context: it decides,
-        # except that the user's own "Alert family" always stands
-        level = higher(server.level, "scam" if user else "none")
-        kind = server.type if server.type != "unknown" else kind
-        sources |= set(server.sources) | {"server"}
     level = higher(level, prev)
     return Verdict(level, kind, sorted(cats), sorted(sources))

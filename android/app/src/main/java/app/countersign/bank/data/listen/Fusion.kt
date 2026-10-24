@@ -8,7 +8,7 @@ import org.json.JSONArray
 import org.json.JSONObject
 
 /*
- * Fusion: cues, the LLM judge, context signals and the server's verdict → one level.
+ * Fusion: cues, our scam classifier, context signals and the voice check → one level.
  * Rules: assets/fusion.json. Port of engine/listener/fusion.py; keep the two identical.
  * Levels never go down during a call.
  */
@@ -17,7 +17,7 @@ val LEVELS = listOf("none", "watch", "warn", "scam")
 
 fun higher(a: String, b: String) = if (LEVELS.indexOf(a) >= LEVELS.indexOf(b)) a else b
 
-/** What an LLM judge said about the transcript so far. */
+/** What the scam classifier (ScamClassifier.kt) said about the transcript so far. */
 data class Judge(val pScam: Double, val type: String = "unknown", val abstain: Boolean = false)
 
 data class Verdict(val level: String, val type: String, val cues: List<String>, val sources: List<String>) {
@@ -35,21 +35,20 @@ class FusionConfig(private val f: JSONObject) {
     val watchMin = f.getJSONObject("watch").getInt("min_categories")
     private val w = f.getJSONObject("warn")
     val warnMinStrong = w.getInt("min_strong")
-    val warnLlmP = w.getDouble("llm_p")
-    val warnLlmMinCats = w.getInt("llm_min_categories")
+    val warnClfP = w.getDouble("clf_p")
+    val warnClfMinCats = w.getInt("clf_min_categories")
     val warnContextAlone = list(w, "context_alone")
     private val s = f.getJSONObject("scam")
     val scamCuesMin = s.getInt("cues_min_categories")
     val scamCuesNeedAction = s.getBoolean("cues_need_action")
     val scamCuesNeedType = s.getBoolean("cues_need_type")
     val scamDiscussionBlocks = s.getBoolean("discussion_blocks_cues")
-    val scamLlmP = s.getDouble("llm_p")
-    val scamLlmMinCats = s.getInt("llm_min_categories")
+    val scamClfP = s.getDouble("clf_p")
+    val scamClfMinCats = s.getInt("clf_min_categories")
     val strongContext = list(s, "strong_context")
     val contextAsCategory = list(f, "context_as_category")
     val trustedContext = list(f, "trusted_context")
     val trustedExtra = f.getInt("trusted_extra")
-    val serverFreshS = f.getInt("server_fresh_s")
 
     companion object {
         fun parse(json: String) = FusionConfig(JSONObject(json))
@@ -64,7 +63,6 @@ fun fuse(
     f: FusionConfig,
     context: Set<String> = emptySet(),
     judge: Judge? = null,
-    server: Verdict? = null,
     user: Boolean = false,
     prev: String = "none",
 ): Verdict {
@@ -81,26 +79,28 @@ fun fuse(
     }
 
     val warnCues = strong.size >= f.warnMinStrong + extra
-    val warnLlm = j != null && j.pScam >= f.warnLlmP && cats.size >= f.warnLlmMinCats
+    val warnClf = j != null && j.pScam >= f.warnClfP && cats.size >= f.warnClfMinCats
     val warnCtx = context intersect f.warnContextAlone
-    if (warnCues || warnLlm || warnCtx.isNotEmpty()) {
+    if (warnCues || warnClf || warnCtx.isNotEmpty()) {
         level = "warn"
-        if (warnLlm) sources += "phone_ai"
-        if (warnCtx.isNotEmpty()) sources += if ("caller_check_failed" in warnCtx) "caller_check" else "context"
+        if (warnClf) sources += "phone_ai"
+        if ("caller_check_failed" in warnCtx) sources += "caller_check"
+        if ("synthetic_voice" in warnCtx) sources += "voice"
+        if ((warnCtx - setOf("caller_check_failed", "synthetic_voice")).isNotEmpty()) sources += "context"
     }
 
     val scamCues = cats.size >= f.scamCuesMin + extra &&
         (!f.scamCuesNeedAction || (cats intersect rules.action).isNotEmpty()) &&
         (!f.scamCuesNeedType || cues.type != "unknown") &&
         !(f.scamDiscussionBlocks && cues.discussion)
-    val scamLlm = j != null && j.pScam >= f.scamLlmP && cats.size >= f.scamLlmMinCats
+    val scamClf = j != null && j.pScam >= f.scamClfP && cats.size >= f.scamClfMinCats
     val strongCtx = context intersect f.strongContext
-    // two independent kinds of evidence: what was said (cues or the judge) and what the phone saw
-    val scamCtx = strongCtx.isNotEmpty() && (warnCues || warnLlm)
-    if (scamCues || scamLlm || scamCtx || user) {
+    // two independent kinds of evidence: what was said (cues or the classifier) and what the phone saw
+    val scamCtx = strongCtx.isNotEmpty() && (warnCues || warnClf)
+    if (scamCues || scamClf || scamCtx || user) {
         level = "scam"
         if (scamCtx) sources += if ("caller_check_failed" in strongCtx) "caller_check" else "context"
-        if (scamLlm) sources += "phone_ai"
+        if (scamClf) sources += "phone_ai"
         if (user) sources += "user"
     }
 
@@ -108,13 +108,6 @@ fun fuse(
     if (kind == "unknown" && j != null && j.type != "unknown") kind = j.type
     if (kind == "unknown" && "caller_check_failed" in context) kind = "impersonation"
 
-    if (server != null) {
-        // the server heard the same call with a stronger model and the same context: it decides,
-        // except that the user's own "Alert family" always stands
-        level = higher(server.level, if (user) "scam" else "none")
-        if (server.type != "unknown") kind = server.type
-        sources += server.sources + "server"
-    }
     level = higher(level, prev)
     return Verdict(level, kind, cats.sorted(), sources.sorted())
 }
