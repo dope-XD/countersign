@@ -121,21 +121,8 @@ def train(rows: list[dict], seed: int = listener_data.SEED, exclude: str | None 
     return clf, report
 
 
-def fused(text: str, clf: Classifier, f: dict, min_words: int, context: frozenset[str] = frozenset()) -> str:
-    """The level the phone would give this text, with fusion settings f (the same steps as data/listen/Analyzer.kt)."""
-    cues = score_text(text)
-    j = clf.judge(text, min_words=min_words)
-    fusion_mod.config.cache_clear()
-    return fusion_mod.fuse(cues, set(context), judge=j).level if f is None else _fuse_with(cues, j, f, context)
-
-
 def _fuse_with(cues, judge, f: dict, context) -> str:
-    old = fusion_mod.config
-    fusion_mod.config = lambda path=None: f  # type: ignore[assignment]
-    try:
-        return fusion_mod.fuse(cues, set(context), judge=judge).level
-    finally:
-        fusion_mod.config = old  # type: ignore[assignment]
+    return fusion_mod.fuse(cues, set(context), judge=judge, cfg=f).level
 
 
 def fit_fusion(rows: list[dict], clf: Classifier, exclude: str | None = None) -> tuple[dict, dict]:
