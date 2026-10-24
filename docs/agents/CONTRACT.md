@@ -119,7 +119,7 @@ The user pressed "I understand" on the pay guard. → `{"scam": null}`. The pay 
 ```
 - `kind`:
   - `call_check`: a family ring;
-  - `bank_call`: a bank agent asking "Is this you on the phone with us?".
+  - `app_approval`: a bank agent asking "Is this you on the phone with us?".
 
 ### `POST /api/m/approvals/{id}/decide`
 `{"decision": "approve", "signature": "<base64 SHA256withECDSA over approve:<id>:<challenge>>"}` or `{"decision": "decline"}` → `Approval` with its new `status`.
@@ -136,7 +136,7 @@ One JSON object per message; `type` says which.
 | `scam` | `{"scam": Scam \| null}` | turns the pay guard on or off |
 | `family_request` | `{"customer_id": "c_ef56", "name": "Priya Sharma"}` | notification + home |
 | `family_joined` | `{"customer_id": "c_cd34", "name": "Rahul Sharma"}` | notification + home |
-| `online` | `{"member": "c_cd34", "online": false}` | the face's dot |
+| `online` | `{"member": "c_cd34", "online": false}` | the face's dot. **Not sent yet**: refresh `home` for now. |
 
 ## Test accounts on the dev server
 

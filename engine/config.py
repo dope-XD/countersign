@@ -60,6 +60,8 @@ class Settings:
     # The softphone needs no login (the caller may be the attacker) and every call costs GPU
     # time, so a public engine takes at most this many live calls at once.
     max_live_calls: int = int(_env("MAX_CALLS", "4"))
+    # dev server only: sign-up also takes Android emulator numbers (+1 555 521 5554) so `adb emu gsm call` matches
+    allow_test_numbers: bool = _env("ALLOW_TEST_NUMBERS", "0") == "1"
 
     # Amazon Connect ingest (engine/ingest/connect.py). The secret is the Lambda's
     # CONNECT_HMAC_SECRET; empty turns the endpoint off. The AWS profile (or the usual AWS_*
