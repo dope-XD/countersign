@@ -12,6 +12,7 @@ import android.media.RingtoneManager
 import android.os.Build
 import android.os.Handler
 import android.os.Looper
+import app.countersign.bank.ui.Language
 import org.json.JSONObject
 
 /** Notifications: the ongoing "protected" one, family checks and approvals (ring or notify), and news. */
@@ -25,6 +26,7 @@ object Notify {
 
     fun channels(c: Context) {
         val nm = c.getSystemService(NotificationManager::class.java)
+        val words = Language.wrap(c) // channel names in the in-app language on Android 12
         nm.createNotificationChannel(NotificationChannel(WATCH, "Protection status", NotificationManager.IMPORTANCE_LOW))
         nm.createNotificationChannel(
             NotificationChannel(RING, "Family checks that ring", NotificationManager.IMPORTANCE_HIGH).apply {
@@ -41,8 +43,8 @@ object Notify {
             NotificationChannel(CHECKS, "Family checks and approvals", NotificationManager.IMPORTANCE_HIGH).apply { enableVibration(true) },
         )
         nm.createNotificationChannel(
-            NotificationChannel(CALL_CHECK, c.getString(R.string.channel_call_check), NotificationManager.IMPORTANCE_HIGH).apply {
-                description = c.getString(R.string.channel_call_check_about)
+            NotificationChannel(CALL_CHECK, words.getString(R.string.channel_call_check), NotificationManager.IMPORTANCE_HIGH).apply {
+                description = words.getString(R.string.channel_call_check_about)
                 lockscreenVisibility = Notification.VISIBILITY_PUBLIC
             },
         )

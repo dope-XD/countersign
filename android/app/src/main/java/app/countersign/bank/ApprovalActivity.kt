@@ -32,6 +32,7 @@ import androidx.fragment.app.FragmentActivity
 import app.countersign.bank.ui.Banner
 import app.countersign.bank.ui.CsTheme
 import app.countersign.bank.ui.Green
+import app.countersign.bank.ui.Language
 import app.countersign.bank.ui.Red
 import app.countersign.bank.ui.Tone
 import kotlinx.coroutines.launch
@@ -49,6 +50,9 @@ class ApprovalActivity : FragmentActivity() {
     private var answered by mutableStateOf(false)
     private var done by mutableStateOf<String?>(null)
     private var error by mutableStateOf<String?>(null)
+
+    // Android 12 doesn't apply the in-app language by itself (13+ does)
+    override fun attachBaseContext(base: android.content.Context) = super.attachBaseContext(Language.wrap(base))
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
