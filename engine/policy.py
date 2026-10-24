@@ -44,9 +44,6 @@ def _reqs_for(action: str, tier: str, previous: dict | None = None) -> dict:
 
 def create_request(customer_id: str, channel: str, action: str, details: dict, tier: str, call_id: str | None = None) -> dict:
     c = cell(action, tier)
-    cust = world.customer(customer_id)
-    if cust and cust.blocked() and ACTIONS[action]["risk"] != "low":
-        raise PolicyError("The customer's kill switch is on, so account changes are blocked until they turn it off in the app.")
     now = time.time()
     rid = new_id("req")
     policy = {

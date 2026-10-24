@@ -139,9 +139,8 @@ def expire(aid: str) -> None:
 
 
 def request_approval(request_id: str, target_customer: str, kind: str, summary: dict) -> dict:
-    """kind: app_approval (the account holder), family_ping (a family member),
-    call_check (a family member: "is it you on Mom's call?") or
-    kill_switch_off (the account holder lifting their own kill switch)."""
+    """kind: app_approval (the account holder, asked by a bank agent) or
+    call_check (a family member: "is it you on Mom's call?")."""
     aid = new_id("apr")
     nonce = os.urandom(16)
     summary = {**summary, "approval_id": aid, "request_id": request_id, "issued_at": int(time.time())}

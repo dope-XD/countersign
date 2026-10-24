@@ -9,7 +9,6 @@ Generators (each skipped with a note if it can't run):
   gtts       Google Translate TTS through gTTS (Indian, US and UK English; Hindi)
   piper      open VITS voices run locally (piper-tts; hi_IN and English voices from rhasspy/piper-voices)
   kokoro     Kokoro-82M run locally, if the `kokoro` package is installed
-  elevenlabs ElevenLabs premade voices, when ELEVENLABS_API_KEY is set (eleven_multilingual_v2)
   mlaad      the MLAAD systems fetched by `python -m ml.fetch_data mlaad_wide` (gated; commercial
              products such as ElevenLabs v3, OpenAI TTS-1 HD, Gemini, Cartesia, and open models)
   downloads  files you saved yourself in data/ai_downloads/, listed in data/ai_downloads/labels.csv
@@ -32,7 +31,6 @@ import asyncio
 import csv
 import io
 import json
-import os
 import random
 import re
 import subprocess
@@ -260,37 +258,6 @@ def kokoro(per_voice: int) -> list[dict]:
     return out
 
 
-def elevenlabs(per_voice: int, n_voices: int = 8) -> list[dict]:
-    import requests
-
-    key = os.environ.get("ELEVENLABS_API_KEY")
-    if not key:
-        raise RuntimeError("ELEVENLABS_API_KEY is not set")
-    h = {"xi-api-key": key}
-    voices = requests.get("https://api.elevenlabs.io/v1/voices", headers=h, timeout=30).json()["voices"]
-    voices = [v for v in voices if v.get("category") == "premade"][:n_voices]
-    out = []
-    for v in voices:
-        for lang in ("en", "hi"):
-            for i, t in enumerate(texts(lang)[: max(1, per_voice // 2)]):
-                key_ = f"{v['name']}_{lang}{i}"
-                p = CLIPS / "elevenlabs" / f"{re.sub(r'[^A-Za-z0-9_.-]+', '_', key_)}.flac"
-                if p.exists():
-                    path = rel(p)
-                else:
-                    r = requests.post(
-                        f"https://api.elevenlabs.io/v1/text-to-speech/{v['voice_id']}?output_format=mp3_44100_128",
-                        headers=h,
-                        json={"text": t, "model_id": "eleven_multilingual_v2"},
-                        timeout=60,
-                    )
-                    r.raise_for_status()
-                    path = save("elevenlabs", key_, decode(r.content, ".mp3"))
-                if path:
-                    out.append(row(path, v["name"], lang, "elevenlabs"))
-    return out
-
-
 def mlaad(per_voice: int) -> list[dict]:
     """MLAAD clips from data/datasets/mlaad_wide/fake/<lang>/<system>/ (see ml/fetch_data.py)."""
     base = ROOT / "data" / "datasets" / "mlaad_wide" / "fake"
@@ -331,7 +298,8 @@ def downloads(max_segments: int = 3) -> list[dict]:
     return out
 
 
-GENERATORS = {"edge": edge, "gtts": gtts, "piper": piper, "kokoro": kokoro, "elevenlabs": elevenlabs, "mlaad": mlaad, "downloads": downloads}
+GENERATORS = {"edge": edge, "gtts": gtts, "piper": piper, "kokoro": kokoro, "mlaad": mlaad, "downloads": downloads}
+# "elevenlabs" stays so rows made earlier with the (paid, now removed) ElevenLabs generator are kept
 LABEL = {"edge": "edge-tts", "gtts": "gtts", "piper": "piper-vits", "kokoro": "kokoro", "elevenlabs": "elevenlabs"}
 
 

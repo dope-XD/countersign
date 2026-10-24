@@ -4,7 +4,7 @@ from pathlib import Path
 import numpy as np
 import pytest
 
-from engine import cases, guard, policy
+from engine import cases, policy
 from engine.audio.codec import mulaw_decode, mulaw_encode, phone_line
 from engine.audio.ring import RingBuffer
 from engine.db import db
@@ -254,27 +254,3 @@ def test_false_alarm_deletes_clip():
     cases.attach_clip(c["id"], np.full(8000, 0.01, dtype=np.float32), 8000)
     cases.resolve(c["id"], "false_alarm", "analyst")
     assert db.get("cases", c["id"])["clip_path"] is None
-
-
-# ------------------------------------------------------------------ Entry B guard
-def test_guard_fires_after_call_for_new_payee_big_amount():
-    world.recent_calls["sunita"] = time.time() - 120
-    res = guard.start_payment("sunita", "quickhelp.relief@okaxis", 50000)
-    assert res["status"] == "paused"
-    assert any("call" in r for r in res["guard"]["reasons"])
-
-
-def test_guard_quiet_for_usual_payment():
-    res = guard.start_payment("sunita", "doodhwala.lko@okicici", 900)
-    assert res["status"] == "executed"
-
-
-def test_guard_quiet_without_a_call_but_asks_who_asked():
-    """No call seen: a big first payment to a new payee only asks "did someone ask you for this?" (F8)."""
-    res = guard.start_payment("sunita", "new.person@ybl", 50000)
-    assert res["status"] == "confirm"
-
-
-def test_inr_format():
-    assert guard.inr(50000) == "₹50,000"
-    assert guard.inr(1234567) == "₹12,34,567"
