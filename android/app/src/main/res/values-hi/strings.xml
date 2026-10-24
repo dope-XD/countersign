@@ -22,4 +22,17 @@
     <string name="action_call">कॉल करें</string>
     <string name="action_yes_its_me">हाँ, मैं ही हूँ</string>
     <string name="action_no_not_me">नहीं, मैं नहीं हूँ</string>
+    <string name="card_family_chip">परिवार से बताते हैं? जाँचें</string>
+    <string name="card_pick_title">ख़ुद को कौन बता रहे हैं?</string>
+    <string name="card_pick_action">जाँचें कि क्या ये %1$s हैं</string>
+    <string name="card_ringing">%1$s का फ़ोन बज रहा है…</string>
+    <string name="card_ring_yes">%1$s ने कहा: मैं ही हूँ</string>
+    <string name="card_ring_no">%1$s ने कहा: मैं नहीं हूँ</string>
+    <string name="card_no_answer">%1$s ने जवाब नहीं दिया</string>
+    <string name="card_line_not_with_you">%1$s का फ़ोन किसी और कॉल पर है।</string>
+    <string name="card_line_not_them">%1$s का फ़ोन किसी कॉल पर नहीं है।</string>
+    <string name="card_line_cant_reach">%1$s का फ़ोन कुछ देर से ऑनलाइन नहीं है।</string>
+    <string name="card_dont_send_money">इस कॉल करने वाले को पैसे न भेजें।</string>
+    <string name="action_ring_member">%1$s का फ़ोन बजाएँ</string>
+    <string name="action_call_member">%1$s को कॉल करें</string>
 </resources>

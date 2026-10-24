@@ -30,4 +30,18 @@
     <string name="action_call">Call</string>
     <string name="action_yes_its_me">Yes, it\'s me</string>
     <string name="action_no_not_me">No, not me</string>
+    <!-- Call check card (over the dialer). %1$s is what this phone calls the member -->
+    <string name="card_family_chip">Says they\'re family? Check</string>
+    <string name="card_pick_title">Who do they say they are?</string>
+    <string name="card_pick_action">Check if it\'s %1$s</string>
+    <string name="card_ringing">Ringing %1$s…</string>
+    <string name="card_ring_yes">%1$s says: it\'s me</string>
+    <string name="card_ring_no">%1$s says: not me</string>
+    <string name="card_no_answer">%1$s didn\'t answer</string>
+    <string name="card_line_not_with_you">%1$s\'s phone is on another call.</string>
+    <string name="card_line_not_them">%1$s\'s phone isn\'t on a call.</string>
+    <string name="card_line_cant_reach">%1$s\'s phone hasn\'t been online lately.</string>
+    <string name="card_dont_send_money">Don\'t send this caller money.</string>
+    <string name="action_ring_member">Ring %1$s</string>
+    <string name="action_call_member">Call %1$s</string>
 </resources>

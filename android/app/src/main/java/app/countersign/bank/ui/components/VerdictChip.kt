@@ -62,11 +62,12 @@ fun verdictWords(verdict: Verdict, label: String): String = when (verdict) {
 
 /**
  * A verdict as icon + words + colour, so it reads without colour too. [label] is what this phone calls the member.
+ * [words] replaces the verdict's own words, for the ring answers ("Rahul says: it's me") in the same look.
  * [spoofSuspected] adds "Caller ID may be faked" under it. The icons are decorative: the words say the same thing,
  * and the chip is read out as one item when it changes.
  */
 @Composable
-fun VerdictChip(verdict: Verdict, label: String, modifier: Modifier = Modifier, spoofSuspected: Boolean = false) {
+fun VerdictChip(verdict: Verdict, label: String, modifier: Modifier = Modifier, words: String? = null, spoofSuspected: Boolean = false) {
     val look = verdict.look()
     val shape = RoundedCornerShape(12.dp)
     Column(
@@ -84,7 +85,7 @@ fun VerdictChip(verdict: Verdict, label: String, modifier: Modifier = Modifier, 
                 Look.UNKNOWN -> QuestionMark(look.fg)
                 Look.WAIT -> CircularProgressIndicator(Modifier.size(22.dp), color = look.fg, strokeWidth = 3.dp)
             }
-            Text(verdictWords(verdict, label), color = look.fg, style = MaterialTheme.typography.titleSmall)
+            Text(words ?: verdictWords(verdict, label), color = look.fg, style = MaterialTheme.typography.titleSmall)
         }
         if (spoofSuspected) {
             Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
