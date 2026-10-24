@@ -17,6 +17,9 @@
     <string name="cc_ring_yes">✓ %1$s confirmed it\'s them</string>
     <string name="cc_ring_no">✗ %1$s says it\'s NOT them</string>
 
+    <string name="listen_label">CS Bank call listener</string>
+    <string name="listen_about">During a phone or WhatsApp call, listens on this phone for what scammers say, and warns you and your family. Nothing is recorded or kept: the sound is checked as it comes and then dropped. It also sees which app you open during the call, so it can stop you paying a scammer.</string>
+
     <string name="cc_action_ring">Ring %1$s</string>
     <string name="cc_action_call">Call %1$s</string>
 </resources>

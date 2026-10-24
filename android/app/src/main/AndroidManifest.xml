@@ -25,7 +25,10 @@
         android:name="android.permission.PACKAGE_USAGE_STATS"
         tools:ignore="ProtectedPermissions" />
     <!-- Calling the bank from inside the app. -->
+    <!-- The call listener: the mic during a call, in memory only (ListenService). -->
     <uses-permission android:name="android.permission.RECORD_AUDIO" />
+    <!-- Texting family from this SIM when their app is offline during a scam call. -->
+    <uses-permission android:name="android.permission.SEND_SMS" />
     <uses-permission android:name="android.permission.MODIFY_AUDIO_SETTINGS" />
 
     <application
@@ -87,6 +90,20 @@
         <receiver
             android:name=".CallCheckNotice$Actions"
             android:exported="false" />
+
+        <!-- The call listener: hears the call (the mic, on speaker), sees which app is in front, shows the card. -->
+        <service
+            android:name=".ListenService"
+            android:exported="false"
+            android:label="@string/listen_label"
+            android:permission="android.permission.BIND_ACCESSIBILITY_SERVICE">
+            <intent-filter>
+                <action android:name="android.accessibilityservice.AccessibilityService" />
+            </intent-filter>
+            <meta-data
+                android:name="android.accessibilityservice"
+                android:resource="@xml/listen_service" />
+        </service>
 
         <!-- The number this phone dials, read only: it never changes or cancels the call. -->
         <receiver

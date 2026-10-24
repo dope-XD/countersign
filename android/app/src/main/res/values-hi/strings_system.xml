@@ -16,6 +16,9 @@
     <string name="cc_ring_yes">✓ %1$s ने पक्का किया, यह वही हैं</string>
     <string name="cc_ring_no">✗ %1$s ने कहा, यह वे नहीं हैं</string>
 
+    <string name="listen_label">CS Bank कॉल सुनने वाला</string>
+    <string name="listen_about">फ़ोन या WhatsApp कॉल के दौरान, इसी फ़ोन पर सुनता है कि कहीं ठग वाली बातें तो नहीं हो रहीं, और आपको व आपके परिवार को सावधान करता है। कुछ भी रिकॉर्ड या सेव नहीं होता: आवाज़ उसी समय जाँची जाती है और फिर हटा दी जाती है। यह यह भी देखता है कि कॉल के दौरान आप कौन-सा ऐप खोलते हैं, ताकि ठग को पैसे भेजने से रोक सके।</string>
+
     <string name="cc_action_ring">%1$s को रिंग करें</string>
     <string name="cc_action_call">%1$s को कॉल करें</string>
 </resources>

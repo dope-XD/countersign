@@ -34,6 +34,8 @@ import androidx.savedstate.SavedStateRegistryController
 import androidx.savedstate.SavedStateRegistryOwner
 import androidx.savedstate.setViewTreeSavedStateRegistryOwner
 import app.countersign.bank.data.CallCheckUi
+import app.countersign.bank.data.Home
+import app.countersign.bank.data.LiveCall
 import app.countersign.bank.data.Outcome
 import app.countersign.bank.data.Repo
 import app.countersign.bank.data.Verdict
@@ -50,8 +52,9 @@ import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 
 /**
- * The call check card over the dialer: a TYPE_APPLICATION_OVERLAY window (needs "Display over
- * other apps") at the top of the screen, shown while [Repo.instance]'s call is ringing or
+ * The call check card over the dialer: an accessibility overlay from [ListenService] when the
+ * listener is on, else a TYPE_APPLICATION_OVERLAY window (needs "Display over other apps"), at the
+ * top of the screen, shown while [Repo.instance]'s call is ringing or
  * answered and removed when it ends. Not focusable, so the dialer keeps the keyboard and its
  * end-call button. CallWatchService runs it with [start] / [stop].
  */
@@ -62,6 +65,9 @@ object Overlay {
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Main)
     private var watching: Job? = null
     private var card: Window? = null
+
+    /** What the card is shown from: the listener's accessibility service, or the app with "Display over other apps". */
+    private var cardHost: Context? = null
 
     /** The call the user closed the card on: it stays closed until the next call. */
     private var closedCall: String? = null
@@ -83,17 +89,24 @@ object Overlay {
             }
         }
         watching = scope.launch {
-            combine(repo.call, repo.home, locked) { call, home, isLocked -> Triple(call, home, isLocked) }.collect { (call, home, isLocked) ->
-                // locked, or "Display over other apps" is off: the card can't be seen, so the notification says it
-                if (call != null && (isLocked || !Settings.canDrawOverlays(app)) && call.id != closedCall) {
+            combine(repo.call, repo.home, locked, ListenService.host) { call, home, isLocked, listener -> Seen(call, home, isLocked, listener) }.collect { (call, home, isLocked, listener) ->
+                // Android hides every overlay over the lock screen (an accessibility one too), and an app
+                // overlay needs "Display over other apps": when the card can't be seen, the notification says it
+                val hidden = isLocked || (listener == null && !Settings.canDrawOverlays(app))
+                if (call != null && hidden && call.id != closedCall) {
                     CallCheckNotice.show(app, CallCheckUi(call.caller, call.check, home?.family.orEmpty()))
                 } else {
                     CallCheckNotice.cancel(app)
                 }
+                val wantHost: Context = listener ?: app
                 when {
                     call == null -> hide()
                     call.id == closedCall -> hide()
-                    card == null -> show(app)
+                    card == null -> show(wantHost)
+                    cardHost !== wantHost -> { // accessibility turned on or off mid-call: move the card
+                        hide()
+                        show(wantHost)
+                    }
                 }
                 // while it rings, the dialer's incoming-call banner sits on top of every overlay: go under it
                 card?.moveTo(if (call != null && call.incoming && !call.answered) (BELOW_BANNER_DP * app.resources.displayMetrics.density).toInt() else 0)
@@ -111,11 +124,15 @@ object Overlay {
     }
 
     private fun show(c: Context) {
-        if (!Settings.canDrawOverlays(c)) {
+        val accessibility = c is ListenService
+        if (!accessibility && !Settings.canDrawOverlays(c)) {
             Log.w(TAG, "no overlay permission: the card can't show")
             return
         }
-        card = Window(c, Gravity.TOP).also { w ->
+        // an accessibility overlay needs no permission of its own, and keeps the listener's mic priority
+        val type = if (accessibility) WindowManager.LayoutParams.TYPE_ACCESSIBILITY_OVERLAY else WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY
+        cardHost = c
+        card = Window(c, Gravity.TOP, type).also { w ->
             w.show {
                 val call by repo.call.collectAsState()
                 val home by repo.home.collectAsState()
@@ -148,10 +165,13 @@ object Overlay {
     private fun hide() {
         card?.remove()
         card = null
+        cardHost = null
     }
 
+    private data class Seen(val call: LiveCall?, val home: Home?, val locked: Boolean, val listener: ListenService?)
+
     /** A Compose window outside any Activity: it brings its own lifecycle and saved state. */
-    private class Window(private val c: Context, private val edge: Int) : LifecycleOwner, SavedStateRegistryOwner {
+    private class Window(private val c: Context, private val edge: Int, private val type: Int) : LifecycleOwner, SavedStateRegistryOwner {
         private val lifecycleRegistry = LifecycleRegistry(this)
         private val savedState = SavedStateRegistryController.create(this)
         private val wm = c.getSystemService(WindowManager::class.java)
@@ -171,7 +191,7 @@ object Overlay {
             val lp = WindowManager.LayoutParams(
                 WindowManager.LayoutParams.MATCH_PARENT,
                 WindowManager.LayoutParams.WRAP_CONTENT,
-                WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY,
+                type,
                 WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE or WindowManager.LayoutParams.FLAG_LAYOUT_IN_SCREEN,
                 PixelFormat.TRANSLUCENT,
             ).apply { gravity = edge }
