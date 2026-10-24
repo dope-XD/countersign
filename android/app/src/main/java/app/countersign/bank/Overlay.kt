@@ -41,6 +41,12 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 
 /**
@@ -60,11 +66,30 @@ object Overlay {
     /** The call the user closed the card on: it stays closed until the next call. */
     private var closedCall: String? = null
 
+    /** Android hides overlay windows while the lock screen is up, so then [CallCheckNotice] says it instead (also without the overlay permission). */
+    private val locked = MutableStateFlow(false)
+    private var lockWatch: Job? = null
+
     fun start(c: Context) {
         if (watching != null) return
         val app = c.applicationContext
+        // the screen-off and unlock broadcasts can arrive many seconds late, so ask once a second during a call
+        lockWatch = scope.launch {
+            repo.call.map { it != null }.distinctUntilChanged().collectLatest { onCall ->
+                while (onCall) {
+                    locked.value = CallCheckNotice.locked(app)
+                    delay(1_000)
+                }
+            }
+        }
         watching = scope.launch {
-            repo.call.collect { call ->
+            combine(repo.call, repo.home, locked) { call, home, isLocked -> Triple(call, home, isLocked) }.collect { (call, home, isLocked) ->
+                // locked, or "Display over other apps" is off: the card can't be seen, so the notification says it
+                if (call != null && (isLocked || !Settings.canDrawOverlays(app)) && call.id != closedCall) {
+                    CallCheckNotice.show(app, CallCheckUi(call.caller, call.check, home?.family.orEmpty()))
+                } else {
+                    CallCheckNotice.cancel(app)
+                }
                 when {
                     call == null -> hide()
                     call.id == closedCall -> hide()
@@ -76,10 +101,13 @@ object Overlay {
         }
     }
 
-    fun stop() {
+    fun stop(c: Context) {
         watching?.cancel()
         watching = null
+        lockWatch?.cancel()
+        lockWatch = null
         hide()
+        CallCheckNotice.cancel(c)
     }
 
     private fun show(c: Context) {

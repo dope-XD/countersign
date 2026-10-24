@@ -20,6 +20,7 @@ object Notify {
     const val RING = "checks_ring"
     const val CHECKS = "checks"
     const val NEWS = "news"
+    const val CALL_CHECK = "call_check"
     const val WATCH_ID = 1
 
     fun channels(c: Context) {
@@ -38,6 +39,12 @@ object Notify {
         )
         nm.createNotificationChannel(
             NotificationChannel(CHECKS, "Family checks and approvals", NotificationManager.IMPORTANCE_HIGH).apply { enableVibration(true) },
+        )
+        nm.createNotificationChannel(
+            NotificationChannel(CALL_CHECK, c.getString(R.string.channel_call_check), NotificationManager.IMPORTANCE_HIGH).apply {
+                description = c.getString(R.string.channel_call_check_about)
+                lockscreenVisibility = Notification.VISIBILITY_PUBLIC
+            },
         )
         nm.createNotificationChannel(NotificationChannel(NEWS, "Payments and alerts", NotificationManager.IMPORTANCE_DEFAULT))
     }

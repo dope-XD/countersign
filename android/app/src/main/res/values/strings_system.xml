@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Notification text (agent C). The call check while the phone is locked, when the card over the dialer can't show. -->
+<resources>
+    <string name="channel_call_check">Call checks</string>
+    <string name="channel_call_check_about">Who is really calling, when the phone is locked.</string>
+
+    <string name="cc_pick_title">Says they\'re family? Check</string>
+    <string name="cc_pick_text">Tap who they say they are.</string>
+    <string name="cc_checking">Checking %1$s…</string>
+    <string name="cc_safe">✓ %1$s\'s phone</string>
+    <string name="cc_danger">✗ Not %1$s\'s phone</string>
+    <string name="cc_danger_text">Don\'t send money or share an OTP.</string>
+    <string name="cc_spoof_text">Caller ID may be faked. Don\'t send money or share an OTP.</string>
+    <string name="cc_cant_reach">\? Couldn\'t check %1$s</string>
+    <string name="cc_cant_reach_text">Ring or call them to be sure.</string>
+    <string name="cc_ringing">Ringing %1$s…</string>
+    <string name="cc_ring_yes">✓ %1$s confirmed it\'s them</string>
+    <string name="cc_ring_no">✗ %1$s says it\'s NOT them</string>
+
+    <string name="cc_action_ring">Ring %1$s</string>
+    <string name="cc_action_call">Call %1$s</string>
+</resources>
