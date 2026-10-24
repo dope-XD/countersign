@@ -27,6 +27,7 @@ import app.countersign.bank.CallRisk
 import app.countersign.bank.CallWatchService
 import app.countersign.bank.DeviceKey
 import app.countersign.bank.ListenService
+import app.countersign.bank.ListenStream
 import app.countersign.bank.ModelPack
 import app.countersign.bank.Notify
 import app.countersign.bank.Prefs
@@ -81,6 +82,7 @@ class RealRepository(private val app: Application) : Repository {
     init {
         checkPermissions()
         ModelPack.refresh(app)
+        scope.launch { ListenStream.connected.collect { on -> _call.update { it?.copy(serverCheck = on) } } }
         // the user comes back from a system prompt or settings page: see what they granted
         app.registerActivityLifecycleCallbacks(object : Application.ActivityLifecycleCallbacks {
             override fun onActivityResumed(activity: Activity) = checkPermissions()
@@ -154,8 +156,8 @@ class RealRepository(private val app: Application) : Repository {
         return Invite(r.getString("code"), System.currentTimeMillis() + r.optLong("expires_in", 600) * 1000, r.getString("qr"))
     }
 
-    override suspend fun join(code: String, label: String) {
-        Api.post("/api/m/family/join", JSONObject().put("code", code).put("label", label))
+    override suspend fun join(code: String, label: String, circle: Circle) {
+        Api.post("/api/m/family/join", JSONObject().put("code", code).put("label", label).put("circle", circle.wire))
     }
 
     override suspend fun confirmJoin(customerId: String, label: String) {
@@ -185,6 +187,7 @@ class RealRepository(private val app: Application) : Repository {
     override suspend fun ring(checkId: String): Check = parseCheck(Api.post("/api/m/checks/$checkId/ring")).also(::takeCheck)
 
     override fun callMember(memberId: String) {
+        if (_alarm.value?.memberId == memberId) ack(memberId, "call")
         val m = _home.value?.family?.firstOrNull { it.id == memberId } ?: return
         app.startActivity(Intent(Intent.ACTION_DIAL, Uri.parse("tel:${m.mobile}")).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK))
     }
@@ -237,6 +240,7 @@ class RealRepository(private val app: Application) : Repository {
 
     /** Opens SMS to the member with "cut that call" filled in; WhatsApp if there's no SMS app. */
     override fun messageMember(memberId: String) {
+        if (_alarm.value?.memberId == memberId) ack(memberId, "message")
         val m = _home.value?.family?.firstOrNull { it.id == memberId } ?: return
         val text = app.getString(R.string.alarm_message, m.label)
         val sms = Intent(Intent.ACTION_SENDTO, Uri.parse("smsto:${m.mobile}")).putExtra("sms_body", text).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
@@ -270,9 +274,19 @@ class RealRepository(private val app: Application) : Repository {
     override val alarm: StateFlow<FamilyAlarmUi?> = _alarm
 
     override fun dismissAlarm() {
+        _alarm.value?.let { ack(it.memberId, "ok") }
         _alarm.value = null
         Notify.cancelAlarm(app)
     }
+
+    /** Tell the person on the scam call that we saw the alarm, so their phone stops escalating. */
+    private fun ack(memberId: String, action: String) {
+        Ringer.stop()
+        scope.launch { runCatching { Api.post("/api/m/family-alarm/ack", JSONObject().put("member", memberId).put("action", action)) } }
+    }
+
+    /** Family members who acknowledged this phone's scam alarm (ScamAlert stops escalating). */
+    val alarmAcks = MutableSharedFlow<String>(extraBufferCapacity = 8)
 
     /** True once the model pack is on the phone; until then the listener says NO_MODEL, not LISTENING. */
     @Volatile var analysisReady = false
@@ -397,6 +411,8 @@ class RealRepository(private val app: Application) : Repository {
             if (has(Manifest.permission.RECORD_AUDIO)) add(Permission.MICROPHONE)
             if (ListenService.enabled(app)) add(Permission.ACCESSIBILITY)
             if (has(Manifest.permission.SEND_SMS)) add(Permission.SMS)
+            if (has(Manifest.permission.CALL_PHONE)) add(Permission.CALL_PHONE)
+            if (app.getSystemService(NotificationManager::class.java).isNotificationPolicyAccessGranted) add(Permission.DO_NOT_DISTURB)
             if (app.getSystemService(NotificationManager::class.java).areNotificationsEnabled()) add(Permission.NOTIFICATIONS)
             if (Settings.canDrawOverlays(app)) add(Permission.OVERLAY)
             if (ops.unsafeCheckOpNoThrow(AppOpsManager.OPSTR_GET_USAGE_STATS, android.os.Process.myUid(), app.packageName) == AppOpsManager.MODE_ALLOWED) {
@@ -450,6 +466,8 @@ class RealRepository(private val app: Application) : Repository {
             // Android 13+ greys the switch out for sideloaded apps until "Allow restricted settings" in App info (B shows the steps)
             Permission.ACCESSIBILITY -> open(Settings.ACTION_ACCESSIBILITY_SETTINGS, null)
             Permission.SMS -> ask(Manifest.permission.SEND_SMS)
+            Permission.CALL_PHONE -> ask(Manifest.permission.CALL_PHONE)
+            Permission.DO_NOT_DISTURB -> open(Settings.ACTION_NOTIFICATION_POLICY_ACCESS_SETTINGS, null)
         }
     }
 
@@ -537,6 +555,7 @@ class RealRepository(private val app: Application) : Repository {
                     _events.tryEmit(AppEvent.FamilyAlarm(a.memberId, a.label, a.type, a.at))
                     Notify.familyAlarm(app, a)
                 }
+                "family_alarm_ack" -> alarmAcks.tryEmit(e.optString("by"))
                 "family_alarm_cleared" -> {
                     val reason = FalseAlarmReason.entries.firstOrNull { it.wire == e.optString("reason") } ?: FalseAlarmReason.NOT_A_SCAM
                     val from = e.optString("from")
@@ -587,6 +606,7 @@ class RealRepository(private val app: Application) : Repository {
         since = ms(o.optDouble("since", 0.0)),
         online = o.optBoolean("online"),
         newLink = o.optBoolean("new_link"),
+        circle = if (o.optString("circle") == "work") Circle.WORK else Circle.FAMILY,
     )
 
     private fun parseJoin(o: JSONObject) = JoinRequest(o.getString("customer_id"), o.getString("name"), o.optString("label"))

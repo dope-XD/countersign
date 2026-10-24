@@ -21,6 +21,7 @@ object Notify {
     const val CHECKS = "checks"
     const val NEWS = "news"
     const val CALL_CHECK = "call_check"
+    const val FAMILY_ALARM = "family_alarm"
     const val WATCH_ID = 1
 
     fun channels(c: Context) {
@@ -47,6 +48,19 @@ object Notify {
             },
         )
         nm.createNotificationChannel(NotificationChannel(NEWS, "Payments and alerts", NotificationManager.IMPORTANCE_DEFAULT))
+        nm.createNotificationChannel(
+            NotificationChannel(FAMILY_ALARM, c.getString(R.string.channel_family_alarm), NotificationManager.IMPORTANCE_HIGH).apply {
+                description = c.getString(R.string.channel_family_alarm_about)
+                setSound(
+                    RingtoneManager.getDefaultUri(RingtoneManager.TYPE_ALARM),
+                    AudioAttributes.Builder().setUsage(AudioAttributes.USAGE_ALARM).build(),
+                )
+                enableVibration(true)
+                vibrationPattern = longArrayOf(0, 1000, 500, 1000, 500, 1000)
+                lockscreenVisibility = Notification.VISIBILITY_PUBLIC
+                setBypassDnd(true) // honoured once the user grants Do Not Disturb access
+            },
+        )
     }
 
     fun watch(c: Context, onCall: Boolean): Notification =
@@ -114,16 +128,17 @@ object Notify {
         val open = Intent(c, FamilyAlarmActivity::class.java).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP)
         val pi = PendingIntent.getActivity(c, ALARM_ID, open, PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT)
         val title = c.getString(R.string.alarm_title, a.label)
-        val b = Notification.Builder(c, RING)
+        val b = Notification.Builder(c, FAMILY_ALARM)
             .setSmallIcon(R.drawable.ic_notify)
             .setContentTitle(title)
             .setContentText(c.getString(R.string.alarm_notify_body))
+            .setOngoing(true)
             .setContentIntent(pi)
             .setAutoCancel(true)
             .setCategory(Notification.CATEGORY_ALARM)
         if (canRing(c)) b.setFullScreenIntent(pi, true)
         c.getSystemService(NotificationManager::class.java).notify(ALARM_ID, b.build())
-        Ringer.start(c)
+        Ringer.alarm(c)
         if (App.visible) runCatching { c.startActivity(open) }
     }
 
@@ -158,9 +173,44 @@ object Ringer {
         main.postDelayed({ stop() }, 30_000)
     }
 
+    /**
+     * The family scam alarm: the alarm sound at full alarm volume, looping, with strong vibration, for up to 3 minutes
+     * or until they act. The alarm stream sounds even when the phone is on silent; with Do Not Disturb access it
+     * also gets through Do Not Disturb.
+     */
+    fun alarm(c: Context) {
+        stop()
+        val app = c.applicationContext
+        val am = app.getSystemService(android.media.AudioManager::class.java)
+        runCatching { am.setStreamVolume(android.media.AudioManager.STREAM_ALARM, am.getStreamMaxVolume(android.media.AudioManager.STREAM_ALARM), 0) }
+        val nm = app.getSystemService(android.app.NotificationManager::class.java)
+        if (nm.isNotificationPolicyAccessGranted && nm.currentInterruptionFilter != android.app.NotificationManager.INTERRUPTION_FILTER_ALL) {
+            previousFilter = nm.currentInterruptionFilter
+            runCatching { nm.setInterruptionFilter(android.app.NotificationManager.INTERRUPTION_FILTER_ALARMS) }
+        }
+        tone = RingtoneManager.getRingtone(app, RingtoneManager.getDefaultUri(RingtoneManager.TYPE_ALARM))?.apply {
+            audioAttributes = AudioAttributes.Builder().setUsage(AudioAttributes.USAGE_ALARM).build()
+            isLooping = true
+            play()
+        }
+        vibrator = app.getSystemService(android.os.VibratorManager::class.java).defaultVibrator.also {
+            it.vibrate(android.os.VibrationEffect.createWaveform(longArrayOf(0, 1000, 500), 0))
+        }
+        nmRef = nm
+        main.postDelayed({ stop() }, 180_000)
+    }
+
+    private var vibrator: android.os.Vibrator? = null
+    private var previousFilter: Int? = null
+    private var nmRef: android.app.NotificationManager? = null
+
     fun stop() {
         main.removeCallbacksAndMessages(null)
         tone?.stop()
         tone = null
+        vibrator?.cancel()
+        vibrator = null
+        previousFilter?.let { f -> runCatching { nmRef?.setInterruptionFilter(f) } }
+        previousFilter = null
     }
 }

@@ -42,6 +42,10 @@ class CallRisk(analyzer: Analyzer, private val clock: () -> Long = System::curre
         call.alert()
     }
 
+    fun server(v: app.countersign.bank.data.listen.Verdict) {
+        call.server(v)
+    }
+
     fun clear() = call.clear()
 
     val cleared get() = call.cleared

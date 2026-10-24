@@ -79,6 +79,7 @@
   "level": "scam",
   "type": "bank_kyc",
   "cues": [
+   "boss_pretext",
    "credentials",
    "money_ask",
    "threat",
@@ -512,38 +513,71 @@
   "p_scam": 0.16688538173334796
  },
  {
+  "id": "team_calls/en_ceo_vendor_payment",
+  "text": "Hi Neha, this is Vikram, your MD speaking. I am in a board meeting so I cannot talk now. We are closing a confidential acquisition. Keep this between us, don't tell finance yet. Please process the payment to the new vendor today, I'm sending the new bank account details on WhatsApp. It is urgent, do the RTGS in the next thirty minutes.",
+  "context": [],
+  "voice": null,
+  "level": "scam",
+  "type": "boss_payment",
+  "cues": [
+   "boss_pretext",
+   "money_ask",
+   "payment_redirect",
+   "secrecy",
+   "urgency"
+  ],
+  "sources": [
+   "cues"
+  ],
+  "p_scam": 0.6161638337533861
+ },
+ {
+  "id": "team_calls/hinglish_boss_genuine_reminder",
+  "text": "Haan Neha, Vikram bol raha hoon. Kal ki review meeting ke slides ready hain? Finance team ko bhi bula lena. Aur haan, invoice wala kaam normal process se hi karna, purchase order ke baad.",
+  "context": [
+   "caller_check_failed"
+  ],
+  "voice": 0.2,
+  "level": "warn",
+  "type": "impersonation",
+  "cues": [
+   "caller_check_failed"
+  ],
+  "sources": [
+   "caller_check"
+  ],
+  "p_scam": 0.12338893963944624
+ },
+ {
   "id": "adversarial/para_digital_arrest_soft",
   "text": "Good afternoon madam, I am calling from the investigation wing in Mumbai. A parcel booked on your identity has some objectionable items. We need you to stay on this video call while we record your statement, and please keep this confidential until the matter is settled. A refundable security amount has to be deposited for clearance.",
   "context": [],
-  "voice": null,
+  "voice": 0.9,
   "level": "scam",
   "type": "courier_customs",
   "cues": [
    "money_ask",
    "parcel_customs",
    "secrecy",
+   "synthetic_voice",
    "video_move"
   ],
   "sources": [
    "cues",
-   "phone_ai"
+   "phone_ai",
+   "voice"
   ],
   "p_scam": 0.9675656110110519
  },
  {
   "id": "adversarial/para_kyc_polite",
   "text": "Hello sir, this is from your bank's customer care. Your account will be paused today as the documents are outdated. To avoid any inconvenience I will send a short code to your mobile, kindly read it back to me so I can complete the update from my side.",
-  "context": [
-   "caller_check_failed"
-  ],
-  "voice": 0.2,
-  "level": "scam",
-  "type": "impersonation",
-  "cues": [
-   "caller_check_failed"
-  ],
+  "context": [],
+  "voice": null,
+  "level": "warn",
+  "type": "unknown",
+  "cues": [],
   "sources": [
-   "caller_check",
    "phone_ai"
   ],
   "p_scam": 0.9924387415369651
@@ -552,11 +586,28 @@
   "id": "adversarial/para_investment_friendly",
   "text": "Hi uncle, I got your number from the WhatsApp group. Our members doubled their savings in three weeks with our stock tips. You just transfer fifty thousand to our partner account to start, and we guarantee the returns. Seats are limited, decide by tonight.",
   "context": [],
-  "voice": 0.9,
+  "voice": 0.2,
   "level": "scam",
   "type": "investment",
   "cues": [
    "investment",
+   "money_ask"
+  ],
+  "sources": [
+   "cues",
+   "phone_ai"
+  ],
+  "p_scam": 0.9406447128203845
+ },
+ {
+  "id": "adversarial/para_job_task",
+  "text": "Hello ji, part time kaam hai ghar baithe. Bas YouTube videos like karne hain aur har task ke paise milenge. Pehle thoda amount deposit karna padega taaki aapka account activate ho jaye, baad mein sab wapas mil jayega commission ke saath.",
+  "context": [],
+  "voice": 0.9,
+  "level": "scam",
+  "type": "job_task",
+  "cues": [
+   "job_task",
    "money_ask",
    "synthetic_voice"
   ],
@@ -565,30 +616,13 @@
    "phone_ai",
    "voice"
   ],
-  "p_scam": 0.9406447128203845
- },
- {
-  "id": "adversarial/para_job_task",
-  "text": "Hello ji, part time kaam hai ghar baithe. Bas YouTube videos like karne hain aur har task ke paise milenge. Pehle thoda amount deposit karna padega taaki aapka account activate ho jaye, baad mein sab wapas mil jayega commission ke saath.",
-  "context": [],
-  "voice": null,
-  "level": "scam",
-  "type": "job_task",
-  "cues": [
-   "job_task",
-   "money_ask"
-  ],
-  "sources": [
-   "cues",
-   "phone_ai"
-  ],
   "p_scam": 0.9990429098195556
  },
  {
   "id": "adversarial/para_family_emergency",
   "text": "Aunty main Rahul ka dost bol raha hoon. Rahul ka accident ho gaya hai aur hospital wale abhi paise maang rahe hain. Uska phone toot gaya hai isliye main call kar raha hoon. Jaldi se is number pe UPI kar dijiye, ghar pe kisi ko mat batana, woh pareshan ho jayenge.",
   "context": [],
-  "voice": 0.2,
+  "voice": null,
   "level": "scam",
   "type": "unknown",
   "cues": [
@@ -606,20 +640,18 @@
   "id": "adversarial/misspell_digital_arrest",
   "text": "this is inspecter sharma from mumbay polise cyber crme. your adhaar is linkd to a mony landering case and a arest warent is isued. do not tel anyone and transfar the amount to the saftey acount for verfication or you will be arested today.",
   "context": [],
-  "voice": 0.9,
+  "voice": 0.2,
   "level": "scam",
   "type": "digital_arrest",
   "cues": [
    "authority",
    "money_ask",
-   "synthetic_voice",
    "threat",
    "verification_pretext"
   ],
   "sources": [
    "cues",
-   "phone_ai",
-   "voice"
+   "phone_ai"
   ],
   "p_scam": 0.8953807384646003
  },
@@ -627,49 +659,10 @@
   "id": "adversarial/misspell_otp",
   "text": "sir aapke acount mein kyc pending hai, aaj band ho jayega. aapke mobil pe ek otpi aaya hoga woh bata dijiye, main yahi se updat kar deta hoon. jaldi kijiye warna card blok ho jayega.",
   "context": [],
-  "voice": null,
-  "level": "scam",
-  "type": "bank_kyc",
-  "cues": [
-   "threat",
-   "urgency",
-   "verification_pretext"
-  ],
-  "sources": [
-   "cues",
-   "phone_ai"
-  ],
-  "p_scam": 0.9993191840463265
- },
- {
-  "id": "adversarial/translit_hi_to_latin_arrest",
-  "text": "main dilli pulis se inspektar varma bol raha hoon. aapke naam par mani londring ka kes darj hua hai. aapko dijital arest kiya ja raha hai. kisi ko mat bataiye aur apne khate ka paisa surakshit khate mein bhej dijiye.",
-  "context": [],
-  "voice": 0.2,
-  "level": "scam",
-  "type": "digital_arrest",
-  "cues": [
-   "authority",
-   "reward",
-   "secrecy",
-   "threat",
-   "video_move"
-  ],
-  "sources": [
-   "cues",
-   "phone_ai"
-  ],
-  "p_scam": 0.9973432931107006
- },
- {
-  "id": "adversarial/translit_latin_to_hi_kyc",
-  "text": "हैलो सर मैं एसबीआई बैंक से बोल रहा हूँ। आपका केवाईसी अपडेट नहीं है इसलिए आज आपका अकाउंट ब्लॉक हो जाएगा। आपके फ़ोन पर एक ओटीपी आया होगा, वो बता दीजिए ताकि मैं अभी अपडेट कर दूँ।",
-  "context": [],
   "voice": 0.9,
   "level": "scam",
   "type": "bank_kyc",
   "cues": [
-   "credentials",
    "synthetic_voice",
    "threat",
    "urgency",
@@ -680,11 +673,11 @@
    "phone_ai",
    "voice"
   ],
-  "p_scam": 0.9922191653218021
+  "p_scam": 0.9993191840463265
  },
  {
-  "id": "adversarial/translit_mixed_script",
-  "text": "Madam मैं CBI से officer बोल रहा हूँ. आपके Aadhaar से एक parcel भेजा गया है जिसमें drugs मिले हैं. आप video call पर रहिए, किसी को मत बताइए, और जांच के लिए पैसे RBI के account में transfer कीजिए.",
+  "id": "adversarial/translit_hi_to_latin_arrest",
+  "text": "main dilli pulis se inspektar varma bol raha hoon. aapke naam par mani londring ka kes darj hua hai. aapko dijital arest kiya ja raha hai. kisi ko mat bataiye aur apne khate ka paisa surakshit khate mein bhej dijiye.",
   "context": [
    "remote_app_opened"
   ],
@@ -693,8 +686,7 @@
   "type": "digital_arrest",
   "cues": [
    "authority",
-   "money_ask",
-   "parcel_customs",
+   "reward",
    "secrecy",
    "threat",
    "video_move",
@@ -705,13 +697,55 @@
    "cues",
    "phone_ai"
   ],
+  "p_scam": 0.9973432931107006
+ },
+ {
+  "id": "adversarial/translit_latin_to_hi_kyc",
+  "text": "हैलो सर मैं एसबीआई बैंक से बोल रहा हूँ। आपका केवाईसी अपडेट नहीं है इसलिए आज आपका अकाउंट ब्लॉक हो जाएगा। आपके फ़ोन पर एक ओटीपी आया होगा, वो बता दीजिए ताकि मैं अभी अपडेट कर दूँ।",
+  "context": [],
+  "voice": 0.2,
+  "level": "scam",
+  "type": "bank_kyc",
+  "cues": [
+   "credentials",
+   "threat",
+   "urgency",
+   "verification_pretext"
+  ],
+  "sources": [
+   "cues",
+   "phone_ai"
+  ],
+  "p_scam": 0.9922191653218021
+ },
+ {
+  "id": "adversarial/translit_mixed_script",
+  "text": "Madam मैं CBI से officer बोल रहा हूँ. आपके Aadhaar से एक parcel भेजा गया है जिसमें drugs मिले हैं. आप video call पर रहिए, किसी को मत बताइए, और जांच के लिए पैसे RBI के account में transfer कीजिए.",
+  "context": [],
+  "voice": 0.9,
+  "level": "scam",
+  "type": "digital_arrest",
+  "cues": [
+   "authority",
+   "money_ask",
+   "parcel_customs",
+   "secrecy",
+   "synthetic_voice",
+   "threat",
+   "video_move"
+  ],
+  "sources": [
+   "cues",
+   "phone_ai",
+   "voice"
+  ],
   "p_scam": 0.9996847650316966
  },
  {
   "id": "adversarial/negation_abuse_safe_account",
   "text": "Ma'am I am not asking for your OTP, never share it with anyone. I'm from the RBI fraud cell. Your savings are not safe in your account right now because of a hacking case. Just move them to the secure RBI account I give you, and don't tell your bank manager because he is under investigation.",
   "context": [],
-  "voice": 0.2,
+  "voice": null,
   "level": "warn",
   "type": "digital_arrest",
   "cues": [
@@ -729,18 +763,20 @@
  {
   "id": "adversarial/negation_abuse_no_money",
   "text": "Ghabraiye mat, hum aapse koi paisa nahi maang rahe. Bas verification ke liye AnyDesk app download kijiye aur jo code aaye woh bata dijiye. Ye sab RBI ke rules ke hisaab se ho raha hai, kisi ko batane ki zaroorat nahi hai.",
-  "context": [],
-  "voice": 0.9,
-  "level": "warn",
+  "context": [
+   "caller_check_failed"
+  ],
+  "voice": 0.2,
+  "level": "scam",
   "type": "remote_access",
   "cues": [
    "authority",
    "remote_access",
-   "synthetic_voice"
+   "caller_check_failed"
   ],
   "sources": [
-   "cues",
-   "voice"
+   "caller_check",
+   "cues"
   ],
   "p_scam": 0.6791970674153176
  },
@@ -748,35 +784,33 @@
   "id": "adversarial/slowburn_courier",
   "text": "Hello, am I speaking to Mrs Iyer? I'm calling from the courier company about a delivery. Are you at home today? Okay good. Your package was sent from Mumbai to Taiwan. It contains five passports and some cards. Customs has stopped it. I'm connecting you to the narcotics officer. Officer here: this is serious, you must not disconnect. Pay the verification fee now through the link I send.",
   "context": [],
-  "voice": null,
-  "level": "watch",
+  "voice": 0.9,
+  "level": "warn",
   "type": "courier_customs",
   "cues": [
    "authority",
-   "parcel_customs"
+   "parcel_customs",
+   "synthetic_voice"
   ],
   "sources": [
-   "cues"
+   "cues",
+   "voice"
   ],
   "p_scam": 0.5740114658114298
  },
  {
   "id": "adversarial/slowburn_trai",
   "text": "Hello madam, how are you? I hope you are keeping well. I'm calling regarding your mobile connection. We noticed some activity. There are complaints filed against your number in Delhi. Your SIM will be blocked in two hours by the telecom department. To stop this I will transfer you to the police, and you will need to pay a fine to clear your name.",
-  "context": [
-   "caller_check_failed"
-  ],
-  "voice": 0.2,
+  "context": [],
+  "voice": null,
   "level": "scam",
   "type": "trai_sim",
   "cues": [
    "authority",
    "money_ask",
-   "sim_block",
-   "caller_check_failed"
+   "sim_block"
   ],
   "sources": [
-   "caller_check",
    "cues",
    "phone_ai"
   ],
@@ -786,18 +820,16 @@
   "id": "adversarial/slowburn_hi_reward",
   "text": "नमस्ते जी, आप कैसे हैं? मैं कौन बनेगा करोड़पति के ऑफिस से बोल रहा हूँ। आपका नंबर लकी ड्रॉ में आया है। बधाई हो, आपने पच्चीस लाख रुपये जीते हैं। बस प्रोसेसिंग फीस के दस हज़ार रुपये भेज दीजिए, फिर पूरी रकम आपके खाते में आ जाएगी।",
   "context": [],
-  "voice": 0.9,
-  "level": "scam",
+  "voice": 0.2,
+  "level": "warn",
   "type": "reward",
   "cues": [
    "money_ask",
-   "reward",
-   "synthetic_voice"
+   "reward"
   ],
   "sources": [
    "cues",
-   "phone_ai",
-   "voice"
+   "phone_ai"
   ],
   "p_scam": 0.9982509153448664
  },
@@ -805,15 +837,17 @@
   "id": "adversarial/no_cue_words_scam",
   "text": "Hi ma'am, I'm the person who rented your flat listing online. I've sent you the deposit by mistake twice, forty thousand extra. Could you please return the extra to my brother's number? I'm in a meeting, please do it in the next ten minutes, he really needs it for an operation.",
   "context": [],
-  "voice": null,
+  "voice": 0.9,
   "level": "warn",
   "type": "family_emergency",
   "cues": [
    "family_emergency",
-   "money_ask"
+   "money_ask",
+   "synthetic_voice"
   ],
   "sources": [
-   "cues"
+   "cues",
+   "voice"
   ],
   "p_scam": 0.4965531523283971
  },
@@ -821,7 +855,7 @@
   "id": "adversarial/genuine_bank_fraud_check",
   "text": "Hello, this is HDFC Bank's fraud monitoring team. We blocked a card transaction of twelve thousand rupees at an online store a few minutes ago. If this was not you, no action is needed, the card stays blocked and you can collect a new one from your branch. We will never ask for your PIN or OTP.",
   "context": [],
-  "voice": 0.2,
+  "voice": null,
   "level": "warn",
   "type": "otp_upi",
   "cues": [
@@ -837,26 +871,23 @@
   "id": "adversarial/genuine_bank_loan_followup",
   "text": "Namaste sir, main ICICI branch se bol rahi hoon. Aapne home loan ke liye form bhara tha, uske documents ke liye aapko branch aana hoga. Original PAN aur salary slip le aaiye. Koi payment phone pe nahi hogi, sab branch mein counter pe hoga.",
   "context": [],
-  "voice": 0.9,
-  "level": "watch",
+  "voice": 0.2,
+  "level": "none",
   "type": "unknown",
-  "cues": [
-   "synthetic_voice"
-  ],
-  "sources": [
-   "cues"
-  ],
+  "cues": [],
+  "sources": [],
   "p_scam": 0.05398755779823857
  },
  {
   "id": "adversarial/genuine_delivery_otp",
   "text": "Hi, I'm the Flipkart delivery person, I'm at your gate with the washing machine. It's open box delivery, so once I unpack it and you check it, please tell me the delivery OTP that you got from Flipkart, then I can close the order. Should I bring it up to the third floor?",
   "context": [],
-  "voice": null,
+  "voice": 0.9,
   "level": "watch",
   "type": "otp_upi",
   "cues": [
-   "credentials"
+   "credentials",
+   "synthetic_voice"
   ],
   "sources": [
    "cues"
@@ -866,14 +897,18 @@
  {
   "id": "adversarial/genuine_delivery_hi",
   "text": "हैलो मैडम, मैं ब्लू डार्ट से बोल रहा हूँ। आपका पार्सल आया है लेकिन घर पर ताला लगा है। क्या मैं इसे पड़ोसी के पास छोड़ दूँ या कल सुबह दस बजे फिर आऊँ? कोई पैसा नहीं देना है, पेमेंट पहले हो चुका है।",
-  "context": [],
-  "voice": 0.2,
-  "level": "watch",
+  "context": [
+   "remote_app_opened"
+  ],
+  "voice": null,
+  "level": "warn",
   "type": "unknown",
   "cues": [
-   "parcel_customs"
+   "parcel_customs",
+   "remote_app_opened"
   ],
   "sources": [
+   "context",
    "cues"
   ],
   "p_scam": 0.1472670507232087
@@ -882,13 +917,12 @@
   "id": "adversarial/genuine_police_verification",
   "text": "Namaste ji, main Kotwali thane se constable bol raha hoon. Aapke passport ki police verification ke liye kal subah gyarah baje thane aa jaiye. Aadhaar aur address proof ki photocopy le aaiye. Phone pe koi paisa ya details nahi chahiye.",
   "context": [],
-  "voice": 0.9,
+  "voice": 0.2,
   "level": "watch",
   "type": "courier_customs",
   "cues": [
    "authority",
-   "parcel_customs",
-   "synthetic_voice"
+   "parcel_customs"
   ],
   "sources": [
    "cues"
@@ -898,18 +932,15 @@
  {
   "id": "adversarial/genuine_police_complaint",
   "text": "Good evening, this is Sub Inspector Rao from Indiranagar police station. You had filed a complaint about your stolen bicycle last week. We have found a few bicycles, could you come to the station on Saturday to identify yours? Please bring the purchase bill if you have it.",
-  "context": [
-   "remote_app_opened"
-  ],
-  "voice": null,
-  "level": "warn",
+  "context": [],
+  "voice": 0.9,
+  "level": "watch",
   "type": "unknown",
   "cues": [
    "authority",
-   "remote_app_opened"
+   "synthetic_voice"
   ],
   "sources": [
-   "context",
    "cues"
   ],
   "p_scam": 0.06282079651385025
@@ -918,7 +949,7 @@
   "id": "adversarial/relatives_discuss_digital_arrest",
   "text": "Mummy aapne news dekhi? Ek aunty ko kisi ne fake police bankar video call pe digital arrest kar diya aur unse das lakh transfer karwa liye. Agar kabhi koi CBI ya police wala phone karke paise maange to turant phone kaat dena aur mujhe call karna.",
   "context": [],
-  "voice": 0.2,
+  "voice": null,
   "level": "warn",
   "type": "digital_arrest",
   "cues": [
@@ -936,17 +967,20 @@
  {
   "id": "adversarial/relatives_discuss_otp",
   "text": "Papa, remember what I told you. If anyone calls saying your KYC is expired or your account will be blocked, and asks for an OTP, it's a scam. The bank never asks for OTP on a call. Just cut the call and phone me. Did you get the new debit card yet?",
-  "context": [],
-  "voice": 0.9,
-  "level": "watch",
+  "context": [
+   "caller_check_failed"
+  ],
+  "voice": 0.2,
+  "level": "warn",
   "type": "bank_kyc",
   "cues": [
    "credentials",
-   "synthetic_voice",
    "threat",
-   "verification_pretext"
+   "verification_pretext",
+   "caller_check_failed"
   ],
   "sources": [
+   "caller_check",
    "cues"
   ],
   "p_scam": 0.008519502819855725
@@ -955,11 +989,12 @@
   "id": "adversarial/relatives_discuss_hi",
   "text": "दीदी, कल हमारे पड़ोस में एक अंकल के साथ धोखा हुआ। किसी ने बैंक वाला बनकर उनका ओटीपी ले लिया और पैसे निकाल लिए। तुम मम्मी को समझा देना कि किसी को भी फ़ोन पर ओटीपी या पिन नहीं बताना है।",
   "context": [],
-  "voice": null,
+  "voice": 0.9,
   "level": "watch",
   "type": "otp_upi",
   "cues": [
-   "credentials"
+   "credentials",
+   "synthetic_voice"
   ],
   "sources": [
    "cues"
@@ -969,18 +1004,14 @@
  {
   "id": "adversarial/genuine_son_needs_money",
   "text": "Haan mummy main bol raha hoon. Hostel ki fees ki last date kal hai, papa se baat hui thi. Aap jab free ho tab mere account mein bhej dena, koi jaldi nahi hai. Aur haan, didi ki shaadi ki shopping kab karni hai?",
-  "context": [
-   "caller_check_failed"
-  ],
-  "voice": 0.2,
-  "level": "warn",
-  "type": "impersonation",
+  "context": [],
+  "voice": null,
+  "level": "watch",
+  "type": "unknown",
   "cues": [
-   "urgency",
-   "caller_check_failed"
+   "urgency"
   ],
   "sources": [
-   "caller_check",
    "cues"
   ],
   "p_scam": 0.2926471584113628
@@ -989,12 +1020,11 @@
   "id": "adversarial/genuine_insurance_renewal",
   "text": "Hello sir, this is Priya from LIC branch office. Your policy premium is due on the fifteenth. You can pay at the branch, through the LIC app or on the official website. Would you like me to send you the due amount by SMS? There's no penalty if paid within the grace period.",
   "context": [],
-  "voice": 0.9,
+  "voice": 0.2,
   "level": "watch",
   "type": "digital_arrest",
   "cues": [
    "authority",
-   "synthetic_voice",
    "threat"
   ],
   "sources": [
@@ -1006,10 +1036,11 @@
   "id": "adversarial/genuine_electricity_hi",
   "text": "नमस्ते, मैं बिजली विभाग से बोल रहा हूँ। कल सुबह नौ से बारह बजे तक आपके इलाके में मरम्मत के लिए बिजली बंद रहेगी। कृपया पानी की मोटर पहले चला लें। इसके लिए आपको कुछ नहीं करना है।",
   "context": [],
-  "voice": null,
+  "voice": 0.9,
   "level": "watch",
   "type": "unknown",
   "cues": [
+   "synthetic_voice",
    "verification_pretext"
   ],
   "sources": [
@@ -1021,7 +1052,7 @@
   "id": "adversarial/genuine_doctor_appointment",
   "text": "Hello, Apollo clinic se bol rahe hain. Aapka kal shaam paanch baje Dr Mehta ke saath appointment hai. Blood test ki report saath le aaiyega aur subah khali pet rehna hai. Agar time change karna ho to isi number pe bata dijiye.",
   "context": [],
-  "voice": 0.2,
+  "voice": null,
   "level": "none",
   "type": "unknown",
   "cues": [],
@@ -1032,15 +1063,11 @@
   "id": "adversarial/genuine_customer_care_callback",
   "text": "Hello, I'm calling back from Airtel customer care about the complaint you raised about slow internet. Our engineer will visit tomorrow between ten and one. He will not ask for any payment. Is that time okay for you?",
   "context": [],
-  "voice": 0.9,
-  "level": "watch",
+  "voice": 0.2,
+  "level": "none",
   "type": "unknown",
-  "cues": [
-   "synthetic_voice"
-  ],
-  "sources": [
-   "cues"
-  ],
+  "cues": [],
+  "sources": [],
   "p_scam": 0.06831471042232305
  }
 ]

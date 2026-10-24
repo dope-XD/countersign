@@ -596,6 +596,64 @@
         "पैसा डबल"
       ]
     },
+    "boss_pretext": {
+      "phrases": [
+        "this is your boss",
+        "your ceo",
+        "i am the ceo",
+        "ceo speaking",
+        "managing director",
+        "md sir",
+        "md speaking",
+        "director speaking",
+        "head office",
+        "i am in a meeting",
+        "in a board meeting",
+        "cant talk now",
+        "cannot talk now",
+        "confidential deal",
+        "confidential acquisition",
+        "keep this between us",
+        "dont tell finance",
+        "dont tell anyone in office",
+        "boss bol raha hoon",
+        "sir bol raha hoon",
+        "main meeting mein hoon",
+        "meeting mein hoon",
+        "office mein kisi ko mat batana",
+        "मैं मीटिंग में हूँ",
+        "बॉस बोल रहा हूँ",
+        "ऑफिस में किसी को मत बताना"
+      ]
+    },
+    "payment_redirect": {
+      "action": true,
+      "phrases": [
+        "new vendor",
+        "vendor payment",
+        "pay the vendor",
+        "client payment",
+        "change in bank details",
+        "new bank account",
+        "updated account details",
+        "new account details",
+        "wire transfer",
+        "rtgs",
+        "neft",
+        "process the payment",
+        "release the payment",
+        "clear the invoice",
+        "buy gift cards",
+        "gift cards for the team",
+        "vendor ko payment",
+        "naya account",
+        "abhi payment kar do",
+        "payment release karo",
+        "वेंडर को पेमेंट",
+        "नया खाता",
+        "पेमेंट अभी कर दो"
+      ]
+    },
     "discussion": {
       "about": "Talk ABOUT scams (news, warnings). Not a scam cue: it stops cue-only evidence from reaching scam (fusion.json).",
       "phrases": [
@@ -757,6 +815,21 @@
       ],
       "plus": [],
       "bonus": 0
+    },
+    {
+      "type": "boss_payment",
+      "all": [
+        "boss_pretext"
+      ],
+      "any": [
+        "money_ask",
+        "payment_redirect"
+      ],
+      "plus": [
+        "urgency",
+        "secrecy"
+      ],
+      "bonus": 1
     }
   ],
   "negation_exceptions": [

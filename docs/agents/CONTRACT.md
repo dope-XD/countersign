@@ -121,7 +121,7 @@ The phone listens to its own calls (an accessibility service records the mic; on
 
 **Check a recording or message** (`Repository.checkRecording(uri)` / `checkText(text)` → `Analysis`): the same pipeline on an audio file or pasted text, entirely on the phone. Nothing is uploaded.
 
-**Types:** `digital_arrest`, `bank_kyc`, `otp_upi`, `remote_access`, `family_emergency`, `courier_customs`, `trai_sim`, `job_task`, `investment`, `reward`, `impersonation`, `unknown`.
+**Types:** `digital_arrest`, `bank_kyc`, `otp_upi`, `remote_access`, `family_emergency`, `courier_customs`, `trai_sim`, `job_task`, `investment`, `reward`, `boss_payment` (a boss or CEO ordering an urgent, secret payment to a new account), `impersonation`, `unknown`.
 
 **Rules:** `android/app/src/main/assets/scam_patterns.json` (cue categories and phrases) and `fusion.json` (thresholds), owned by A, read by both the app and the engine. Test transcripts: `android/app/src/test/resources/scam_transcripts.json`.
 
@@ -147,6 +147,26 @@ Sent once when a call first reaches `scam` (or the user presses "Alert family").
 - Turns the listener's pay guard off. Family alarmed for this `call_id` get `family_alarm_cleared`; `cleared` lists them.
 - Keeps one feedback record (reason, level, type, cue ids, sources, time) for human review. No words, no audio.
 - A later `scam-alert` for the same `call_id` alarms nobody.
+
+### `WS /ws/listen?call_id=<id>&lang=en|hi` (the server's stronger check; device token in the `X-Device-Token` header)
+**Hybrid:** the phone always checks the call itself first. Only once its own level reaches `warn` does it open this
+socket, so only calls the phone already finds suspicious are ever heard by a server (today a team laptop, later the
+bank's own servers). Never after "Not a scam".
+- Phone → server, binary: 16 kHz mono 16-bit little-endian PCM, 100 ms per message.
+- Phone → server, text: `{"type": "context", "signals": ["unknown_number"], "caller_check": "not_them"}`.
+- Server → phone, text, on change and every 5 s:
+  `{"type": "listen_verdict", "level": "scam", "scam_type": "digital_arrest", "p_scam": 0.99, "cues": ["authority", "threat"], "voice": 0.25, "at": 1761300150.0}`
+- The server runs a larger speech-to-text (Omnilingual 1B), the cue scorer, our classifier and the full 24-layer voice model (S1). Its level can raise the phone's, never lower it (source `server`).
+- **What the server keeps** (Round 1 plan): audio in memory only, in a rolling 20 s buffer, dropped when the socket closes. If the call reaches `scam`, a fraud case opens with the tier, scam type and cue ids, and that last 20 s is kept as an AES-256 encrypted clip, deleted after 30 days or when the case closes. Transcripts are never stored.
+
+### `POST /api/m/family-alarm/ack`
+`{"member": "c_ab12", "action": "call" | "message" | "ok"}`: the alarmed family member acted. The phone on the scam
+call gets `family_alarm_ack` and stops escalating. If nobody acks within 60 s, that phone texts every member and calls
+the first one itself (needs the "Call family for you" permission).
+
+### Circles
+A family link has `circle`: `family` or `work` (a boss or colleague who could order a payment; the CEO-fraud case).
+The joiner picks it in `POST /api/m/family/join` (`"circle": "work"`); both sides get the same tag; `Member.circle`.
 
 ### Context signal ids (sent in `context`, also used on the phone)
 `unknown_number`, `international_number`, `video_call_unknown`, `remote_app_opened` (AnyDesk, TeamViewer, RustDesk, QuickSupport), `payment_app_opened`, `long_call` (over 15 minutes), `caller_check_failed`, `synthetic_voice` (the voice-clone model on the first ~20 s of the caller's speech; warn at most).
@@ -182,6 +202,7 @@ One JSON object per message; `type` says which.
 | `family_request` | `{"customer_id": "c_ef56", "name": "Priya Sharma"}` | notification + home |
 | `family_joined` | `{"customer_id": "c_cd34", "name": "Rahul Sharma"}` | notification + home |
 | `family_alarm` | `{"from": "c_ab12", "label": "Mummy", "scam_type": "digital_arrest", "level": "scam", "at": 1761300155.0}` | full-screen alarm: "Mummy may be on a scam call", with Call / Message / OK |
+| `family_alarm_ack` | `{"by": "c_cd34", "action": "call", "at": 1761300170.0}` | stop escalating: someone in the family is on it |
 | `family_alarm_cleared` | `{"from": "c_ab12", "label": "Mummy", "reason": "know_caller", "at": 1761300190.0}` | the alarm screen turns to "False alarm: Mummy says it's fine", with OK |
 | `online` | `{"member": "c_cd34", "online": false}` | the face's dot. **Not sent yet**: refresh `home` for now. |
 

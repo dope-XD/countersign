@@ -35,7 +35,7 @@ interface Repository {
     suspend fun invite(): Invite
 
     /** [label] is what I call the person who invited me. */
-    suspend fun join(code: String, label: String)
+    suspend fun join(code: String, label: String, circle: Circle = Circle.FAMILY)
 
     /** [label] is what I call the person joining. */
     suspend fun confirmJoin(customerId: String, label: String)

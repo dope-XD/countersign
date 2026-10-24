@@ -67,7 +67,8 @@ class FakeRepository(start: Scenario = Scenario.IDLE) : Repository {
     private val rahul = Member("c_rahul", "Rahul", "Rahul Sharma", "+919812345678", now - 86_400_000L * 40, online = true, newLink = false)
     private val priya = Member("c_priya", "Priya", "Priya Verma", "+919811111111", now - 86_400_000L * 3, online = false, newLink = false)
     private val papa = Member("c_papa", "Papa", "Ramesh Sharma", "+919822222222", now - 3_600_000L, online = true, newLink = true)
-    private val family = listOf(rahul, priya, papa)
+    private val boss = Member("c_boss", "Vikram sir", "Vikram Rao", "+919844444444", now - 86_400_000L * 90, online = true, newLink = false, circle = Circle.WORK)
+    private val family = listOf(rahul, priya, papa, boss)
 
     private val _signedIn = MutableStateFlow(true)
     private val _home = MutableStateFlow<Home?>(null)
@@ -242,12 +243,12 @@ class FakeRepository(start: Scenario = Scenario.IDLE) : Repository {
         return Invite("482913", now + 600_000, "csbank://family?code=482913")
     }
 
-    override suspend fun join(code: String, label: String) {
+    override suspend fun join(code: String, label: String, circle: Circle) {
         delay(500)
         if (code.length != 6) error("That code has expired or doesn't exist. Ask for a new one.")
         scope.launch {
             delay(3_000)
-            val m = Member("c_new", label, "Neha Gupta", "+919833333333", now, online = true, newLink = true)
+            val m = Member("c_new", label, "Neha Gupta", "+919833333333", now, online = true, newLink = true, circle = circle)
             _home.update { h -> h?.copy(family = h.family + m) }
             _events.emit(AppEvent.FamilyJoined(m.id, m.name))
         }

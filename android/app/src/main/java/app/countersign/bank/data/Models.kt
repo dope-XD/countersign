@@ -24,6 +24,9 @@ data class Me(
     val smsFallback: Boolean = true,
 )
 
+/** Family, or work: a boss or colleague who might ask for a payment (the CEO-fraud case). */
+enum class Circle(val wire: String) { FAMILY("family"), WORK("work") }
+
 data class Member(
     val id: String,
     /** What I call them: "Rahul", "Mummy". */
@@ -34,6 +37,7 @@ data class Member(
     val online: Boolean,
     /** Linked under 24 hours ago: such a link can stop a payment but can't give a ✓ Verified. */
     val newLink: Boolean,
+    val circle: Circle = Circle.FAMILY,
 ) {
     val initials: String get() = label.split(' ').filter { it.isNotBlank() }.take(2).joinToString("") { it.take(1).uppercase() }
 }
@@ -124,6 +128,8 @@ data class LiveCall(
     val risk: Risk? = null,
     /** The user said "Not a scam" / "I know this caller": risk is none and the listener stays quiet until the call ends. */
     val cleared: Boolean = false,
+    /** The server's stronger check is listening too (only once the phone found the call suspicious). */
+    val serverCheck: Boolean = false,
 )
 
 /* ---- the call listener (docs/agents/CONTRACT.md, "Call listener") ---- */
@@ -158,6 +164,9 @@ enum class ScamType(val wire: String) {
     INVESTMENT("investment"),
     REWARD("reward"),
 
+    /** "Your MD" in a meeting orders an urgent, secret payment to a new account (CEO fraud). */
+    BOSS_PAYMENT("boss_payment"),
+
     /** The caller check said this isn't the family member's phone. */
     IMPERSONATION("impersonation"),
     UNKNOWN("unknown"),
@@ -173,6 +182,9 @@ enum class RiskSource(val wire: String) {
 
     /** The voice-clone model thinks the caller's voice is AI-made. Can raise warn, never scam on its own. */
     VOICE("voice"),
+
+    /** The server's stronger check (laptop / bank server), asked only once the phone itself finds the call suspicious. */
+    SERVER("server"),
     CONTEXT("context"),
     CALLER_CHECK("caller_check"),
     USER("user"),
@@ -229,7 +241,13 @@ enum class Permission {
     /** The call listener's accessibility service (Android 13+ sideloads first need "Allow restricted settings"). */
     ACCESSIBILITY,
     SMS,
+
+    /** Place a call: if no family member answers the scam alarm in 60 s, the phone calls one of them. */
+    CALL_PHONE,
     NOTIFICATIONS,
+
+    /** Do Not Disturb access: a family member's scam alarm rings even on silent or Do Not Disturb. */
+    DO_NOT_DISTURB,
     OVERLAY,
     USAGE_ACCESS,
     FULL_SCREEN,
@@ -277,6 +295,9 @@ data class CallCheckUi(
     val risk: Risk? = null,
     /** The user said it's not a scam: show "Cleared" briefly, then nothing more for this call. */
     val cleared: Boolean = false,
+    /** The prompter's "what we're doing": the server's stronger check is on, payments are paused (the pay guard). */
+    val serverCheck: Boolean = false,
+    val paymentsPaused: Boolean = false,
 )
 
 /**

@@ -151,3 +151,12 @@ def test_the_old_bank_routes_are_gone(client):
     assert p.post("/api/m/pay", {"payee": "shop@okaxis", "amount": 10}).status_code in gone
     assert p.post("/api/m/kill-switch").status_code in gone
     assert p.post("/api/m/call-state", {"state": "active"}).status_code in gone
+
+
+def test_a_work_circle_link_is_tagged_on_both_sides(client):
+    boss, clerk = Phone(client, "Vikram Rao"), Phone(client, "Neha Iyer")
+    code = boss.post("/api/m/family/invite").json()["code"]
+    assert clerk.post("/api/m/family/join", {"code": code, "label": "Vikram sir", "circle": "work"}).status_code == 200
+    fam = boss.post("/api/m/family/confirm", {"customer_id": clerk.id, "label": "Neha"}).json()["family"]
+    assert fam[0]["circle"] == "work"
+    assert clerk.get("/api/m/home").json()["family"][0]["circle"] == "work"

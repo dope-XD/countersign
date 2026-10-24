@@ -140,7 +140,11 @@ def make_device_token(customer_id: str) -> str:
 
 def device_customer(conn: Request | WebSocket) -> str | None:
     """The customer whose app sent this request, if its device token is valid."""
-    tok = conn.headers.get(DEVICE_HEADER) or ""
+    return token_customer(conn.headers.get(DEVICE_HEADER) or "")
+
+
+def token_customer(tok: str) -> str | None:
+    """The customer a device token belongs to, if it is valid and not expired (a websocket's ?token=)."""
     parts = tok.rsplit(".", 2)
     if len(parts) != 3:
         return None

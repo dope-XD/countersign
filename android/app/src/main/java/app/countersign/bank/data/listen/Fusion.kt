@@ -65,6 +65,7 @@ fun fuse(
     f: FusionConfig,
     context: Set<String> = emptySet(),
     judge: Judge? = null,
+    server: Verdict? = null,
     user: Boolean = false,
     prev: String = "none",
 ): Verdict {
@@ -114,6 +115,14 @@ fun fuse(
     if (kind == "unknown" && j != null && j.type != "unknown") kind = j.type
     if (kind == "unknown" && "caller_check_failed" in context) kind = "impersonation"
 
+    var all = cats
+    if (server != null && server.level != "none") {
+        // the server's stronger check heard the same call: it can raise the level, never lower it
+        level = higher(level, server.level)
+        if (kind == "unknown" && server.type != "unknown") kind = server.type
+        sources += "server"
+        all = cats + (server.cues.toSet() - "discussion")
+    }
     level = higher(level, prev)
-    return Verdict(level, kind, cats.sorted(), sources.sorted())
+    return Verdict(level, kind, all.sorted(), sources.sorted())
 }

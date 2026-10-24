@@ -32,6 +32,10 @@ class SpeakerEmbedder:
             return
         try:
             import torch
+            import torchaudio
+
+            if not hasattr(torchaudio, "list_audio_backends"):  # removed in torchaudio 2.9; speechbrain still asks
+                torchaudio.list_audio_backends = lambda: ["soundfile"]
             from speechbrain.inference.speaker import EncoderClassifier
             from speechbrain.utils.fetching import LocalStrategy
 

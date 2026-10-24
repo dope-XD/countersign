@@ -21,6 +21,8 @@ fun cueWords(id: String): Int? = when (id) {
     "sim_block" -> R.string.why_sim_block
     "job_task" -> R.string.why_job_task
     "investment" -> R.string.why_investment
+    "boss_pretext" -> R.string.why_boss_pretext
+    "payment_redirect" -> R.string.why_payment_redirect
     "remote_app_opened" -> R.string.why_remote_app_opened
     "caller_check_failed" -> R.string.why_caller_check_failed
     "video_call_unknown" -> R.string.why_video_call_unknown

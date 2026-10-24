@@ -43,6 +43,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import app.countersign.bank.R
+import app.countersign.bank.data.Circle
 import app.countersign.bank.data.FakeRepository
 import app.countersign.bank.data.Invite
 import app.countersign.bank.data.Member
@@ -114,10 +115,10 @@ fun AddFamilyScreen(repo: Repository, code: String?, onDone: () -> Unit) {
         onType = { error = null; step = AddStep.Type },
         onCode = { theirCode = it.filter(Char::isDigit).take(6); error = null },
         onCodeDone = { step = AddStep.Name },
-        onJoin = { label ->
+        onJoin = { label, circle ->
             busy = true
             scope.launch {
-                runCatching { repo.join(theirCode, label) }
+                runCatching { repo.join(theirCode, label, circle) }
                     .onSuccess { step = AddStep.Waiting; error = null }
                     .onFailure { error = it.message }
                 busy = false
@@ -141,7 +142,7 @@ internal fun AddFamilyContent(
     onType: () -> Unit,
     onCode: (String) -> Unit,
     onCodeDone: () -> Unit,
-    onJoin: (String) -> Unit,
+    onJoin: (String, Circle) -> Unit,
     onDone: () -> Unit,
 ) = SubScreen(stringResource(R.string.home_add_family), onBack) {
     when (step) {
@@ -192,6 +193,13 @@ internal fun AddFamilyContent(
         }
         AddStep.Name -> {
             var label by rememberSaveable { mutableStateOf("") }
+            var work by rememberSaveable { mutableStateOf(false) }
+            Text(stringResource(R.string.join_circle_title), color = Ink, style = MaterialTheme.typography.titleLarge)
+            Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+                BigButton(stringResource(R.string.circle_family), { work = false }, Modifier.weight(1f), kind = if (!work) ButtonKind.Primary else ButtonKind.Quiet)
+                BigButton(stringResource(R.string.circle_work), { work = true }, Modifier.weight(1f), kind = if (work) ButtonKind.Primary else ButtonKind.Quiet)
+            }
+            if (work) Text(stringResource(R.string.circle_work_why), color = Muted, style = MaterialTheme.typography.bodyMedium)
             Text(stringResource(R.string.join_label_title), color = Ink, style = MaterialTheme.typography.titleLarge)
             OutlinedTextField(
                 label, { label = it },
@@ -202,7 +210,7 @@ internal fun AddFamilyContent(
             )
             BigButton(
                 stringResource(if (busy) R.string.about_wait else R.string.action_continue),
-                { onJoin(label.trim()) },
+                { onJoin(label.trim(), if (work) Circle.WORK else Circle.FAMILY) },
                 enabled = !busy && label.isNotBlank(),
             )
         }
@@ -261,7 +269,7 @@ private val previewInvite = Invite("482913", System.currentTimeMillis() + 600_00
 
 @Composable
 private fun AddPreview(step: AddStep, code: String = "") = CsTheme {
-    AddFamilyContent(step, previewInvite, code, null, false, {}, {}, {}, {}, {}, {}, {}, {})
+    AddFamilyContent(step, previewInvite, code, null, false, {}, {}, {}, {}, {}, {}, { _, _ -> }, {})
 }
 
 @Preview(name = "English", locale = "en", widthDp = 360, heightDp = 800)

@@ -186,6 +186,8 @@ private fun Permission.copy() = when (this) {
     Permission.MICROPHONE -> PermissionCopy(Icons.Filled.Phone, R.string.perm_microphone, R.string.perm_microphone_why)
     Permission.ACCESSIBILITY -> PermissionCopy(Icons.Filled.Info, R.string.perm_accessibility, R.string.perm_accessibility_why)
     Permission.SMS -> PermissionCopy(Icons.Filled.Email, R.string.perm_sms, R.string.perm_sms_why)
+    Permission.CALL_PHONE -> PermissionCopy(Icons.Filled.Call, R.string.perm_call_phone, R.string.perm_call_phone_why)
+    Permission.DO_NOT_DISTURB -> PermissionCopy(Icons.Filled.Notifications, R.string.perm_dnd, R.string.perm_dnd_why)
     Permission.NOTIFICATIONS -> PermissionCopy(Icons.Filled.Notifications, R.string.perm_notifications, R.string.perm_notifications_why)
     Permission.OVERLAY -> PermissionCopy(Icons.Filled.AccountBox, R.string.perm_overlay, R.string.perm_overlay_why)
     Permission.USAGE_ACCESS -> PermissionCopy(Icons.Filled.Lock, R.string.perm_usage, R.string.perm_usage_why)

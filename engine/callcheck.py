@@ -86,9 +86,9 @@ class CallEvent(BaseModel):
 
 SCAM_TYPES = (
     "digital_arrest", "bank_kyc", "otp_upi", "remote_access", "family_emergency", "courier_customs",
-    "trai_sim", "job_task", "investment", "reward", "impersonation", "unknown",
+    "trai_sim", "job_task", "investment", "reward", "boss_payment", "impersonation", "unknown",
 )  # fmt: skip
-SOURCES = ("cues", "phone_ai", "voice", "context", "caller_check", "user")
+SOURCES = ("cues", "phone_ai", "voice", "server", "context", "caller_check", "user")
 
 
 class ScamAlert(BaseModel):
@@ -503,3 +503,21 @@ async def scam_alert_clear(body: NotAScam, request: Request) -> dict:
     false_alarms.append(record)
     db.audit(me.id, "false_alarm", aid or body.call_id, **{k: v for k, v in record.items() if k not in ("at", "call_id")})
     return {"scam": scam_for(me.id), "cleared": told}
+
+
+class AlarmAck(BaseModel):
+    """A family member saw the alarm: they tapped Call, Message or OK."""
+
+    member: str = Field(min_length=1, max_length=64)  # the person on the scam call
+    action: str = Field(default="ok", pattern="^(call|message|ok)$")
+
+
+@router.post("/family-alarm/ack")
+async def family_alarm_ack(body: AlarmAck, request: Request) -> dict:
+    """The alarmed family member acted. The phone on the scam call stops escalating (no auto-call, no more texts)."""
+    me = _me(request)
+    if body.member not in me.family:
+        raise HTTPException(404, "Not in your family.")
+    hub.publish(f"app:{body.member}", {"type": "family_alarm_ack", "by": me.id, "action": body.action, "at": time.time()})
+    db.audit(me.id, "family_alarm_ack", body.member, action=body.action)
+    return {"ok": True}

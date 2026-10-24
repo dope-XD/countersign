@@ -241,4 +241,32 @@
     <string name="models_downloading">धोखा-जाँच डाउनलोड हो रही है… %1$d%%</string>
     <string name="models_why">धोखा-जाँच एक बार डाउनलोड करें। फिर बिना इंटरनेट के चलती है।</string>
     <string name="models_download">डाउनलोड करें (%1$d MB)</string>
+    <!-- The call prompter -->
+    <string name="prompt_doing_listening">इस फ़ोन पर धोखे की बातें सुन रहे हैं। अभी तक सब ठीक है।</string>
+    <string name="prompt_doing_warn">इस कॉल पर ध्यान से नज़र रख रहे हैं।</string>
+    <string name="prompt_doing_server">इस कॉल की हमारे सुरक्षित सर्वर पर दोबारा जाँच हो रही है।</string>
+    <string name="prompt_doing_scam">आपके परिवार को बता दिया गया है।</string>
+    <string name="prompt_payments_paused">अभी इस फ़ोन पर पेमेंट रोक दिए गए हैं।</string>
+    <string name="prompt_tip_otp">ध्यान दें: OTP या PIN माँगें तो वह धोखा है।</string>
+    <string name="prompt_tip_police">असली पुलिस या बैंक कॉल पर कभी पैसे नहीं माँगते।</string>
+    <string name="prompt_tip_apps">वे जो ऐप डालने को कहें, वह न डालें।</string>
+    <string name="prompt_tip_hurry">जल्दी मचाएँ या ‘किसी को मत बताना’ कहें, तो कॉल काटें।</string>
+    <string name="prompt_tip_family">परिवार वाला बता रहे हैं? उनके चेहरे पर दबाकर जाँचें।</string>
+    <string name="perm_call_phone">आपकी तरफ़ से परिवार को कॉल</string>
+    <string name="perm_call_phone_why">परिवार ने धोखे की चेतावनी न देखी, तो हम उन्हें कॉल कर देंगे।</string>
+    <string name="perm_dnd">साइलेंट पर भी घंटी बजे</string>
+    <string name="perm_dnd_why">ताकि परिवार की धोखे वाली चेतावनी कभी छूटे नहीं।</string>
+    <string name="channel_family_alarm">परिवार की धोखे वाली चेतावनी</string>
+    <string name="channel_family_alarm_about">परिवार का कोई शायद अभी धोखे की कॉल पर है। साइलेंट पर भी ज़ोर से बजती है।</string>
+    <string name="sms_scam_alarm_unanswered">%1$s ने धोखे की चेतावनी का जवाब नहीं दिया। उन्हें कॉल कर रहे हैं।</string>
+    <string name="join_circle_title">ये आपके कौन हैं?</string>
+    <string name="circle_family">परिवार</string>
+    <string name="circle_work">काम</string>
+    <string name="circle_work_why">बॉस या साथी जो पेमेंट करने को कह सकते हैं। हम जाँचते हैं कि सच में वही हैं।</string>
+    <string name="home_work">आपके काम के लोग</string>
+    <string name="scam_boss_payment">यह नकली बॉस का पेमेंट माँगने वाला धोखा लगता है।</string>
+    <string name="scam_boss_payment_advice">पेमेंट से पहले बॉस को उनके अपने नंबर पर कॉल करें।</string>
+    <string name="alarm_boss_payment">कोई बॉस बनकर पेमेंट माँग रहा है।</string>
+    <string name="why_boss_pretext">खुद को बॉस बताया, मीटिंग में होने की बात</string>
+    <string name="why_payment_redirect">नया खाता या तुरंत ट्रांसफ़र</string>
 </resources>

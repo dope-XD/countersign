@@ -40,6 +40,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -153,6 +154,7 @@ fun CallCheckCard(
                 // an unknown caller's "Says they're family?" chip is moot once the listener warns; its card takes the close button
                 if (check != null) CheckBody(check, onRing, onCall, onClose, actions = !alarmed) else if (!alarmed) UnknownCaller(state.family, onPickMember, onClose)
                 Listener(state, onAlertFamily, onCall, onCallMember, onNotAScam, onClose = if (check == null) onClose else null)
+                if (state.listen == ListenState.LISTENING || state.risk != null) Prompter(state)
             }
         }
     }
@@ -277,6 +279,45 @@ private fun Listener(
     }
 }
 
+/**
+ * The prompter: what Countersign is doing on this call right now, and one thing to watch for, in plain words.
+ * While the call looks fine the tip changes every 8 s; once it warns, the card above says what to do.
+ */
+@Composable
+private fun Prompter(state: CallCheckUi) {
+    val level = state.risk?.level
+    val doing = buildList {
+        if (state.cleared) return@buildList
+        when {
+            level == RiskLevel.SCAM -> add(R.string.prompt_doing_scam)
+            state.serverCheck -> add(R.string.prompt_doing_server)
+            level == RiskLevel.WARN -> add(R.string.prompt_doing_warn)
+            else -> add(R.string.prompt_doing_listening)
+        }
+        if (state.paymentsPaused) add(R.string.prompt_payments_paused)
+    }
+    var tip by remember { mutableIntStateOf(0) }
+    LaunchedEffect(level) {
+        while (level == null || level == RiskLevel.NONE || level == RiskLevel.WATCH) {
+            delay(8_000)
+            tip = (tip + 1) % TIPS.size
+        }
+    }
+    Column(Modifier.padding(end = 12.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
+        doing.forEach { s ->
+            Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                Icon(Icons.Filled.Check, contentDescription = null, tint = Brand, modifier = Modifier.size(20.dp))
+                Text(stringResource(s), color = Ink, style = MaterialTheme.typography.bodyMedium)
+            }
+        }
+        if (!state.cleared && (level == null || level == RiskLevel.NONE || level == RiskLevel.WATCH)) {
+            Text(stringResource(TIPS[tip]), color = Muted, style = MaterialTheme.typography.bodyMedium)
+        }
+    }
+}
+
+private val TIPS = listOf(R.string.prompt_tip_otp, R.string.prompt_tip_police, R.string.prompt_tip_apps, R.string.prompt_tip_hurry, R.string.prompt_tip_family)
+
 /** "I know this caller" / "It's not a scam": a plain text button, 48 dp tall, under the card's main button. */
 @Composable
 private fun FalseAlarmLink(text: String, onClick: () -> Unit) {
@@ -319,6 +360,7 @@ private fun ScamType.headline() = when (this) {
     ScamType.JOB_TASK -> R.string.scam_job_task
     ScamType.INVESTMENT -> R.string.scam_investment
     ScamType.REWARD -> R.string.scam_reward
+    ScamType.BOSS_PAYMENT -> R.string.scam_boss_payment
     ScamType.IMPERSONATION -> R.string.scam_impersonation
     ScamType.UNKNOWN -> R.string.scam_unknown
 }
@@ -335,6 +377,7 @@ private fun ScamType.advice() = when (this) {
     ScamType.JOB_TASK -> R.string.scam_job_task_advice
     ScamType.INVESTMENT -> R.string.scam_investment_advice
     ScamType.REWARD -> R.string.scam_reward_advice
+    ScamType.BOSS_PAYMENT -> R.string.scam_boss_payment_advice
     ScamType.IMPERSONATION -> R.string.scam_impersonation_advice
     ScamType.UNKNOWN -> R.string.scam_unknown_advice
 }

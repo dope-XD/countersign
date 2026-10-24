@@ -67,6 +67,7 @@ class CallWatchService : Service() {
         CallContext.start(this)
         ScamAlert.start(this)
         CallListener.start(this)
+        ListenStream.start()
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int = START_STICKY
@@ -80,6 +81,7 @@ class CallWatchService : Service() {
         CallContext.stop()
         ScamAlert.stop()
         CallListener.stop()
+        ListenStream.stop()
         super.onDestroy()
     }
 

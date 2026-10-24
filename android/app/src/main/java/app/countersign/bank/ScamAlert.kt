@@ -2,6 +2,8 @@ package app.countersign.bank
 
 import android.Manifest
 import android.content.Context
+import android.content.Intent
+import android.net.Uri
 import android.content.pm.PackageManager
 import android.telephony.SmsManager
 import android.util.Log
@@ -13,6 +15,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 
@@ -61,7 +64,38 @@ object ScamAlert {
             family
         }
         text(app, repo, toText.map { it.id to it.mobile })
+        escalate(app, repo, callId)
     }
+
+    /**
+     * Nobody may miss this: if no family member acts on the alarm (Call / Message / OK) within [ACK_WAIT_MS], text all of
+     * them, and call the first one from this phone, so a real person comes on the line. Stops the moment one acts.
+     */
+    private fun escalate(app: Context, repo: RealRepository, callId: String) {
+        escalation?.cancel()
+        escalation = scope.launch {
+            val acked = kotlinx.coroutines.withTimeoutOrNull(ACK_WAIT_MS) { repo.alarmAcks.first() }
+            if (acked != null || alertedCall != callId || repo.call.value?.cleared == true) {
+                Log.i(TAG, "family acknowledged the alarm")
+                return@launch
+            }
+            val family = repo.home.value?.family.orEmpty()
+            Log.w(TAG, "nobody acknowledged the alarm in ${ACK_WAIT_MS / 1000} s: texting and calling")
+            text(app, repo, family.map { it.id to it.mobile })
+            val first = family.firstOrNull { it.online } ?: family.firstOrNull() ?: return@launch
+            if (app.checkSelfPermission(Manifest.permission.CALL_PHONE) != PackageManager.PERMISSION_GRANTED) {
+                Log.w(TAG, "no call permission: can't call family")
+                return@launch
+            }
+            Notify.news(app, app.getString(R.string.sms_scam_alarm_unanswered, first.label), "")
+            runCatching {
+                app.startActivity(Intent(Intent.ACTION_CALL, Uri.parse("tel:${first.mobile}")).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK))
+            }.onFailure { Log.w(TAG, "call not placed: $it") }
+        }
+    }
+
+    private const val ACK_WAIT_MS = 60_000L
+    private var escalation: Job? = null
 
     private fun text(app: Context, repo: RealRepository, members: List<Pair<String, String>>) {
         if (members.isEmpty()) {
