@@ -24,3 +24,7 @@ data/indiacall/human_lags.json
 ml/runs/
 data/pack/
 models/voice_clone/*.onnx
+
+# the conversation model: ICFD-derived data and trained weights (shipped only in the model pack)
+data/conv/
+models/conv_model*/

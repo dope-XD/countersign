@@ -47,10 +47,14 @@ CANDIDATES = {
     "omnilingual_300m": "sherpa-onnx-omnilingual-asr-1600-languages-300M-ctc-v2-int8-2026-02-05",
     "moonshine_tiny_en": "sherpa-onnx-moonshine-tiny-en-quantized-2026-02-27",
     "whisper_tiny": "sherpa-onnx-whisper-tiny",
+    # AI4Bharat IndicConformer (Hindi) and NeMo fast-conformer (English), CTC, int8: parismitaglobalsolutions/indicconformer-sherpa-onnx
+    "indicconformer_hi": "indicconformer/hi",
+    "indicconformer_en": "indicconformer/en",
 }
 PAIRS = {
     "dolphin_base+moonshine_tiny_en": ["dolphin_base", "moonshine_tiny_en"],
     "omnilingual_300m+moonshine_tiny_en": ["omnilingual_300m", "moonshine_tiny_en"],
+    "indicconformer_hi+indicconformer_en": ["indicconformer_hi", "indicconformer_en"],
 }
 CHANNELS = ["clean", "g711u", "ota+g711u"]
 
@@ -91,7 +95,7 @@ def recognizer(name: str, threads: int = 4):
     import sherpa_onnx as so
 
     d = MODELS / CANDIDATES[name]
-    tok = str(d / "tokens.txt") if (d / "tokens.txt").exists() else str(next(d.glob("*tokens.txt")))
+    tok = next(str(t) for t in (d / "tokens.txt", d.parent / "tokens.txt", *d.glob("*tokens.txt")) if t.exists())
     if name.startswith("dolphin"):
         return so.OfflineRecognizer.from_dolphin_ctc(model=str(next(d.glob("model*.onnx"))), tokens=tok, num_threads=threads)
     if name.startswith("omnilingual"):
@@ -100,6 +104,8 @@ def recognizer(name: str, threads: int = 4):
         return so.OfflineRecognizer.from_moonshine_v2(
             encoder=str(d / "encoder_model.ort"), decoder=str(d / "decoder_model_merged.ort"), tokens=tok, num_threads=threads
         )
+    if name.startswith("indicconformer"):
+        return so.OfflineRecognizer.from_nemo_ctc(model=str(d / "model.int8.onnx"), tokens=tok, num_threads=threads)
     if name.startswith("whisper"):
         enc = str(next(d.glob("*encoder.int8.onnx")))
         dec = str(next(d.glob("*decoder.int8.onnx")))
@@ -160,6 +166,7 @@ def main() -> int:
     ap = argparse.ArgumentParser()
     ap.add_argument("--quick", action="store_true")
     ap.add_argument("--models", nargs="*", default=list(CANDIDATES))
+    ap.add_argument("--out", default=str(OUT))
     a = ap.parse_args()
     rows = calls()
     chans = CHANNELS
@@ -210,8 +217,9 @@ def main() -> int:
         res["models"][m] = {"rtf_4_threads": round(timing[m], 3), "size_mb": _size(m), "channels": per}
     res["examples"] = {m: dict(list(hs.items())[:6]) for m, hs in hyps.items()}
     res["markdown"] = markdown(res)
-    OUT.parent.mkdir(parents=True, exist_ok=True)
-    OUT.write_text(json.dumps(res, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
+    out = Path(a.out)
+    out.parent.mkdir(parents=True, exist_ok=True)
+    out.write_text(json.dumps(res, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
     print(res["markdown"])
     return 0
 

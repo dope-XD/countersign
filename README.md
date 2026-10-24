@@ -8,7 +8,8 @@ accident". Within the hour she has shared an OTP or sent money by UPI. Countersi
 1. **Is it really Rahul?** When a caller claims to be family, the app asks Rahul's own phone whether it's on this call.
    "Not Rahul's phone" appears on top of the dialer.
 2. **Does this call sound like a scam?** On speaker, the phone listens, turns speech into text *on the phone*, and runs
-   our scam check: cue words (police, warrant, "don't tell anyone", OTP…), our own classifier, the voice-clone check and
+   our conversation check: a model that reads the whole call so far and judges what the caller is doing (claiming to be
+   police, threatening arrest, asking for the OTP or a transfer), not which words appear; plus the voice-clone check and
    what the phone sees (unknown number, AnyDesk opened). The card turns amber with the scam named and *why it fired*.
 3. **It acts.** At red, the family's phones ring full screen ("Mummy may be on a scam call", Call / Message), an SMS
    goes out if their app is off, and a red screen stops her in GPay or PhonePe.
@@ -36,12 +37,13 @@ Python give identical answers on shared test vectors, checked in CI.
 | Where | What | Code |
 |---|---|---|
 | Phone | speech-to-text: Silero VAD + Omnilingual-300M (sherpa-onnx), picked by our bake-off | `android/…/Speech.kt`, `ml/eval/asr_bakeoff.py` |
-| Phone | cue scorer: 15 cue categories, 12 scam types, negation, English/Hindi/Hinglish | `data/listen/ScamScorer.kt`, `assets/scam_patterns.json` |
-| Phone | **our scam classifier**: hashed character n-grams, logistic regression, trained on 4 public sets + ours | `data/listen/ScamClassifier.kt`, `ml/listener_clf.py` |
+| Phone | **our conversation model**: multilingual-e5-small fine-tuned on ICFD-31k + our sets, judged over the whole call; our own Kotlin tokenizer (= Hugging Face) | `data/listen/Conversation.kt`, `ConversationModels.kt`, `ml/conv_model.py` |
+| Phone | scam-move matcher (the plain-words "why") and the call accumulator (thresholds set on dev at fixed false-positive rates) | `ml/moves.py`, `assets/moves.json`, `assets/conv.json`, `ml/eval/conv_eval.py` |
+| Phone | basic mode, before the model pack is installed: cue scorer + our small n-gram classifier | `data/listen/ScamScorer.kt`, `ScamClassifier.kt`, `assets/scam_patterns.json` |
 | Phone | **our voice-clone check**: first K layers of AntiDeepfake W2V-Large + our head, ONNX int8 | `VoiceCheck.kt`, `ml/voice_clone.py` |
-| Phone | fusion: scam needs two kinds of evidence; one model never makes red alone | `data/listen/Fusion.kt`, `Analyzer.kt`, `assets/fusion.json` |
+| Phone | evidence rules: red needs the conversation held above its threshold, or the conversation at amber plus what the phone saw; the voice check never makes red | `Conversation.kt` (Accumulator), `Analyzer.kt` |
 | Phone | caller check, context signals, pay guard, family alarm, SMS fallback | `CallContext.kt`, `ScamAlert.kt`, `Overlay.kt` |
-| Detection server (a team laptop now; the bank's servers later) | the stronger check for suspicious calls (`/ws/listen`: Omnilingual 1B, full S1), the bank contact-centre path (S1–S4, policy, step-up, agent console, fraud desk), family links, caller checks, alarms | `engine/app.py`, `engine/listener/live.py` |
+| Detection server (a team laptop now; the bank's servers later) | the stronger check for suspicious calls (`/ws/listen`: Omnilingual 1B, the same conversation check, full S1), the bank contact-centre path (S1–S4, policy, step-up, agent console, fraud desk), family links, caller checks, alarms | `engine/app.py`, `engine/listener/live.py` |
 | Relay (optional, no ML) | the same family messaging without the detection server, on a free host | `engine/relay.py` |
 
 The contract between the app and the relay: [docs/agents/CONTRACT.md](docs/agents/CONTRACT.md). Deployment, costs and a

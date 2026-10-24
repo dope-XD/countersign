@@ -7,10 +7,12 @@ import app.countersign.bank.data.RiskSource
 import app.countersign.bank.data.ScamType
 
 /*
- * Everything the phone knows about a call or a message → one verdict: the cue scorer, our classifier,
- * context signals and the voice-clone score, through fusion. Used by the live call listener (one [Call] per call)
- * and by "Check a recording or message" ([text]). Pure Kotlin, no Android: AnalyzerTest runs it on the JVM.
+ * Everything the phone knows about a call or a message → one verdict. Used by the live call listener (one [Call] per
+ * call) and by "Check a recording or message" ([text]). Pure Kotlin, no Android: AnalyzerTest runs it on the JVM.
  * Port of engine/listener/analyzer.py; keep the two identical.
+ *
+ * With the model pack ([conv] set): the conversation check (Conversation.kt) decides, from what the caller is doing
+ * over the call, not from words. Without it, basic mode: the cue scorer and our small classifier, through fusion.
  */
 class Analyzer(
     private val rules: Rules,
@@ -18,10 +20,15 @@ class Analyzer(
     private val clf: ScamClassifier,
     /** The voice-clone score at or above which the caller's voice counts as AI-made (the voice model's threshold). */
     private val voiceThreshold: Float = 0.5f,
+    /** The conversation models, once the model pack is installed; null = basic mode. */
+    private val conv: ConvKit? = null,
 ) {
+    val basicMode: Boolean get() = conv == null
+
     /** One live call. Feed it speech-to-text segments, context and the voice score as they come; read [verdict]. */
     inner class Call {
         private val scorer = CallScorer(rules)
+        private val convCall = conv?.let { ConvCall(it.models, it.matcher, it.cfg, rules) }
         private val words = StringBuilder()
         private var context = emptySet<String>()
         private var voice: Float? = null
@@ -42,7 +49,8 @@ class Analyzer(
         /** One recognised segment. Pass every hypothesis (Hindi and English models) as separate calls. */
         fun feed(text: String): Verdict {
             if (text.isBlank()) return verdict
-            scorer.feed(text)
+            if (cleared) return verdict
+            if (convCall != null) convCall.feed(text) else scorer.feed(text)
             if (words.isNotEmpty()) words.append(' ')
             words.append(text)
             return update()
@@ -80,8 +88,14 @@ class Analyzer(
 
         private fun update(): Verdict {
             if (cleared) return verdict
-            judge = clf.judge(transcript, clf.minWordsCall)
-            verdict = fuse(scorer.result(), rules, fusion, signals(context, voice), judge, server, user, prev)
+            verdict = if (convCall != null) {
+                convCall.context(signals(context, voice))
+                judge = convCall.lastP?.let { Judge(it) }
+                withServerAndUser(convCall.verdict(), server, user, prev)
+            } else {
+                judge = clf.judge(transcript, clf.minWordsCall)
+                fuse(scorer.result(), rules, fusion, signals(context, voice), judge, server, user, prev)
+            }
             prev = verdict.level
             return verdict
         }
@@ -103,6 +117,19 @@ class Analyzer(
         seconds: Float = 0f,
         minWords: Int = clf.minWordsText,
     ): Analysis {
+        val ctx0 = signals(context, voiceClone)
+        if (conv != null) {
+            val c = ConvCall(conv.models, conv.matcher, conv.cfg, rules)
+            c.context(ctx0)
+            var v = c.verdict()
+            for (s in textSegments(text)) v = c.feed(s)
+            // a whole message or recording is all the evidence there will be: judged once more as a whole
+            val whole = conv.models.p(convWindow(textSegments(text)))
+            if (whole >= conv.cfg.main.scam && v.level != "scam" && LEVELS.indexOf(v.level) >= LEVELS.indexOf("warn")) {
+                v = v.copy(level = "scam")
+            }
+            return toAnalysis(v, c.lastP?.let { Judge(it) }, ctx0, voiceClone, text, seconds)
+        }
         val cues = CallScorer(rules).feed(text)
         val j = clf.judge(text, minWords)
         val ctx = signals(context, voiceClone)
@@ -111,6 +138,24 @@ class Analyzer(
 
     companion object {
         const val SYNTHETIC_VOICE = "synthetic_voice"
+
+        /** The server's stronger check can raise the level, never lower it; "Alert family" makes it scam. */
+        fun withServerAndUser(v: Verdict, server: Verdict?, user: Boolean, prev: String): Verdict {
+            var level = v.level
+            var kind = v.type
+            val sources = v.sources.toMutableSet()
+            val cues = v.cues.toMutableList()
+            if (server != null && server.level != "none") {
+                level = higher(level, server.level)
+                if (kind == "unknown") kind = server.type
+                sources.add("server")
+                server.cues.filter { it != "discussion" && it !in cues }.forEach(cues::add)
+            }
+            if (user) {
+                level = "scam"; sources.add("user")
+            }
+            return Verdict(higher(level, prev), kind, cues, sources.sorted())
+        }
 
         fun toAnalysis(v: Verdict, j: Judge?, context: Set<String>, voiceClone: Float?, transcript: String, seconds: Float): Analysis {
             val r: Risk = v.toRisk(0)

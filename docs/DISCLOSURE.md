@@ -27,7 +27,9 @@ The same text as the paper form. Everything that existed before check-in is decl
 | Omnilingual ASR 300M CTC int8 | Meta, via sherpa-onnx | On-phone speech-to-text, off the shelf; chosen on site by our bake-off (`ml/eval/asr_bakeoff.py`) | Apache-2.0 |
 | Silero VAD | snakers4, via sherpa-onnx | Splits speech on the phone | MIT |
 | sherpa-onnx 1.13.8, onnxruntime-android 1.22 | k2-fsa; Microsoft | On-phone runtimes | Apache-2.0; MIT |
-| Our scam classifier | ours, trained on site | Hashed character n-grams + logistic regression, `ml/listener_clf.py`; runs in pure Kotlin | ours |
+| multilingual-e5-small (`intfloat/multilingual-e5-small`) | Microsoft (intfloat), Hugging Face → `transformers` | **On site:** fine-tuned by us into the conversation model (`ml/conv_model.py`, trained on the team's RTX laptop); the base model, unchanged, embeds segments for the scam-move matcher (`ml/moves.py`). Both run on the phone as int8 ONNX | MIT |
+| IndicConformer (Hindi) and NeMo fast-conformer (English), sherpa-onnx exports | AI4Bharat; NVIDIA; `parismitaglobalsolutions/indicconformer-sherpa-onnx` | Evaluated on site in our speech-to-text bake-off against Omnilingual | MIT; CC-BY-4.0; Apache-2.0 (exports) |
+| Our scam classifier | ours, trained on site | Hashed character n-grams + logistic regression, `ml/listener_clf.py`; runs in pure Kotlin. Now **basic mode** only (before the model pack is installed) | ours |
 | Test-set voices: Microsoft edge-tts (en-IN, hi-IN) | Microsoft | Only to speak our test scripts for evaluation and the spot-check kit; never in the product | Microsoft service terms |
 | Amazon Connect + Kinesis Video Streams, RunPod, ngrok | AWS; RunPod; ngrok | Before check-in only; not in the final demo path | Pay per use / free tier |
 | Render (free web service) | Render | Hosts the relay (no ML) | Free tier |
@@ -40,6 +42,7 @@ All public or self-generated; no banking or customer data.
 
 | Dataset | Format | Licence / provenance | Use |
 |---|---|---|---|
+| ICFD-31k (`rishia2220/icfd-31k`; Ahuja et al., IJCAI 2026) | text (synthetic Indian bank-call conversations, English and Hinglish, a verdict every 3 s) | Released for defensive research and education; we use it for exactly that, cite it, and do not redistribute it (the data stays out of the repository; only our fine-tuned weights ship in the model pack) | conversation model train/dev; its test and unseen-type splits and 10% of its train conversations (held out by id) for test |
 | ysangam/Indian_Cyber_Scam_PhoneCall_Hinglish_Dataset | text | Apache-2.0 | classifier train/dev/test (743 distinct of 10,000 rows) |
 | BothBosu/scam-dialogue | text | Apache-2.0 | classifier train/dev; its test file held out |
 | anmolshrivastav/scam_ham_india_14_languages | text | MIT | classifier train/dev (en/hi/Hinglish); its test suite held out |
@@ -68,7 +71,7 @@ Declared on the form before building; what was actually built, and what was cut 
 
 | Area | Built on site |
 |---|---|
-| Detection | Everything on the phone: on-phone speech-to-text, the cue scorer, our scam classifier (Kotlin = Python on shared vectors), the voice-clone check (first K layers + our head, ONNX int8), context signals and fusion; "Check a recording or message" |
+| Detection | Everything on the phone: on-phone speech-to-text; the conversation check (e5-small fine-tuned on ICFD-31k + our sets, a scam-move matcher for the reasons, and a call accumulator with thresholds set on dev; our own SentencePiece tokenizer in Kotlin, identical to Hugging Face on held-out text); the voice-clone check (first K layers + our head, ONNX int8); context signals; "Check a recording or message". Basic mode (the cue scorer and our small classifier) until the model pack is installed |
 | Alert and response | The call card says why it fired; pay guard; family alarm that rings full screen, Call / Message; SMS when the family's app is off; "Not a scam" in one tap, which tells the family |
 | Safeguards | Scam needs two kinds of evidence; one model never makes scam alone; audio leaves the phone only for calls it already finds suspicious, held in memory on the server; a 20 s encrypted clip only for confirmed scams (30 days); alerts carry ids only; false alarms kept as ids-only records for human review |
 | Measurement | `python -m ml.eval.run_all`, `python -m ml.eval.kit`, `docs/RESULTS.md` with false positives and named failure cases on held-out public data |

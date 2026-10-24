@@ -6,7 +6,10 @@ import app.countersign.bank.data.RealRepository
 import app.countersign.bank.data.Repo
 import app.countersign.bank.data.Risk
 import app.countersign.bank.data.listen.Analyzer
+import app.countersign.bank.data.listen.ConvConfig
+import app.countersign.bank.data.listen.ConvKit
 import app.countersign.bank.data.listen.FusionConfig
+import app.countersign.bank.data.listen.Matcher
 import app.countersign.bank.data.listen.Rules
 import app.countersign.bank.data.listen.ScamClassifier
 
@@ -66,7 +69,10 @@ class CallRisk(analyzer: Analyzer, private val clock: () -> Long = System::curre
         private var callId: String? = null
         private var current: CallRisk? = null
 
-        /** The phone's analyzer (cue rules, our classifier, fusion), also used by "Check a recording or message". */
+        /**
+         * The phone's analyzer, also used by "Check a recording or message": the conversation check once the model pack
+         * is installed, basic mode (cue rules, our small classifier, fusion) until then.
+         */
         fun analyzer(c: Context): Analyzer {
             load(c)
             return analyzer!!
@@ -74,17 +80,20 @@ class CallRisk(analyzer: Analyzer, private val clock: () -> Long = System::curre
 
         @Synchronized
         fun load(c: Context) {
-            if (analyzer != null) return
+            if (analyzer != null && !(analyzer!!.basicMode && ModelPack.manifest(c)?.has("conv") == true)) return
             fun text(name: String) = c.assets.open(name).bufferedReader().use { it.readText() }
             val clf = ScamClassifier.load(c.assets.open("scam_clf.bin").use { it.readBytes() }, text("scam_clf.json"))
-            analyzer = Analyzer(Rules.parse(text("scam_patterns.json")), FusionConfig.parse(text("fusion.json")), clf, VoiceCheck.threshold(c))
+            val conv = ConversationModels.get(c)?.let { ConvKit(it, Matcher(text("moves.json")), ConvConfig(text("conv.json"))) }
+            analyzer = Analyzer(Rules.parse(text("scam_patterns.json")), FusionConfig.parse(text("fusion.json")), clf, VoiceCheck.threshold(c), conv)
+            Log.i(TAG, if (conv != null) "conversation check ready" else "basic mode (no conversation models in the pack yet)")
         }
 
         /** A new call (or none): forget everything about the last one. */
         @Synchronized
-        fun reset(call: String?) {
+        fun reset(call: String?, c: Context? = null) {
             if (call == callId) return
             callId = call
+            if (call != null && c != null) load(c) // picks up the conversation models once the pack is installed
             current = if (call != null) analyzer?.let { CallRisk(it) } else null
         }
 

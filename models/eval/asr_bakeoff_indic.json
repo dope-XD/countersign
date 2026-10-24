@@ -1,0 +1,538 @@
+{
+  "calls": 59,
+  "channels": [
+    "clean",
+    "g711u",
+    "ota+g711u"
+  ],
+  "seconds_of_audio": 1177.4,
+  "models": {
+    "omnilingual_300m": {
+      "rtf_4_threads": 0.047,
+      "size_mb": 365,
+      "channels": {
+        "clean": {
+          "wer": 0.2837,
+          "cue_recall": {
+            "k": 122,
+            "n": 159,
+            "rate": 0.7673,
+            "ci95": [
+              0.6958,
+              0.8262
+            ]
+          },
+          "scams_at_warn": {
+            "k": 29,
+            "n": 32,
+            "rate": 0.9062,
+            "ci95": [
+              0.7578,
+              0.9676
+            ]
+          },
+          "harmless_at_warn": {
+            "k": 1,
+            "n": 27,
+            "rate": 0.037,
+            "ci95": [
+              0.0066,
+              0.1828
+            ]
+          },
+          "harmless_at_scam": {
+            "k": 0,
+            "n": 27,
+            "rate": 0.0,
+            "ci95": [
+              0.0,
+              0.1246
+            ]
+          }
+        },
+        "g711u": {
+          "wer": 0.2817,
+          "cue_recall": {
+            "k": 124,
+            "n": 159,
+            "rate": 0.7799,
+            "ci95": [
+              0.7093,
+              0.8373
+            ]
+          },
+          "scams_at_warn": {
+            "k": 28,
+            "n": 32,
+            "rate": 0.875,
+            "ci95": [
+              0.7193,
+              0.9503
+            ]
+          },
+          "harmless_at_warn": {
+            "k": 2,
+            "n": 27,
+            "rate": 0.0741,
+            "ci95": [
+              0.0206,
+              0.2337
+            ]
+          },
+          "harmless_at_scam": {
+            "k": 0,
+            "n": 27,
+            "rate": 0.0,
+            "ci95": [
+              0.0,
+              0.1246
+            ]
+          }
+        },
+        "ota+g711u": {
+          "wer": 0.5762,
+          "cue_recall": {
+            "k": 74,
+            "n": 159,
+            "rate": 0.4654,
+            "ci95": [
+              0.3896,
+              0.5428
+            ]
+          },
+          "scams_at_warn": {
+            "k": 18,
+            "n": 32,
+            "rate": 0.5625,
+            "ci95": [
+              0.3933,
+              0.7183
+            ]
+          },
+          "harmless_at_warn": {
+            "k": 2,
+            "n": 27,
+            "rate": 0.0741,
+            "ci95": [
+              0.0206,
+              0.2337
+            ]
+          },
+          "harmless_at_scam": {
+            "k": 0,
+            "n": 27,
+            "rate": 0.0,
+            "ci95": [
+              0.0,
+              0.1246
+            ]
+          }
+        }
+      }
+    },
+    "indicconformer_hi": {
+      "rtf_4_threads": 0.013,
+      "size_mb": 197,
+      "channels": {
+        "clean": {
+          "wer": 0.6488,
+          "cue_recall": {
+            "k": 107,
+            "n": 159,
+            "rate": 0.673,
+            "ci95": [
+              0.5967,
+              0.741
+            ]
+          },
+          "scams_at_warn": {
+            "k": 22,
+            "n": 32,
+            "rate": 0.6875,
+            "ci95": [
+              0.5143,
+              0.8205
+            ]
+          },
+          "harmless_at_warn": {
+            "k": 3,
+            "n": 27,
+            "rate": 0.1111,
+            "ci95": [
+              0.0385,
+              0.2806
+            ]
+          },
+          "harmless_at_scam": {
+            "k": 2,
+            "n": 27,
+            "rate": 0.0741,
+            "ci95": [
+              0.0206,
+              0.2337
+            ]
+          }
+        },
+        "g711u": {
+          "wer": 0.6563,
+          "cue_recall": {
+            "k": 100,
+            "n": 159,
+            "rate": 0.6289,
+            "ci95": [
+              0.5516,
+              0.7002
+            ]
+          },
+          "scams_at_warn": {
+            "k": 22,
+            "n": 32,
+            "rate": 0.6875,
+            "ci95": [
+              0.5143,
+              0.8205
+            ]
+          },
+          "harmless_at_warn": {
+            "k": 3,
+            "n": 27,
+            "rate": 0.1111,
+            "ci95": [
+              0.0385,
+              0.2806
+            ]
+          },
+          "harmless_at_scam": {
+            "k": 2,
+            "n": 27,
+            "rate": 0.0741,
+            "ci95": [
+              0.0206,
+              0.2337
+            ]
+          }
+        },
+        "ota+g711u": {
+          "wer": 0.7841,
+          "cue_recall": {
+            "k": 57,
+            "n": 159,
+            "rate": 0.3585,
+            "ci95": [
+              0.2881,
+              0.4356
+            ]
+          },
+          "scams_at_warn": {
+            "k": 11,
+            "n": 32,
+            "rate": 0.3438,
+            "ci95": [
+              0.2041,
+              0.5169
+            ]
+          },
+          "harmless_at_warn": {
+            "k": 3,
+            "n": 27,
+            "rate": 0.1111,
+            "ci95": [
+              0.0385,
+              0.2806
+            ]
+          },
+          "harmless_at_scam": {
+            "k": 1,
+            "n": 27,
+            "rate": 0.037,
+            "ci95": [
+              0.0066,
+              0.1828
+            ]
+          }
+        }
+      }
+    },
+    "indicconformer_en": {
+      "rtf_4_threads": 0.006,
+      "size_mb": 174,
+      "channels": {
+        "clean": {
+          "wer": 0.4421,
+          "cue_recall": {
+            "k": 109,
+            "n": 159,
+            "rate": 0.6855,
+            "ci95": [
+              0.6097,
+              0.7526
+            ]
+          },
+          "scams_at_warn": {
+            "k": 25,
+            "n": 32,
+            "rate": 0.7812,
+            "ci95": [
+              0.6124,
+              0.8898
+            ]
+          },
+          "harmless_at_warn": {
+            "k": 6,
+            "n": 27,
+            "rate": 0.2222,
+            "ci95": [
+              0.1061,
+              0.4076
+            ]
+          },
+          "harmless_at_scam": {
+            "k": 1,
+            "n": 27,
+            "rate": 0.037,
+            "ci95": [
+              0.0066,
+              0.1828
+            ]
+          }
+        },
+        "g711u": {
+          "wer": 0.4444,
+          "cue_recall": {
+            "k": 119,
+            "n": 159,
+            "rate": 0.7484,
+            "ci95": [
+              0.6757,
+              0.8095
+            ]
+          },
+          "scams_at_warn": {
+            "k": 25,
+            "n": 32,
+            "rate": 0.7812,
+            "ci95": [
+              0.6124,
+              0.8898
+            ]
+          },
+          "harmless_at_warn": {
+            "k": 5,
+            "n": 27,
+            "rate": 0.1852,
+            "ci95": [
+              0.0818,
+              0.367
+            ]
+          },
+          "harmless_at_scam": {
+            "k": 2,
+            "n": 27,
+            "rate": 0.0741,
+            "ci95": [
+              0.0206,
+              0.2337
+            ]
+          }
+        },
+        "ota+g711u": {
+          "wer": 0.631,
+          "cue_recall": {
+            "k": 71,
+            "n": 159,
+            "rate": 0.4465,
+            "ci95": [
+              0.3714,
+              0.5242
+            ]
+          },
+          "scams_at_warn": {
+            "k": 16,
+            "n": 32,
+            "rate": 0.5,
+            "ci95": [
+              0.3363,
+              0.6637
+            ]
+          },
+          "harmless_at_warn": {
+            "k": 3,
+            "n": 27,
+            "rate": 0.1111,
+            "ci95": [
+              0.0385,
+              0.2806
+            ]
+          },
+          "harmless_at_scam": {
+            "k": 2,
+            "n": 27,
+            "rate": 0.0741,
+            "ci95": [
+              0.0206,
+              0.2337
+            ]
+          }
+        }
+      }
+    },
+    "indicconformer_hi+indicconformer_en": {
+      "rtf_4_threads": 0.019,
+      "size_mb": 372,
+      "channels": {
+        "clean": {
+          "wer": null,
+          "cue_recall": {
+            "k": 151,
+            "n": 159,
+            "rate": 0.9497,
+            "ci95": [
+              0.9039,
+              0.9743
+            ]
+          },
+          "scams_at_warn": {
+            "k": 30,
+            "n": 32,
+            "rate": 0.9375,
+            "ci95": [
+              0.7985,
+              0.9827
+            ]
+          },
+          "harmless_at_warn": {
+            "k": 7,
+            "n": 27,
+            "rate": 0.2593,
+            "ci95": [
+              0.1317,
+              0.4468
+            ]
+          },
+          "harmless_at_scam": {
+            "k": 0,
+            "n": 27,
+            "rate": 0.0,
+            "ci95": [
+              0.0,
+              0.1246
+            ]
+          }
+        },
+        "g711u": {
+          "wer": null,
+          "cue_recall": {
+            "k": 148,
+            "n": 159,
+            "rate": 0.9308,
+            "ci95": [
+              0.8804,
+              0.9609
+            ]
+          },
+          "scams_at_warn": {
+            "k": 30,
+            "n": 32,
+            "rate": 0.9375,
+            "ci95": [
+              0.7985,
+              0.9827
+            ]
+          },
+          "harmless_at_warn": {
+            "k": 7,
+            "n": 27,
+            "rate": 0.2593,
+            "ci95": [
+              0.1317,
+              0.4468
+            ]
+          },
+          "harmless_at_scam": {
+            "k": 1,
+            "n": 27,
+            "rate": 0.037,
+            "ci95": [
+              0.0066,
+              0.1828
+            ]
+          }
+        },
+        "ota+g711u": {
+          "wer": null,
+          "cue_recall": {
+            "k": 97,
+            "n": 159,
+            "rate": 0.6101,
+            "ci95": [
+              0.5325,
+              0.6824
+            ]
+          },
+          "scams_at_warn": {
+            "k": 20,
+            "n": 32,
+            "rate": 0.625,
+            "ci95": [
+              0.4525,
+              0.7707
+            ]
+          },
+          "harmless_at_warn": {
+            "k": 4,
+            "n": 27,
+            "rate": 0.1481,
+            "ci95": [
+              0.0592,
+              0.3248
+            ]
+          },
+          "harmless_at_scam": {
+            "k": 3,
+            "n": 27,
+            "rate": 0.1111,
+            "ci95": [
+              0.0385,
+              0.2806
+            ]
+          }
+        }
+      }
+    }
+  },
+  "examples": {
+    "omnilingual_300m": {
+      "adversarial/genuine_bank_fraud_check|clean": "hallo this is hdfc banks fraud monitoring team we blocke the card transaction of 12 thousand rupies at an online store of few minutes ago if this was not you no action is needed the cart stays blocked and you can collect a new one from your branch we will never ask for your pin or otp",
+      "adversarial/genuine_bank_fraud_check|g711u": "hallo this is hdfc banks fraud monitoring team we block the card transaction of 1t thousan rupies at an online store of few minutes ago if this was not you no action is needed the cart stays blocked and you can collect a new one from your branch we will never ask for your pin or otp",
+      "adversarial/genuine_bank_fraud_check|ota+g711u": "h tis is s ba fro montarin t we blok the ard transaon of 2 rvrs at a onlin stor of w mnt a if this was not u no aton is needd the gad stas ok an u can collect  nw on om our branc we will never ask for u pn or otp",
+      "adversarial/genuine_bank_loan_followup|clean": "नमस्तेस मैन आईसीआईसीआi ब्रांच से बोल रही हूं मे होम लोन के लिए फॉर्म भरा था उसके डॉक्यमेंट्स के लिए आपको ब्रांच आना होगा ओरिजनल पैन और सालरी स्लिपले आइए कोई पेईमेंट फोन पे नहीं होगी सब ब्रांच में काउंटर पे होगा",
+      "adversarial/genuine_bank_loan_followup|g711u": "नमस्तेस मैन आicीआiसीआi ब्रांचh से बोल रही हूँ ने होम लोन के लिए फॉर्म भरा था उसके डॉक्युमेंटस के लिए आपको ब्रांच आना होगा oरिजनल पैन और सालरी स्लिपले आइए कोई पेईमेंट फोन पे नहीं होगी सब ब्रांचh में काउंटर पे होगा",
+      "adversarial/genuine_bank_loan_followup|ota+g711u": "结后 डॉक्यमेंटस के लिए आपको ब्रांच आना होगा لبلي اي ब्रांच में काउंटर पे होगा"
+    },
+    "indicconformer_hi": {
+      "adversarial/genuine_bank_fraud_check|clean": "हैलो दिस इज एचडीएफसी बैंंगस फ्रॉड मॉनिटरिंग टीम वी ब्लॉक ट कार ट्रांजैक्शन ऑफ़ ट्वेल्व थाउजेंड रुपीज एट एन ऑनलाइन स्टोर ऑफ फ्यू मिनट्स अगो इफ दिस वज नोट यू नो एक्शन इस नीडेड थे कार्ड स्टेज ब्लॉक्ड एंड यू कैन कलेक्ट ए न्यू वर्न फ्रम यूर ब्रांड वी विल नेवर आस्क फॉर योर पिन और ओटीपी",
+      "adversarial/genuine_bank_fraud_check|g711u": "हलो दिस इज एचडीएफसी बैंकस फ्रॉड मॉनिटरिंग टीम वी ब्लॉक द कार ट्रांजेक्शन ऑफ ट्वलव थाउजेंड रुपीज एट एन ऑनलाइन स्टोर ऑफ फू मिनट्स अगो इफ दिस वज नॉट यू नो एक्शन इज नीडेड द कारड स्टेज ब्लॉक्ड एंड यू कैन कलेक्ट न्यू वर्न फ्रॉम योर ब्रांड वी विल नेवर आस्क फॉर योर पिन और ओटीपी",
+      "adversarial/genuine_bank_fraud_check|ota+g711u": "हैलो तीस इस बंक फ मटंग वे ब्लॉक थ ट्रांसश्वे थौसन्दऑलाइन स्टोर ऑफ यू मिन इट तीस फ नोटूनो एक्शन इस मीडेके ब्लॉक एंड यू कन कॉलेक्ट एंड यू न फ्र्म यूर ब्रांच वे विल नेवर आक फपन और ओ",
+      "adversarial/genuine_bank_loan_followup|clean": "नमस्ते स मै आईसीआईसीआई ब्रांच से बोल रही हूं आपने होम लोन के लिए फ़ॉर्म भरा था उसके डॉक्यूमेंट्स के लिए आपको ब्रांच आना होगा ओरिजनल पैन और सैलरी स्लिप ले आइए कोई पेमेंट फ़ोन पे नहीं होगी सब ब्रांच में काउंटर पे होगा",
+      "adversarial/genuine_bank_loan_followup|g711u": "नमस्ते सर मैं आई सआईसीआई ब्रांच से बोल रही हूँ आपने होम लोन के लिए फॉर्म भरा था उसके डॉक्यूमेंट्स के लिए आपको ब्रांच आना होगा ओरिजनल पैन और सैलरी स्लिप ले आइए कोई पेमेंट फ़ोन पे नहीं होगी सब ब्रांच में काउंटर पे होगा",
+      "adversarial/genuine_bank_loan_followup|ota+g711u": "यहेह इस डॉक्येंट के आपक बांच आ फ ब्रांच में काउंटर पे होगा"
+    },
+    "indicconformer_en": {
+      "adversarial/genuine_bank_fraud_check|clean": "Hello, this is Hdfc Banks fraud Monitoring Te We blocked a card transaction of twelve thousand rupees at an online store a few minutes ago If this was not you, no action is needed the card stays blocked, and you can collect a new one from your branch. We will never ask for your pin or Otep",
+      "adversarial/genuine_bank_fraud_check|g711u": "Hallo, this is HDFC Bang's fraud Monitoring Team We blocked the card transaction of twelve thousand rupees at an online store a few minutes ago If this was not you, no action is needed, the card stays blocked and you can collect a new one from your branch We will never ask for your pin or OTP",
+      "adversarial/genuine_bank_fraud_check|ota+g711u": "Hello, this is DFC Bank's fraud monitoring team. We blocked the card transaction of twelve thousand rupees at an online store a few minutes ago. If this was not you, no action is needed. The car stays blocked and you can collect a new one from your branch. We will never ask for your pay or own.",
+      "adversarial/genuine_bank_loan_followup|clean": "Nos this, s, main IcCI branch say bol rehehun May home lone Killee form baraha, Uske documents Kille aco branch Anahuga Original pan or saalary slipy ay Go a payment phone pay nehihogei, Sub branch may counter Pehoga",
+      "adversarial/genuine_bank_loan_followup|g711u": "Now must say, sir, Ma I seei Ici branch say bold reheum home lone killiler form baraha, whoke documents killilleer a co branch Anahga Original plan or saalary slipy ay Goe payment phone pay nahihogei, Sub branch may counter peyhoga",
+      "adversarial/genuine_bank_loan_followup|ota+g711u": "home documents K Ao branch Anahoga Holy are you branch may counter pay hoga"
+    },
+    "indicconformer_hi+indicconformer_en": {
+      "adversarial/genuine_bank_fraud_check|clean": "हैलो दिस इज एचडीएफसी बैंंगस फ्रॉड मॉनिटरिंग टीम वी ब्लॉक ट कार ट्रांजैक्शन ऑफ़ ट्वेल्व थाउजेंड रुपीज एट एन ऑनलाइन स्टोर ऑफ फ्यू मिनट्स अगो इफ दिस वज नोट यू नो एक्शन इस नीडेड थे कार्ड स्टेज ब्लॉक्ड एंड यू कैन कलेक्ट ए न्यू वर्न फ्रम यूर ब्रांड वी विल नेवर आस्क फॉर योर पिन और ओटीपी Hello, this is Hdfc Banks fraud Monitoring Te We blocked a card transaction of twelve thousand rupees at an online store a few minutes ago If this was not you, no action is needed the card stays blocked, and you can collect a new one from your branch. We will never ask for your pin or Otep",
+      "adversarial/genuine_bank_fraud_check|g711u": "हलो दिस इज एचडीएफसी बैंकस फ्रॉड मॉनिटरिंग टीम वी ब्लॉक द कार ट्रांजेक्शन ऑफ ट्वलव थाउजेंड रुपीज एट एन ऑनलाइन स्टोर ऑफ फू मिनट्स अगो इफ दिस वज नॉट यू नो एक्शन इज नीडेड द कारड स्टेज ब्लॉक्ड एंड यू कैन कलेक्ट न्यू वर्न फ्रॉम योर ब्रांड वी विल नेवर आस्क फॉर योर पिन और ओटीपी Hallo, this is HDFC Bang's fraud Monitoring Team We blocked the card transaction of twelve thousand rupees at an online store a few minutes ago If this was not you, no action is needed, the card stays blocked and you can collect a new one from your branch We will never ask for your pin or OTP",
+      "adversarial/genuine_bank_fraud_check|ota+g711u": "हैलो तीस इस बंक फ मटंग वे ब्लॉक थ ट्रांसश्वे थौसन्दऑलाइन स्टोर ऑफ यू मिन इट तीस फ नोटूनो एक्शन इस मीडेके ब्लॉक एंड यू कन कॉलेक्ट एंड यू न फ्र्म यूर ब्रांच वे विल नेवर आक फपन और ओ Hello, this is DFC Bank's fraud monitoring team. We blocked the card transaction of twelve thousand rupees at an online store a few minutes ago. If this was not you, no action is needed. The car stays blocked and you can collect a new one from your branch. We will never ask for your pay or own.",
+      "adversarial/genuine_bank_loan_followup|clean": "नमस्ते स मै आईसीआईसीआई ब्रांच से बोल रही हूं आपने होम लोन के लिए फ़ॉर्म भरा था उसके डॉक्यूमेंट्स के लिए आपको ब्रांच आना होगा ओरिजनल पैन और सैलरी स्लिप ले आइए कोई पेमेंट फ़ोन पे नहीं होगी सब ब्रांच में काउंटर पे होगा Nos this, s, main IcCI branch say bol rehehun May home lone Killee form baraha, Uske documents Kille aco branch Anahuga Original pan or saalary slipy ay Go a payment phone pay nehihogei, Sub branch may counter Pehoga",
+      "adversarial/genuine_bank_loan_followup|g711u": "नमस्ते सर मैं आई सआईसीआई ब्रांच से बोल रही हूँ आपने होम लोन के लिए फॉर्म भरा था उसके डॉक्यूमेंट्स के लिए आपको ब्रांच आना होगा ओरिजनल पैन और सैलरी स्लिप ले आइए कोई पेमेंट फ़ोन पे नहीं होगी सब ब्रांच में काउंटर पे होगा Now must say, sir, Ma I seei Ici branch say bold reheum home lone killiler form baraha, whoke documents killilleer a co branch Anahga Original plan or saalary slipy ay Goe payment phone pay nahihogei, Sub branch may counter peyhoga",
+      "adversarial/genuine_bank_loan_followup|ota+g711u": "यहेह इस डॉक्येंट के आपक बांच आ फ ब्रांच में काउंटर पे होगा home documents K Ao branch Anahoga Holy are you branch may counter pay hoga"
+    }
+  },
+  "markdown": "59 calls (1177.4 s each channel), spoken by en-IN / hi-IN neural voices; WER on the listener's folded tokens.\n\n| Model | MB | RTF (4 threads, laptop) | Channel | WER | Cue recall | Scams at warn | Harmless at warn | Harmless at scam |\n|---|---|---|---|---|---|---|---|---|\n| omnilingual_300m | 365 | 0.047 | clean | 28% | 77% (122/159) | 91% (29/32) | 4% (1/27) | 0% (0/27) |\n| omnilingual_300m | 365 | 0.047 | g711u | 28% | 78% (124/159) | 88% (28/32) | 7% (2/27) | 0% (0/27) |\n| omnilingual_300m | 365 | 0.047 | ota+g711u | 58% | 47% (74/159) | 56% (18/32) | 7% (2/27) | 0% (0/27) |\n| indicconformer_hi | 197 | 0.013 | clean | 65% | 67% (107/159) | 69% (22/32) | 11% (3/27) | 7% (2/27) |\n| indicconformer_hi | 197 | 0.013 | g711u | 66% | 63% (100/159) | 69% (22/32) | 11% (3/27) | 7% (2/27) |\n| indicconformer_hi | 197 | 0.013 | ota+g711u | 78% | 36% (57/159) | 34% (11/32) | 11% (3/27) | 4% (1/27) |\n| indicconformer_en | 174 | 0.006 | clean | 44% | 69% (109/159) | 78% (25/32) | 22% (6/27) | 4% (1/27) |\n| indicconformer_en | 174 | 0.006 | g711u | 44% | 75% (119/159) | 78% (25/32) | 19% (5/27) | 7% (2/27) |\n| indicconformer_en | 174 | 0.006 | ota+g711u | 63% | 45% (71/159) | 50% (16/32) | 11% (3/27) | 7% (2/27) |\n| indicconformer_hi+indicconformer_en | 372 | 0.019 | clean | – | 95% (151/159) | 94% (30/32) | 26% (7/27) | 0% (0/27) |\n| indicconformer_hi+indicconformer_en | 372 | 0.019 | g711u | – | 93% (148/159) | 94% (30/32) | 26% (7/27) | 4% (1/27) |\n| indicconformer_hi+indicconformer_en | 372 | 0.019 | ota+g711u | – | 61% (97/159) | 62% (20/32) | 15% (4/27) | 11% (3/27) |"
+}
