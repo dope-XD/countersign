@@ -66,7 +66,7 @@ object Overlay {
     /** The call the user closed the card on: it stays closed until the next call. */
     private var closedCall: String? = null
 
-    /** Android hides overlay windows while the lock screen is up, so then [CallCheckNotice] says it instead. */
+    /** Android hides overlay windows while the lock screen is up, so then [CallCheckNotice] says it instead (also without the overlay permission). */
     private val locked = MutableStateFlow(false)
     private var lockWatch: Job? = null
 
@@ -84,7 +84,8 @@ object Overlay {
         }
         watching = scope.launch {
             combine(repo.call, repo.home, locked) { call, home, isLocked -> Triple(call, home, isLocked) }.collect { (call, home, isLocked) ->
-                if (call != null && isLocked && call.id != closedCall) {
+                // locked, or "Display over other apps" is off: the card can't be seen, so the notification says it
+                if (call != null && (isLocked || !Settings.canDrawOverlays(app)) && call.id != closedCall) {
                     CallCheckNotice.show(app, CallCheckUi(call.caller, call.check, home?.family.orEmpty()))
                 } else {
                     CallCheckNotice.cancel(app)
