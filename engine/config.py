@@ -57,6 +57,13 @@ class Settings:
     # Staff PIN for the agent console, fraud desk, demo panel and metrics. Generated and
     # printed on first run if unset (kept in runtime/staff_pin.txt).
     staff_pin: str = _env("STAFF_PIN", "")
+    # The key that signs device tokens and staff cookies. Unset: made once and kept in
+    # runtime/cookie_secret.key. A host that loses its disk on restart (the relay on Render)
+    # sets it, or every phone is signed out after each restart.
+    secret: str = _env("SECRET", "")
+    # Postgres (e.g. Supabase) instead of runtime/countersign.db, so accounts survive restarts
+    # on a host without a disk. Also read from the plain DATABASE_URL that hosts set.
+    database_url: str = _env("DATABASE_URL", os.environ.get("DATABASE_URL", ""))
     # The softphone needs no login (the caller may be the attacker) and every call costs GPU
     # time, so a public engine takes at most this many live calls at once.
     max_live_calls: int = int(_env("MAX_CALLS", "4"))

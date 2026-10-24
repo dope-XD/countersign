@@ -48,7 +48,7 @@ def staff_pin() -> str:
     return _persisted("staff_pin.txt", lambda: f"{secrets.randbelow(10**8):08d}")
 
 
-_SECRET = _persisted("cookie_secret.key", lambda: secrets.token_hex(32)).encode()
+_SECRET = (settings.secret or _persisted("cookie_secret.key", lambda: secrets.token_hex(32))).encode()
 
 
 MAX_FAILS, MAX_FAILS_ALL, FAIL_WINDOW, LOCKOUT = 10, 100, 300.0, 300.0
