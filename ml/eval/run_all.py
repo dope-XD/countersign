@@ -184,18 +184,32 @@ def pct(x: dict) -> str:
 
 def markdown(m: dict) -> str:
     t = m["text"]
-    L = [START, "", f"_Generated {m['generated_at']} on {m['machine']} in {m['seconds']} s · code {m['git']} · model frozen at {m['frozen_at']} · seed {m['seed']}._", ""]
+    L = [
+        START,
+        "",
+        f"_Generated {m['generated_at']} on {m['machine']} in {m['seconds']} s · code {m['git']} · model frozen at {m['frozen_at']} · seed {m['seed']}._",
+        "",
+    ]
     L += ["### Text listener on held-out data", "", "What the phone shows (fused: cues + our classifier). Percentages with Wilson 95% intervals.", ""]
     L += ["| Test set | Scams at warn | Scams at scam | Harmless at warn (false positive) | Harmless at scam (false positive) |", "|---|---|---|---|---|"]
     for s, d in t["sets"].items():
         f = d["fused"]
         L.append(f"| {NAMES.get(s, s.replace('_', ' '))} | {pct(f['recall_warn'])} | {pct(f['recall_scam'])} | {pct(f['fp_warn'])} | {pct(f['fp_scam'])} |")
     L += ["", "**Each layer alone** (scams at warn / harmless at warn):", "", "| Test set | Cues only | Classifier only | Fused |", "|---|---|---|---|"]
+
+    def cell(x: dict) -> str:
+        return f"{100 * x['recall_warn']['rate']:.0f}% / {100 * x['fp_warn']['rate']:.0f}%" if x["scams"] and x["harmless"] else "–"
+
     for s, d in t["sets"].items():
-        cell = lambda k: f"{100 * d[k]['recall_warn']['rate']:.0f}% / {100 * d[k]['fp_warn']['rate']:.0f}%" if d[k]["scams"] and d[k]["harmless"] else "–"  # noqa: E731
-        L.append(f"| {NAMES.get(s, s)} | {cell('cues')} | {cell('classifier')} | {cell('fused')} |")
+        L.append(f"| {NAMES.get(s, s)} | {cell(d['cues'])} | {cell(d['classifier'])} | {cell(d['fused'])} |")
     if m.get("lodo"):
-        L += ["", "### Leave one dataset out (never seen in train or dev)", "", "| Held-out source | Trained on | Scams at warn | Harmless at warn | Harmless at scam |", "|---|---|---|---|---|"]
+        L += [
+            "",
+            "### Leave one dataset out (never seen in train or dev)",
+            "",
+            "| Held-out source | Trained on | Scams at warn | Harmless at warn | Harmless at scam |",
+            "|---|---|---|---|---|",
+        ]
         for s, d in m["lodo"].items():
             L.append(f"| {NAMES.get(s, s)} | {', '.join(d['trained_on'])} | {pct(d['recall_warn'])} | {pct(d['fp_warn'])} | {pct(d['fp_scam'])} |")
     L += ["", "### Per scam type (all held-out sets, fused)", "", "| Type | Texts | Reached warn | Reached scam |", "|---|---|---|---|"]
@@ -210,7 +224,9 @@ def markdown(m: dict) -> str:
     tw = m.get("turns_to_warn")
     if tw:
         L += ["", "### Turns to warn on multi-turn calls (BothBosu test + our calls, fed turn by turn)", ""]
-        L += [f"- Scam calls reaching warn: {pct(tw['scams_reaching_warn'])}; median {tw['median_turns_to_warn']} turns, {tw['median_words_to_warn']} words in."]
+        L += [
+            f"- Scam calls reaching warn: {pct(tw['scams_reaching_warn'])}; median {tw['median_turns_to_warn']} turns, {tw['median_words_to_warn']} words in."
+        ]
         L += [f"- Harmless calls that ever showed warn: {pct(tw['harmless_ever_warned'])}."]
     g = m["gates"]
     L += ["", "### Gates (set before the test run)", ""]
@@ -222,7 +238,13 @@ def markdown(m: dict) -> str:
         else:
             L += ["", f"### {title}", "", f"_Not run on this machine yet (`python -m ml.eval.{'asr_bakeoff' if sec == 'audio' else 'voice_clone'}`)._"]
     if t["misses"]:
-        L += ["", "### Every miss on our own and the Indian sets (scam below warn, or harmless at scam)", "", "| Id | Truth | Phone said | Text (start) |", "|---|---|---|---|"]
+        L += [
+            "",
+            "### Every miss on our own and the Indian sets (scam below warn, or harmless at scam)",
+            "",
+            "| Id | Truth | Phone said | Text (start) |",
+            "|---|---|---|---|",
+        ]
         for x in t["misses"][:60]:
             L.append(f"| {x['id']} | {'scam' if x['label'] else 'harmless'} | {x['level']} | {x['text'].replace('|', '/')} |")
     L += ["", END]
