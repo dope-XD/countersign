@@ -3,6 +3,7 @@ package app.countersign.bank.ui.components
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.defaultMinSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -51,6 +52,8 @@ fun BigButton(
 ) {
     val m = modifier.fillMaxWidth().defaultMinSize(minHeight = ButtonHeight)
     val shape = RoundedCornerShape(14.dp)
+    // narrower than Material's 24 dp sides, so two buttons fit side by side at 360 dp
+    val padding = PaddingValues(horizontal = 14.dp, vertical = 8.dp)
     val label: @Composable () -> Unit = {
         if (icon != null) {
             Icon(icon, contentDescription = null, Modifier.size(26.dp))
@@ -60,7 +63,7 @@ fun BigButton(
     }
     if (kind == ButtonKind.Quiet) {
         OutlinedButton(
-            onClick, m, enabled = enabled, shape = shape,
+            onClick, m, enabled = enabled, shape = shape, contentPadding = padding,
             border = BorderStroke(2.dp, Line),
             colors = ButtonDefaults.outlinedButtonColors(containerColor = Color.White, contentColor = Ink),
         ) { label() }
@@ -71,7 +74,7 @@ fun BigButton(
             else -> Brand
         }
         Button(
-            onClick, m, enabled = enabled, shape = shape,
+            onClick, m, enabled = enabled, shape = shape, contentPadding = padding,
             colors = ButtonDefaults.buttonColors(containerColor = fill, contentColor = Color.White),
         ) { label() }
     }
