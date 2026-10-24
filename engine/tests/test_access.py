@@ -31,11 +31,11 @@ def _claimed(staff, cid: str) -> SoftDevice:
 def test_app_routes_need_a_device_token(staff):
     anon = TestClient(app, base_url="https://testserver")
     assert anon.get("/api/m/home").status_code == 401
-    assert anon.post("/api/m/pay", json={"payee": "shop@okaxis", "amount": 10}).status_code == 401
+    assert anon.post("/api/m/checks", json={"call_id": "x", "claimed": "sunita"}).status_code == 401
     assert anon.get("/api/m/home", headers={auth.DEVICE_HEADER: "rahul.9999999999.forged"}).status_code == 401
     rahul = _claimed(staff, "rahul")
     me = anon.get("/api/m/home", headers={auth.DEVICE_HEADER: rahul.token}).json()
-    assert me["account"]["id"] == "rahul"
+    assert me["me"]["id"] == "rahul"
 
 
 def test_claiming_a_seeded_account_needs_the_staff_pin(staff):

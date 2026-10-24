@@ -125,7 +125,7 @@ def _ring_time(check: dict) -> float:
     return c["start"] if c else check["created_at"]
 
 
-def _seen(customer_id: str) -> float:
+def seen(customer_id: str) -> float:
     return max(world.app_sessions.get(customer_id, 0.0), _last_event.get(customer_id, 0.0))
 
 
@@ -142,7 +142,7 @@ def evaluate(check: dict) -> str:
         return "likely"
     if any(c["start"] <= t + AFTER_S for c in theirs):
         return "not_with_you"
-    if time.time() - _seen(claimed) <= ONLINE_S:
+    if time.time() - seen(claimed) <= ONLINE_S:
         return "not_them"
     return "cant_reach"
 
