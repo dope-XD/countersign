@@ -81,3 +81,17 @@ Delete the old bank screens (`ui/Pay.kt`, `ui/Call.kt`, `ui/Profile.kt` and the 
 ## Done means
 
 Every screen above runs on `FakeRepository` in both languages, has previews, and has passed review with screenshots in the PR. The overlay composables are merged before C wires the overlay window (C works against stubs until then).
+
+## Call listener screens (P1 from 24 Oct)
+
+The app now also listens to calls and warns about scams (`CONTRACT.md`, "Call listener"). New states, all on `FakeRepository` (`Scenario.LISTEN_*`, `FAMILY_ALARM`, `MODEL_DOWNLOADING`):
+
+- **`CallCheckCard`** shows `CallCheckUi.listen`, `onSpeaker` and `risk` next to the caller-check verdict:
+  - `NEED_SPEAKER` → a small chip: "Put on speaker so we can listen".
+  - `LISTENING` + `watch` → a quiet "Listening for scams" line.
+  - `warn` → an amber card: one headline naming the scam type, in plain words ("This sounds like a 'digital arrest' scam."), one line of advice ("Police never ask for money on a call."), and an **Alert family** button.
+  - `scam` → a red card: "This is likely a scam. Hang up." with **Alert family** (already sent: show "Family alerted ✓") and **Call <family member>**.
+  - Write one headline and one advice line per `ScamType`, in English and Hindi.
+- **`FamilyAlarmScreen(state: FamilyAlarmUi, onCall, onMessage, onDismiss)`**, full screen: the face, "Mummy may be on a scam call", the type in plain words, then **Call Mummy** (big, green), **Message Mummy**, **OK**. The message text (a string resource): "Mummy, cut that call now. It's a scam. Call me." in English and Hindi.
+- **Onboarding**: new permission cards for the microphone, the call listener (accessibility; on Android 13+ show the "App info → ⋮ → Allow restricted settings" steps with pictures), and SMS ("Text family if their app is off"). Then a model download card with progress (`repo.modelState`, `repo.downloadModels()`).
+- **Settings**: "Listen to calls for scams", "Stronger check (uses the bank's server)", "Text family if their app is off" (`repo.setListening`).

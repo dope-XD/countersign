@@ -62,7 +62,26 @@ interface Repository {
 
     // ---- permissions: opens the system prompt or settings page; [permissions] updates when the user comes back
     fun request(permission: Permission, activity: ComponentActivity)
+
+    // ---- the call listener (CONTRACT.md, "Call listener"). Defaults keep older implementations building.
+
+    /** The on-phone speech model for the app's language. */
+    val modelState: StateFlow<ModelState> get() = NO_MODEL_NEEDED
+
+    /** Download the speech model; [modelState] reports progress. */
+    suspend fun downloadModels() {}
+
+    suspend fun setListening(listenCalls: Boolean? = null, strongerCheck: Boolean? = null, smsFallback: Boolean? = null): Me =
+        error("Not built yet.")
+
+    /** "Alert family" on the call card: treat this call as a scam now and alarm the family. */
+    suspend fun alertFamily() {}
+
+    /** Open SMS (or WhatsApp) to this member with the prefilled "cut that call" message. */
+    fun messageMember(memberId: String) {}
 }
+
+private val NO_MODEL_NEEDED = kotlinx.coroutines.flow.MutableStateFlow(ModelState(ModelStatus.NOT_NEEDED))
 
 /** Which repository the app uses. FakeRepository until C's RealRepository lands. */
 object Repo {

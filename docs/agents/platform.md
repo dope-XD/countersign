@@ -85,3 +85,30 @@ Write the results in the PR or the QA issue: device, Android version, pass/fail 
 ## Done means
 
 The QA script passes on two emulators, then on two real phones with SIMs, with a third phone as the scammer. ✗ shows within about 3 s of the ring, and the pay guard shows on opening GPay.
+
+## Call listener (P1 from 24 Oct)
+
+The app listens to its own calls and warns about scams (`CONTRACT.md`, "Call listener"). Nothing is ever played into the call.
+
+**Capture.**
+- `ListenService` is an `AccessibilityService`. Android lets an accessibility service capture the mic during a call ("Sharing audio input"); ordinary apps can't.
+- It opens `AudioRecord` at 16 kHz mono **only while a call is active** (from `CallWatchService`'s state) and stops when the call ends.
+- On speaker, the mic hears the caller as well. Check speaker with `AudioManager.getCommunicationDevice()` → `TYPE_BUILTIN_SPEAKER`.
+- Keep `RECORD_AUDIO`; add the accessibility service XML (minimal event types: window state changes only, `canRetrieveWindowContent=false` unless needed).
+- Android 13+ sideloads need "Allow restricted settings" in App info before accessibility can be turned on. B shows the steps.
+
+**Overlay.** Host the call card in the accessibility service as `TYPE_ACCESSIBILITY_OVERLAY`. This needs no "display over other apps", and an accessibility UI on top keeps mic priority. The same service sees the foreground app from window events, which replaces the UsageStats poll for the pay guard.
+
+**Analysis.**
+- **On the phone:** speech-to-text (on-phone model, chosen by A's bake-off) → `data/listen/ScamScorer.kt` (A writes it; pure Kotlin, reads `assets/scam_patterns.json`) → `Fusion.kt` with the context signals → `LiveCall.risk`.
+- **Stronger check:** in parallel, stream the PCM to `/ws/listen` when `stronger_check` is on and the server is reachable. The server's `listen_verdict` goes into the fusion.
+- **Context signals** are yours to detect: unknown number, international number, WhatsApp video from an unknown number, a remote-access app or payment app opened during the call, a long call.
+
+**At `scam`:**
+- `POST /api/m/scam-alert` (ids only);
+- the pay guard turns on through the `scam` event;
+- text the members in `text_these` with `SmsManager` if `sms_fallback` is on, or every member if the POST failed. Once per member per call.
+
+**Receiving `family_alarm`:** a full-screen ring (reuse `Ringer`) showing B's `FamilyAlarmScreen`; Call opens the dialer, Message opens SMS or WhatsApp with B's prefilled text.
+
+**Privacy:** never write audio or transcripts to disk; drop them when the call ends. Only the level, type and cue ids are kept.
