@@ -52,7 +52,7 @@ data class Approval(
 
     companion object {
         fun from(o: JSONObject): Approval {
-            val s = o.getJSONObject("summary")
+            val s = o.optJSONObject("summary") ?: o // the contract puts question and detail at the top
             return Approval(
                 o.getString("id"), o.getString("kind"), s.optString("question"), s.optString("detail"), o.getString("challenge"),
                 o.optString("deliver", "notify"), o.optDouble("expires_at", 0.0), o.optString("status", "pending"),
