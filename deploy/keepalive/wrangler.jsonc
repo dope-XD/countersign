@@ -3,6 +3,8 @@
   "name": "countersign-keepalive",
   "main": "worker.js",
   "compatibility_date": "2026-10-01",
+  // a schedule only: no public address, so no workers.dev subdomain to register
+  "workers_dev": false,
   "triggers": {
     "crons": ["*/10 * * * *"]
   },
