@@ -140,4 +140,34 @@
     <string name="settings_sign_out">Sign out</string>
     <string name="settings_sign_out_title">Sign out of this phone?</string>
     <string name="settings_sign_out_line">Your family can\'t check your calls until you sign in again.</string>
+    <!-- Call listener on the call card. Headline + one line of advice per scam type -->
+    <string name="listen_need_speaker">Put on speaker so we can listen</string>
+    <string name="listen_listening">Listening for scams</string>
+    <string name="scam_title">This is likely a scam. Hang up.</string>
+    <string name="action_alert_family">Alert family</string>
+    <string name="family_alerted">Family alerted</string>
+    <string name="scam_digital_arrest">This sounds like a “digital arrest” scam.</string>
+    <string name="scam_digital_arrest_advice">Police never ask for money on a call.</string>
+    <string name="scam_bank_kyc">This sounds like a fake call from your bank.</string>
+    <string name="scam_bank_kyc_advice">Your bank never asks for a PIN or a code on a call.</string>
+    <string name="scam_otp_upi">This caller is after a code or your UPI PIN.</string>
+    <string name="scam_otp_upi_advice">Never share a code or a PIN with anyone.</string>
+    <string name="scam_remote_access">This caller wants to control your phone.</string>
+    <string name="scam_remote_access_advice">Don\'t install any app they tell you to.</string>
+    <string name="scam_family_emergency">This sounds like a fake family emergency.</string>
+    <string name="scam_family_emergency_advice">Call your family on their own number first.</string>
+    <string name="scam_courier_customs">This sounds like a fake courier or customs call.</string>
+    <string name="scam_courier_customs_advice">Customs never asks for money on a call.</string>
+    <string name="scam_trai_sim">This sounds like a fake “your SIM will be blocked” call.</string>
+    <string name="scam_trai_sim_advice">Phone companies never call to block your SIM.</string>
+    <string name="scam_job_task">This sounds like a fake job or task offer.</string>
+    <string name="scam_job_task_advice">Real jobs never ask you to pay first.</string>
+    <string name="scam_investment">This sounds like an investment scam.</string>
+    <string name="scam_investment_advice">No one can promise you sure profits.</string>
+    <string name="scam_reward">This sounds like a fake prize or reward.</string>
+    <string name="scam_reward_advice">You never have to pay to get a prize.</string>
+    <string name="scam_impersonation">This caller isn\'t who they say.</string>
+    <string name="scam_impersonation_advice">Hang up and call them on their own number.</string>
+    <string name="scam_unknown">This call has signs of a scam.</string>
+    <string name="scam_unknown_advice">Don\'t send money or share a code.</string>
 </resources>
