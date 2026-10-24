@@ -14,6 +14,7 @@ import app.countersign.bank.data.CallCheckUi
 import app.countersign.bank.data.Outcome
 import app.countersign.bank.data.Repo
 import app.countersign.bank.data.RingState
+import app.countersign.bank.ui.Language
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
@@ -35,7 +36,8 @@ object CallCheckNotice {
 
     fun locked(c: Context): Boolean = c.getSystemService(KeyguardManager::class.java).isKeyguardLocked
 
-    fun show(c: Context, ui: CallCheckUi) {
+    fun show(app: Context, ui: CallCheckUi) {
+        val c = Language.wrap(app) // Android 12: the in-app language (13+ applies it by itself)
         val check = ui.check
         val who = check?.label ?: ui.caller?.label
         val member = (check?.memberId ?: ui.caller?.id)?.let { id -> ui.family.firstOrNull { it.id == id } }

@@ -39,6 +39,7 @@ import app.countersign.bank.data.LiveCall
 import app.countersign.bank.data.Outcome
 import app.countersign.bank.data.Repo
 import app.countersign.bank.data.Verdict
+import app.countersign.bank.ui.Language
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -183,7 +184,7 @@ object Overlay {
         fun show(content: @Composable () -> Unit) {
             savedState.performRestore(null)
             lifecycleRegistry.currentState = Lifecycle.State.RESUMED
-            val v = ComposeView(c).apply {
+            val v = ComposeView(Language.wrap(c)).apply { // the window comes from c; the words in the app's language
                 setViewTreeLifecycleOwner(this@Window)
                 setViewTreeSavedStateRegistryOwner(this@Window)
                 setContent(content)
