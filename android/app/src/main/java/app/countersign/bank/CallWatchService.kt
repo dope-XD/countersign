@@ -73,7 +73,7 @@ class CallWatchService : Service() {
         phoneCallback?.let { phone.unregisterTelephonyCallback(it) }
         modeListener?.let { audio.removeOnModeChangedListener(it) }
         real?.disconnect()
-        Overlay.stop()
+        Overlay.stop(this)
         super.onDestroy()
     }
 

@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="channel_call_check">कॉल जाँच</string>
+    <string name="channel_call_check_about">फ़ोन लॉक हो तब भी, असल में कौन कॉल कर रहा है।</string>
+
+    <string name="cc_pick_title">परिवार से हैं, ऐसा कह रहे हैं? जाँचें</string>
+    <string name="cc_pick_text">वे कौन होने का दावा कर रहे हैं, उन्हें चुनें।</string>
+    <string name="cc_checking">%1$s का फ़ोन है या नहीं, देख रहे हैं…</string>
+    <string name="cc_safe">✓ यह %1$s का फ़ोन है</string>
+    <string name="cc_danger">✗ यह %1$s का फ़ोन नहीं है</string>
+    <string name="cc_danger_text">पैसे न भेजें, OTP न बताएँ।</string>
+    <string name="cc_spoof_text">नंबर नकली हो सकता है। पैसे न भेजें, OTP न बताएँ।</string>
+    <string name="cc_cant_reach">\? %1$s का पता नहीं चल पाया</string>
+    <string name="cc_cant_reach_text">पक्का करने के लिए उन्हें रिंग या कॉल करें।</string>
+    <string name="cc_ringing">%1$s को रिंग कर रहे हैं…</string>
+    <string name="cc_ring_yes">✓ %1$s ने पक्का किया, यह वही हैं</string>
+    <string name="cc_ring_no">✗ %1$s ने कहा, यह वे नहीं हैं</string>
+
+    <string name="cc_action_ring">%1$s को रिंग करें</string>
+    <string name="cc_action_call">%1$s को कॉल करें</string>
+</resources>
