@@ -19,16 +19,17 @@ data class Account(
     val firstName get() = name.substringBefore(' ')
 
     companion object {
+        // the engine's "me" (#27) has no bank fields any more: the old screens show blanks until B replaces them
         fun from(o: JSONObject) = Account(
-            o.getString("id"), o.getString("name"), o.getString("mobile"), o.getString("account_no"), o.getString("upi_id"),
-            o.optString("card_last4"), o.getDouble("balance"), o.getString("check_channel"), o.getBoolean("share_call_status"), o.obj("kill_switch"),
+            o.getString("id"), o.getString("name"), o.getString("mobile"), o.optString("account_no"), o.optString("upi_id"),
+            o.optString("card_last4"), o.optDouble("balance", 0.0), o.optString("check_channel", "ring"), o.optBoolean("share_call_status"), o.obj("kill_switch"),
         )
     }
 }
 
 data class FamilyMember(val id: String, val label: String, val name: String, val mobile: String, val upi: String, val since: Double) {
     companion object {
-        fun from(o: JSONObject) = FamilyMember(o.getString("id"), o.getString("label"), o.getString("name"), o.getString("mobile"), o.getString("upi_id"), o.optDouble("since", 0.0))
+        fun from(o: JSONObject) = FamilyMember(o.getString("id"), o.getString("label"), o.getString("name"), o.getString("mobile"), o.optString("upi_id"), o.optDouble("since", 0.0))
     }
 }
 
@@ -129,11 +130,11 @@ data class Home(
 ) {
     companion object {
         fun from(o: JSONObject) = Home(
-            Account.from(o.getJSONObject("account")),
+            Account.from(o.obj("account") ?: o.getJSONObject("me")),
             o.getJSONArray("family").objects().map(FamilyMember::from),
             o.getJSONArray("join_requests").objects().map(JoinRequest::from),
             o.getJSONArray("approvals").objects().map(Approval::from),
-            o.getJSONArray("payments").objects().map(Payment::from),
+            o.optJSONArray("payments")?.objects()?.map(Payment::from).orEmpty(),
             o.obj("bank_call"),
         )
     }
