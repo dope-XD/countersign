@@ -14,7 +14,7 @@ accident". Within the hour she has shared an OTP or sent money by UPI. Countersi
    goes out if their app is off, and a red screen stops her in GPay or PhonePe.
 4. **A mistake costs one tap.** "I know this caller" / "It's not a scam" clears it at once and tells the family.
 
-No audio or words ever leave the phone. A small relay with no ML passes family messages (ids only).
+The phone checks every call itself. Only a call it already finds suspicious (amber) is also streamed to the detection server for a stronger check, where audio is held in memory and dropped; only a call confirmed as a scam keeps a 20 s encrypted evidence clip for the fraud desk, deleted after 30 days. Transcripts are never stored. Family messages carry ids only.
 
 ## How well it works
 
@@ -41,7 +41,8 @@ Python give identical answers on shared test vectors, checked in CI.
 | Phone | **our voice-clone check**: first K layers of AntiDeepfake W2V-Large + our head, ONNX int8 | `VoiceCheck.kt`, `ml/voice_clone.py` |
 | Phone | fusion: scam needs two kinds of evidence; one model never makes red alone | `data/listen/Fusion.kt`, `Analyzer.kt`, `assets/fusion.json` |
 | Phone | caller check, context signals, pay guard, family alarm, SMS fallback | `CallContext.kt`, `ScamAlert.kt`, `Overlay.kt` |
-| Relay | sign-up, family, caller checks, scam alert, "Not a scam", events (no ML) | `engine/relay.py` |
+| Detection server (a team laptop now; the bank's servers later) | the stronger check for suspicious calls (`/ws/listen`: Omnilingual 1B, full S1), the bank contact-centre path (S1–S4, policy, step-up, agent console, fraud desk), family links, caller checks, alarms | `engine/app.py`, `engine/listener/live.py` |
+| Relay (optional, no ML) | the same family messaging without the detection server, on a free host | `engine/relay.py` |
 
 The contract between the app and the relay: [docs/agents/CONTRACT.md](docs/agents/CONTRACT.md). Deployment, costs and a
 pilot: [docs/DEPLOY.md](docs/DEPLOY.md). How an attacker would get past it: [docs/ADVERSARIAL.md](docs/ADVERSARIAL.md).

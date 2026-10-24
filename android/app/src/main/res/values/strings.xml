@@ -257,4 +257,33 @@
     <string name="models_downloading">Downloading scam check… %1$d%%</string>
     <string name="models_why">Download the scam check once. After that it works without internet.</string>
     <string name="models_download">Download (%1$d MB)</string>
+    <!-- The call prompter -->
+    <string name="prompt_doing_listening">Listening for scams on this phone. Nothing worrying so far.</string>
+    <string name="prompt_doing_warn">Watching this call closely.</string>
+    <string name="prompt_doing_server">Double-checking this call on our secure server.</string>
+    <string name="prompt_doing_scam">Your family has been alerted.</string>
+    <string name="prompt_payments_paused">Payments are paused on this phone for now.</string>
+    <string name="prompt_tip_otp">Watch out: if they ask for an OTP or PIN, it is a scam.</string>
+    <string name="prompt_tip_police">Real police and banks never ask for money on a call.</string>
+    <string name="prompt_tip_apps">Don\'t install any app they tell you to.</string>
+    <string name="prompt_tip_hurry">If they rush you or say \'tell no one\', hang up.</string>
+    <string name="prompt_tip_family">Says they\'re family? Tap their face to check.</string>
+    <string name="perm_call_phone">Call family for you</string>
+    <string name="perm_call_phone_why">If family miss a scam alarm, we call them for you.</string>
+    <string name="perm_dnd">Ring even on silent</string>
+    <string name="perm_dnd_why">So a family scam alarm can never be missed.</string>
+    <string name="channel_family_alarm">Family scam alarms</string>
+    <string name="channel_family_alarm_about">A family member may be on a scam call right now. Rings loudly, even on silent.</string>
+    <string name="sms_scam_alarm_unanswered">%1$s did not answer the scam alarm. Calling them for you.</string>
+    <string name="join_circle_title">Who are they to you?</string>
+    <string name="circle_family">Family</string>
+    <string name="circle_work">Work</string>
+    <string name="circle_work_why">A boss or colleague who might ask you to make a payment. We check it\'s really them.</string>
+    <string name="home_work">Your work circle</string>
+    <string name="scam_boss_payment">This sounds like a fake boss asking for a payment.</string>
+    <string name="scam_boss_payment_advice">Call your boss on their own number before you pay.</string>
+    <string name="alarm_boss_payment">Someone is pretending to be the boss and asking for a payment.</string>
+    <string name="why_boss_pretext">says they are your boss, busy in a meeting</string>
+    <string name="why_payment_redirect">a new account or urgent transfer</string>
+    <string name="prompt_doing_server_done">Checked again on our secure server: it agrees.</string>
 </resources>

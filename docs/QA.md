@@ -7,6 +7,8 @@
 | 21:09 | vivo V2504 | Settings → download the model pack (379 MB from the GitHub release), sha256 check, unpack | "धोखा-जाँच तैयार है" |
 | 21:30 | Emulator | Check a recording: `data/kit/call_08.wav` (BothBosu test scam, G.711) through VAD + Omnilingual + Analyzer + voice check | red, digital arrest, police · threat · rushes you; voice "real person" (0.01): same as `ml.eval.kit` |
 | 21:55 | Emulator | **Live call:** unknown number rings, answered; the call listener records; the kit scam call fed into the listener (debug hook `spike/FeedAudio.kt`) | red ~65 words in (authority, threat, AI voice); scam alert sent; "It's not a scam" → confirm → "Cleared. Family told it's fine."; `scam-alert/clear` reached the relay |
+| 23:05 | Emulator + the laptop server (engine on the M4 Mac, CPU) | **Hybrid live call:** the phone reaches amber by itself (cues + classifier), opens `/ws/listen` (token in the header, not the URL), streams the call | red with source SERVER 8 s later; the server opened a RED case with a 20 s encrypted clip (30-day expiry) |
+| 23:00 | Laptop server | Agent console at `/agent` behind the staff PIN, served through a Cloudflare quick tunnel | loads, waits for calls |
 
 ## Bugs found and fixed by these tests
 

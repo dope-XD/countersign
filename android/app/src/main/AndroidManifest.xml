@@ -29,6 +29,9 @@
     <uses-permission android:name="android.permission.RECORD_AUDIO" />
     <!-- Texting family from this SIM when their app is offline during a scam call. -->
     <uses-permission android:name="android.permission.SEND_SMS" />
+    <!-- the scam alarm: call a family member who didn't answer it; ring through Do Not Disturb -->
+    <uses-permission android:name="android.permission.CALL_PHONE" />
+    <uses-permission android:name="android.permission.ACCESS_NOTIFICATION_POLICY" />
     <uses-permission android:name="android.permission.MODIFY_AUDIO_SETTINGS" />
 
     <application

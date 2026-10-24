@@ -70,7 +70,7 @@ Declared on the form before building; what was actually built, and what was cut 
 |---|---|
 | Detection | Everything on the phone: on-phone speech-to-text, the cue scorer, our scam classifier (Kotlin = Python on shared vectors), the voice-clone check (first K layers + our head, ONNX int8), context signals and fusion; "Check a recording or message" |
 | Alert and response | The call card says why it fired; pay guard; family alarm that rings full screen, Call / Message; SMS when the family's app is off; "Not a scam" in one tap, which tells the family |
-| Safeguards | Scam needs two kinds of evidence; one model never makes scam alone; audio and words never leave the phone; alerts carry ids only; false alarms kept as ids-only records for human review |
+| Safeguards | Scam needs two kinds of evidence; one model never makes scam alone; audio leaves the phone only for calls it already finds suspicious, held in memory on the server; a 20 s encrypted clip only for confirmed scams (30 days); alerts carry ids only; false alarms kept as ids-only records for human review |
 | Measurement | `python -m ml.eval.run_all`, `python -m ml.eval.kit`, `docs/RESULTS.md` with false positives and named failure cases on held-out public data |
 
 ## 4. Undertaking and 5. Signatures

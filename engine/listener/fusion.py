@@ -45,6 +45,7 @@ def fuse(
     cues: Result,
     context: set[str] | frozenset[str] = frozenset(),
     judge: Judge | None = None,
+    server: Verdict | None = None,
     user: bool = False,
     prev: str = "none",
     cfg: dict | None = None,
@@ -110,5 +111,12 @@ def fuse(
     if kind == "unknown" and "caller_check_failed" in context:
         kind = "impersonation"
 
+    if server is not None and server.level != "none":
+        # the server's stronger check heard the same call: it can raise the level, never lower it
+        level = higher(level, server.level)
+        if kind == "unknown" and server.type != "unknown":
+            kind = server.type
+        sources |= {"server"}
+        cats |= set(server.cues) - {"discussion"}
     level = higher(level, prev)
     return Verdict(level, kind, sorted(cats), sorted(sources))

@@ -3,7 +3,7 @@
 import pytest
 
 from engine.listener import fixtures
-from engine.listener.fusion import Judge, fuse
+from engine.listener.fusion import Judge, Verdict, fuse
 from engine.listener.rules import CallScorer, normalize, score_text, word_matches
 
 TRANSCRIPTS = fixtures.load()["transcripts"]
@@ -99,3 +99,16 @@ def test_an_ai_voice_is_one_piece_of_evidence_never_scam():
 
 def test_levels_never_go_down():
     assert fuse(score_text("hello"), prev="warn").level == "warn"
+
+
+def test_the_servers_stronger_check_can_raise_the_level_but_never_lower_it():
+    calm = score_text("hello madam how are you today")
+    up = fuse(calm, server=Verdict("scam", "digital_arrest", ["authority", "threat"], ["server"]))
+    assert up.level == "scam" and up.type == "digital_arrest" and "server" in up.sources
+    police = score_text("this is the police, there is a warrant in your name, transfer the money to the safe account now")
+    assert fuse(police, server=Verdict("none", "unknown", [], ["server"])).level == fuse(police).level
+
+
+def test_a_boss_ordering_a_secret_payment_to_a_new_account_is_its_own_type():
+    v = score_text("this is your MD speaking, I am in a board meeting, keep this between us and process the payment to the new vendor account, it is urgent")
+    assert v.type == "boss_payment"

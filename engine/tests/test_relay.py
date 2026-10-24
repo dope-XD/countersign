@@ -85,3 +85,15 @@ def test_metrics_count_false_alarms_for_review(mom_son):
     live = mom.c.get("/api/metrics").json()["live"]
     assert live["false_alarms_reported"] == n + 1 and live["false_alarms_by_reason"]["know_caller"] >= 1
     assert set(live["for_review"][-1]) == {"at", "call_id", "reason", "level", "type", "cues", "sources"}
+
+
+def test_an_alarmed_member_acknowledges_and_the_victim_hears_it(mom_son):
+    mom, son = mom_son
+    with mom.c.websocket_connect(f"/ws/events?topics=app:{mom.id}", headers=mom.h()) as ws:
+        ws.send_text("hi")
+        assert son.post("/api/m/family-alarm/ack", {"member": mom.id, "action": "call"}).status_code == 200
+        m = ws.receive_json()
+        while m["type"] != "family_alarm_ack":
+            m = ws.receive_json()
+        assert m["by"] == son.id and m["action"] == "call"
+    assert son.post("/api/m/family-alarm/ack", {"member": "c_stranger"}).status_code == 404

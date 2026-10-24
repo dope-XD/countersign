@@ -117,6 +117,7 @@
         "level": "scam",
         "type": "bank_kyc",
         "categories": [
+          "boss_pretext",
           "credentials",
           "money_ask",
           "threat",
@@ -666,6 +667,53 @@
           "authority",
           "verification_pretext"
         ]
+      }
+    },
+    {
+      "id": "en_ceo_vendor_payment",
+      "lang": "en",
+      "label": "scam",
+      "min": "warn",
+      "max": "scam",
+      "type": "boss_payment",
+      "context": [
+        "unknown_number"
+      ],
+      "turns": [
+        "Hi Neha, this is Vikram, your MD speaking. I am in a board meeting so I cannot talk now.",
+        "We are closing a confidential acquisition. Keep this between us, don't tell finance yet.",
+        "Please process the payment to the new vendor today, I'm sending the new bank account details on WhatsApp.",
+        "It is urgent, do the RTGS in the next thirty minutes."
+      ],
+      "expect": {
+        "level": "scam",
+        "type": "boss_payment",
+        "categories": [
+          "boss_pretext",
+          "money_ask",
+          "payment_redirect",
+          "secrecy",
+          "urgency"
+        ]
+      }
+    },
+    {
+      "id": "hinglish_boss_genuine_reminder",
+      "lang": "hinglish",
+      "label": "benign",
+      "min": "none",
+      "max": "warn",
+      "type": "",
+      "context": [],
+      "turns": [
+        "Haan Neha, Vikram bol raha hoon.",
+        "Kal ki review meeting ke slides ready hain? Finance team ko bhi bula lena.",
+        "Aur haan, invoice wala kaam normal process se hi karna, purchase order ke baad."
+      ],
+      "expect": {
+        "level": "none",
+        "type": "unknown",
+        "categories": []
       }
     }
   ]

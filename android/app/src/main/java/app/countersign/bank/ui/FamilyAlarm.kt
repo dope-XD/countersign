@@ -106,6 +106,7 @@ fun alarmLine(t: ScamType): Int = when (t) {
     ScamType.JOB_TASK -> R.string.alarm_job_task
     ScamType.INVESTMENT -> R.string.alarm_investment
     ScamType.REWARD -> R.string.alarm_reward
+    ScamType.BOSS_PAYMENT -> R.string.alarm_boss_payment
     ScamType.IMPERSONATION -> R.string.alarm_impersonation
     ScamType.UNKNOWN -> R.string.alarm_unknown
 }

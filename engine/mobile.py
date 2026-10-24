@@ -29,7 +29,7 @@ from engine.stepup import devicekeys
 router = APIRouter(prefix="/api/m")
 files = APIRouter()
 
-MAX_FAMILY = 6
+MAX_FAMILY = 12  # family and work circle together
 INVITE_TTL = 600.0
 SIGNUPS_PER_CLIENT = 10  # accounts one phone or address may open per 10 minutes
 MOBILE_RE = re.compile(r"^\+91[6-9]\d{9}$")
@@ -81,6 +81,7 @@ class Prefs(BaseModel):
 class Join(BaseModel):
     code: str = Field(pattern=r"^\d{6}$")
     label: str = Field(min_length=1, max_length=30)  # what I call the person who invited me
+    circle: str = Field(default="family", pattern="^(family|work)$")  # a relative, or a boss / colleague who can order payments
 
 
 class Confirm(BaseModel):
@@ -145,6 +146,7 @@ def _family(cust: Customer) -> list[dict]:
                 {
                     "id": fid,
                     "label": link.get("label") or f.first_name,
+                    "circle": link.get("circle", "family"),
                     "name": f.name,
                     "mobile": f.registered_mobile,
                     "since": link.get("since", 0.0),
@@ -264,8 +266,8 @@ async def family_join(body: Join, request: Request) -> dict:
         raise HTTPException(400, "That's your own code.")
     if inviter.id in me.family:
         raise HTTPException(409, f"You're already family with {inviter.first_name}.")
-    _join_requests.setdefault(inviter.id, {})[me.id] = {"label": body.label.strip(), "at": time.time()}
-    hub.publish(f"app:{inviter.id}", {"type": "family_request", "customer_id": me.id, "name": me.name})
+    _join_requests.setdefault(inviter.id, {})[me.id] = {"label": body.label.strip(), "circle": body.circle, "at": time.time()}
+    hub.publish(f"app:{inviter.id}", {"type": "family_request", "customer_id": me.id, "name": me.name, "circle": body.circle})
     db.audit(me.id, "family_join_requested", inviter.id)
     return {"status": "waiting", "inviter": inviter.name}
 
@@ -280,8 +282,9 @@ async def family_confirm(body: Confirm, request: Request) -> dict:
     if len(me.family) >= MAX_FAMILY or len(joiner.family) >= MAX_FAMILY:
         raise HTTPException(409, f"A family can have up to {MAX_FAMILY} people.")
     now = time.time()
-    me.family[joiner.id] = {"label": body.label.strip(), "since": now}
-    joiner.family[me.id] = {"label": req["label"], "since": now}
+    circle = req.get("circle", "family")
+    me.family[joiner.id] = {"label": body.label.strip(), "since": now, "circle": circle}
+    joiner.family[me.id] = {"label": req["label"], "since": now, "circle": circle}
     world.save(me)
     world.save(joiner)
     db.audit(me.id, "family_linked", joiner.id)

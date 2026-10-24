@@ -145,7 +145,10 @@ object Overlay {
                 val now = call ?: return@show
                 CsTheme {
                     CallCheckCard(
-                        state = CallCheckUi(now.caller, now.check, home?.family.orEmpty(), now.listen, now.onSpeaker, now.risk, now.cleared),
+                        state = CallCheckUi(
+                            now.caller, now.check, home?.family.orEmpty(), now.listen, now.onSpeaker, now.risk, now.cleared,
+                            serverCheck = now.serverCheck, paymentsPaused = home?.scam != null,
+                        ),
                         onRing = { now.check?.let { act("ring") { repo.ring(it.id) } } },
                         onCall = { (now.check?.memberId ?: now.caller?.id)?.let(repo::callMember) },
                         onPickMember = { id -> act("check") { repo.check(id) } },

@@ -25,6 +25,7 @@ class Analyzer(
         private val words = StringBuilder()
         private var context = emptySet<String>()
         private var voice: Float? = null
+        private var server: Verdict? = null
         private var user = false
         private var prev = "none"
 
@@ -58,6 +59,12 @@ class Analyzer(
             return update()
         }
 
+        /** The server's stronger check (ListenStream): it can raise the level, never lower it. */
+        fun server(v: Verdict): Verdict {
+            server = v
+            return update()
+        }
+
         /** "Alert family" on the card. */
         fun alert(): Verdict {
             user = true
@@ -74,7 +81,7 @@ class Analyzer(
         private fun update(): Verdict {
             if (cleared) return verdict
             judge = clf.judge(transcript, clf.minWordsCall)
-            verdict = fuse(scorer.result(), rules, fusion, signals(context, voice), judge, user, prev)
+            verdict = fuse(scorer.result(), rules, fusion, signals(context, voice), judge, server, user, prev)
             prev = verdict.level
             return verdict
         }

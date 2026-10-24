@@ -66,6 +66,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import app.countersign.bank.BuildConfig
 import app.countersign.bank.R
+import app.countersign.bank.data.Circle
 import androidx.compose.material.icons.filled.Search
 import app.countersign.bank.data.Check
 import app.countersign.bank.data.FakeRepository
@@ -167,13 +168,20 @@ internal fun HomeContent(
         Shield(permissions, onFix, onNextScenario)
         BigButton(stringResource(R.string.home_check_tile), onCheck, kind = ButtonKind.Quiet, icon = Icons.Filled.Search)
 
+        val colours = remember(home.family) { familyColours(home.family) }
         Text(stringResource(R.string.home_family), Modifier.semantics { heading() }, color = Ink, style = MaterialTheme.typography.headlineSmall)
         FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalArrangement = Arrangement.spacedBy(16.dp)) {
-            val colours = remember(home.family) { familyColours(home.family) }
-            home.family.forEach { m ->
+            home.family.filter { it.circle == Circle.FAMILY }.forEach { m ->
                 MemberFace(m, Modifier.clickable(role = Role.Button) { onMember(m.id) }, colour = colours.getValue(m.id))
             }
             AddFamilyTile(onAddFamily)
+        }
+        val work = home.family.filter { it.circle == Circle.WORK }
+        if (work.isNotEmpty()) {
+            Text(stringResource(R.string.home_work), Modifier.semantics { heading() }, color = Ink, style = MaterialTheme.typography.headlineSmall)
+            FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalArrangement = Arrangement.spacedBy(16.dp)) {
+                work.forEach { m -> MemberFace(m, Modifier.clickable(role = Role.Button) { onMember(m.id) }, colour = colours.getValue(m.id)) }
+            }
         }
 
         Row(verticalAlignment = Alignment.CenterVertically) {

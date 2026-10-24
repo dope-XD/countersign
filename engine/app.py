@@ -592,6 +592,68 @@ def _event_topics(conn: Request | WebSocket, topics: str) -> list[str]:
     return [t for t in names if t.startswith("app:") and auth.is_device(conn, t.split(":", 1)[1])]
 
 
+@app.websocket("/ws/listen")
+async def ws_listen(ws: WebSocket, call_id: str = "", lang: str = "en", token: str = ""):
+    """The server's stronger check for a call the phone already finds suspicious (engine/listener/live.py).
+    Audio stays in memory; only a call that reaches "scam" keeps a 20 s encrypted evidence clip in its case."""
+    from engine.listener import server_asr
+    from engine.listener.live import ListenSession
+
+    cid = auth.device_customer(ws) or auth.token_customer(token)
+    me = world.customer(cid) if cid else None
+    await ws.accept()
+    if me is None or not call_id or len(call_id) > 64:
+        await ws.close(code=4401)
+        return
+    if len(_listens) >= settings.max_live_calls * 4:
+        await ws.close(code=1013)
+        return
+
+    async def send(msg: dict) -> bool:
+        return await _send(ws, json.dumps(msg))
+
+    def voice(windows: list) -> list[float]:
+        return [r.p_synthetic for r in detector.score(windows)] if detector.models else []
+
+    def on_scam(v, ring) -> None:
+        # Round 1: a RED call opens a fraud-desk case with the tier, reasons and a 20 s encrypted clip (30 days)
+        case = cases.open_case(
+            channel="app", customer_id=me.id, call_id=call_id, tier="RED",
+            reasons=["SCAM_CALL", v.type.upper()] + [c.upper() for c in v.cues[:3]],
+            scores={"cues": v.cues, "sources": v.sources}, model_version=f"listen:{server_asr.model_name()}+{detector.version}",
+            event="listener_scam_server",
+        )  # fmt: skip
+        if len(ring):
+            cases.attach_clip(case["id"], ring, 16000)
+
+    sess = ListenSession(me.id, call_id, lang if lang in ("en", "hi", "hinglish") else "en", server_asr.transcribe, voice, send, on_scam)
+    _listens.add(sess)
+    db.audit(me.id, "listen_started", call_id)
+    try:
+        while True:
+            msg = await ws.receive()
+            if msg["type"] == "websocket.disconnect":
+                break
+            if msg.get("bytes"):
+                await sess.on_audio(msg["bytes"])
+            elif msg.get("text"):
+                try:
+                    data = json.loads(msg["text"])
+                except json.JSONDecodeError:
+                    continue
+                if data.get("type") == "context":
+                    await sess.on_context(list(data.get("signals") or [])[:20], data.get("caller_check"))
+    except WebSocketDisconnect:
+        pass
+    finally:
+        _listens.discard(sess)
+        await sess.close()
+        db.audit(me.id, "listen_ended", call_id, level=sess.verdict.level)
+
+
+_listens: set = set()
+
+
 @app.websocket("/ws/events")
 async def ws_events(ws: WebSocket, topics: str = "calls"):
     names = _event_topics(ws, topics)
