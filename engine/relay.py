@@ -18,7 +18,6 @@ from __future__ import annotations
 import asyncio
 import json
 import logging
-import os
 import time
 from contextlib import asynccontextmanager
 
@@ -33,18 +32,6 @@ from engine.mocks.world import world
 
 log = logging.getLogger("countersign.relay")
 STARTED = time.time()
-
-# the model pack the phones download (ml/pack_models.py prints these); a GitHub release asset by default
-PACK = {
-    "name": os.environ.get("COUNTERSIGN_PACK_NAME", "countersign-pack-v1"),
-    "size_mb": int(os.environ.get("COUNTERSIGN_PACK_MB", "0") or 0),
-    "sha256": os.environ.get("COUNTERSIGN_PACK_SHA256", ""),
-    "url": os.environ.get("COUNTERSIGN_PACK_URL", "https://github.com/dope-XD/countersign/releases/download/models-v1/countersign-pack-v1.zip"),
-    "parts": ["asr-hi", "asr-en", "vad", "voice"],
-}
-_pack_file = settings.models_dir / "pack.json"
-if _pack_file.exists():
-    PACK |= {k: v for k, v in json.loads(_pack_file.read_text(encoding="utf-8")).items() if k in PACK and v}
 
 
 async def _housekeeping() -> None:
@@ -91,11 +78,6 @@ async def health() -> JSONResponse:
         "analysis": "on the phone",
     }
     return JSONResponse(body, status_code=200 if db_ok else 503)
-
-
-@app.get("/api/m/models")
-async def models() -> list[dict]:
-    return [PACK]
 
 
 @app.get("/api/metrics")
