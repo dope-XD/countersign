@@ -15,8 +15,8 @@ import java.security.MessageDigest
 import java.util.zip.ZipInputStream
 
 /**
- * The one model pack (CONTRACT.md, `GET /api/m/models`): speech-to-text (Hindi-capable + English), Silero VAD and the
- * voice-clone model, downloaded once into the app's private files and checked against its sha256.
+ * The one model pack (CONTRACT.md, `GET /api/m/models`): speech-to-text (Hindi-capable + English), Silero VAD, the
+ * voice-clone model and the conversation models, downloaded once into the app's private files and checked against its sha256.
  * `pack.json` inside says which file is which (see ml/pack_models.py).
  */
 object ModelPack {
@@ -31,7 +31,8 @@ object ModelPack {
 
     fun refresh(c: Context) {
         val m = manifest(c)
-        if (m != null) _state.value = ModelState(ModelStatus.READY, 1f, m.optInt("size_mb"))
+        // a pack without the conversation models (v1) still works in basic mode, but is offered again as a download
+        if (m != null && m.has("conv")) _state.value = ModelState(ModelStatus.READY, 1f, m.optInt("size_mb"))
         else if (_state.value.status != ModelStatus.DOWNLOADING) _state.value = ModelState(ModelStatus.MISSING, 0f, _state.value.sizeMb)
     }
 
@@ -82,6 +83,7 @@ object ModelPack {
             fresh.renameTo(target)
             Speech.reset()
             VoiceCheck.reset()
+            ConversationModels.reset()
             _state.value = ModelState(ModelStatus.READY, 1f, size)
             Log.i(TAG, "model pack ready (${size} MB)")
         } catch (e: Exception) {
