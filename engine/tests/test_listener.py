@@ -96,5 +96,6 @@ def test_an_ai_voice_is_one_piece_of_evidence_never_scam():
     assert v.level == "warn" and "voice" in v.sources  # with one scam cue: amber
     assert fuse(plain, context={"synthetic_voice"}, judge=Judge(0.99)).level != "scam"
 
+
 def test_levels_never_go_down():
     assert fuse(score_text("hello"), prev="warn").level == "warn"
