@@ -1,0 +1,146 @@
+{
+  "check": "conv",
+  "calls": 59,
+  "channels": [
+    "clean",
+    "g711u",
+    "ota+g711u"
+  ],
+  "seconds_of_audio": 1177.4,
+  "models": {
+    "omnilingual_300m": {
+      "rtf_4_threads": 0.047,
+      "size_mb": 365,
+      "channels": {
+        "clean": {
+          "wer": 0.2837,
+          "cue_recall": {
+            "k": 122,
+            "n": 159,
+            "rate": 0.7673,
+            "ci95": [
+              0.6958,
+              0.8262
+            ]
+          },
+          "scams_at_warn": {
+            "k": 21,
+            "n": 32,
+            "rate": 0.6562,
+            "ci95": [
+              0.4831,
+              0.7959
+            ]
+          },
+          "harmless_at_warn": {
+            "k": 2,
+            "n": 27,
+            "rate": 0.0741,
+            "ci95": [
+              0.0206,
+              0.2337
+            ]
+          },
+          "harmless_at_scam": {
+            "k": 1,
+            "n": 27,
+            "rate": 0.037,
+            "ci95": [
+              0.0066,
+              0.1828
+            ]
+          }
+        },
+        "g711u": {
+          "wer": 0.2817,
+          "cue_recall": {
+            "k": 124,
+            "n": 159,
+            "rate": 0.7799,
+            "ci95": [
+              0.7093,
+              0.8373
+            ]
+          },
+          "scams_at_warn": {
+            "k": 20,
+            "n": 32,
+            "rate": 0.625,
+            "ci95": [
+              0.4525,
+              0.7707
+            ]
+          },
+          "harmless_at_warn": {
+            "k": 2,
+            "n": 27,
+            "rate": 0.0741,
+            "ci95": [
+              0.0206,
+              0.2337
+            ]
+          },
+          "harmless_at_scam": {
+            "k": 1,
+            "n": 27,
+            "rate": 0.037,
+            "ci95": [
+              0.0066,
+              0.1828
+            ]
+          }
+        },
+        "ota+g711u": {
+          "wer": 0.5762,
+          "cue_recall": {
+            "k": 74,
+            "n": 159,
+            "rate": 0.4654,
+            "ci95": [
+              0.3896,
+              0.5428
+            ]
+          },
+          "scams_at_warn": {
+            "k": 16,
+            "n": 32,
+            "rate": 0.5,
+            "ci95": [
+              0.3363,
+              0.6637
+            ]
+          },
+          "harmless_at_warn": {
+            "k": 3,
+            "n": 27,
+            "rate": 0.1111,
+            "ci95": [
+              0.0385,
+              0.2806
+            ]
+          },
+          "harmless_at_scam": {
+            "k": 0,
+            "n": 27,
+            "rate": 0.0,
+            "ci95": [
+              0.0,
+              0.1246
+            ]
+          }
+        }
+      }
+    }
+  },
+  "examples": {
+    "omnilingual_300m": {
+      "adversarial/genuine_bank_fraud_check|clean": "hallo this is hdfc banks fraud monitoring team we blocke the card transaction of 12 thousand rupies at an online store of few minutes ago if this was not you no action is needed the cart stays blocked and you can collect a new one from your branch we will never ask for your pin or otp",
+      "adversarial/genuine_bank_fraud_check|g711u": "hallo this is hdfc banks fraud monitoring team we block the card transaction of 1t thousan rupies at an online store of few minutes ago if this was not you no action is needed the cart stays blocked and you can collect a new one from your branch we will never ask for your pin or otp",
+      "adversarial/genuine_bank_fraud_check|ota+g711u": "h tis is s ba fro montarin t we blok the ard transaon of 2 rvrs at a onlin stor of w mnt a if this was not u no aton is needd the gad stas ok an u can collect  nw on om our branc we will never ask for u pn or otp",
+      "adversarial/genuine_bank_loan_followup|clean": "नमस्तेस मैन आईसीआईसीआi ब्रांच से बोल रही हूं मे होम लोन के लिए फॉर्म भरा था उसके डॉक्यमेंट्स के लिए आपको ब्रांच आना होगा ओरिजनल पैन और सालरी स्लिपले आइए कोई पेईमेंट फोन पे नहीं होगी सब ब्रांच में काउंटर पे होगा",
+      "adversarial/genuine_bank_loan_followup|g711u": "नमस्तेस मैन आicीआiसीआi ब्रांचh से बोल रही हूँ ने होम लोन के लिए फॉर्म भरा था उसके डॉक्युमेंटस के लिए आपको ब्रांच आना होगा oरिजनल पैन और सालरी स्लिपले आइए कोई पेईमेंट फोन पे नहीं होगी सब ब्रांचh में काउंटर पे होगा",
+      "adversarial/genuine_bank_loan_followup|ota+g711u": "结后 डॉक्यमेंटस के लिए आपको ब्रांच आना होगा لبلي اي ब्रांच में काउंटर पे होगा"
+    }
+  },
+  "markdown": "59 calls (1177.4 s each channel), spoken by en-IN / hi-IN neural voices; WER on the listener's folded tokens.\n\n| Model | MB | RTF (4 threads, laptop) | Channel | WER | Cue recall | Scams at warn | Harmless at warn | Harmless at scam |\n|---|---|---|---|---|---|---|---|---|\n| omnilingual_300m | 365 | 0.047 | clean | 28% | 77% (122/159) | 66% (21/32) | 7% (2/27) | 4% (1/27) |\n| omnilingual_300m | 365 | 0.047 | g711u | 28% | 78% (124/159) | 62% (20/32) | 7% (2/27) | 4% (1/27) |\n| omnilingual_300m | 365 | 0.047 | ota+g711u | 58% | 47% (74/159) | 50% (16/32) | 11% (3/27) | 0% (0/27) |"
+}

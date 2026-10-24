@@ -157,17 +157,17 @@ class Move:
 class Matcher:
     def __init__(self, path: Path = ASSETS / "moves.json"):
         d = json.loads(path.read_text(encoding="utf-8"))
-        self.centre = np.array(d["centre"], dtype=np.float32)
+        self.centre = np.array(d["centre"], dtype=np.float64)
         self.moves = d["moves"]
         self.index = {m["id"]: k for k, m in enumerate(self.moves)}
-        self.vecs = np.array([x["vec"] for x in d["descriptions"]], dtype=np.float32)
+        self.vecs = np.array([x["vec"] for x in d["descriptions"]], dtype=np.float64)
         self.owner = np.array([self.index[x["move"]] for x in d["descriptions"]])
 
     def match(self, embedding: np.ndarray, guess: bool = False) -> Move | None:
         """The move this segment makes if it clears that move's threshold; with `guess`, the closest unsafe move anyway."""
-        v = embedding - self.centre
+        v = np.nan_to_num(np.asarray(embedding, dtype=np.float64)) - self.centre
         v = v / max(float(np.linalg.norm(v)), 1e-9)
-        sims = self.vecs @ v
+        sims = np.einsum("ij,j->i", self.vecs, v)  # not @: numpy 2.2 on macOS raises false overflow warnings there
         best = np.full(len(self.moves), -2.0, dtype=np.float32)
         np.maximum.at(best, self.owner, sims)
         k = int(best.argmax())

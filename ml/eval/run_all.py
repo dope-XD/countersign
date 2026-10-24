@@ -232,7 +232,11 @@ def markdown(m: dict) -> str:
     L += ["", "### Gates (set before the test run)", ""]
     for k, v in g.items():
         L.append(f"- {k}: {v}")
-    runs = {"audio": "ml.eval.asr_bakeoff", "voice": "ml.voice_clone && python -m ml.voice_calibrate", "kit": "ml.eval.kit data/kit"}
+    runs = {
+        "audio": "ml.eval.asr_bakeoff",
+        "voice": "ml.voice_clone && python -m ml.voice_calibrate",
+        "kit": "ml.eval.kit data/kit --basic --json models/eval/kit.json",
+    }
     titles = {
         "audio": "Audio end to end (on-phone speech-to-text → listener), the speech-to-text bake-off",
         "voice": "Voice-clone model (on the phone; held-out sets, scored with the shipped int8 model)",

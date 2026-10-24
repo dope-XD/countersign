@@ -188,6 +188,14 @@ def write_markdown(out: dict) -> None:
             kind = "scam" if r["scam"] else "genuine"
             L.append(f"| {k} ({kind}) | {r['calls']} | {pct(r['reached_warn'])} [{100 * lo:.0f}–{100 * hi:.0f}%] | {pct(r['reached_scam'])} | {t} | {before} |")
         L.append("")
+    for name, title, how in (
+        ("kit_conv.json", "Spot-check kit with the conversation check (data/kit: 30 public held-out items)", "ml.eval.kit data/kit --json models/eval/kit_conv.json"),
+        ("asr_bakeoff_conv.json", "Audio end to end with the conversation check (our 59 spoken calls, fed segment by segment)",
+         "ml.eval.asr_bakeoff --models omnilingual_300m --check conv --out models/eval/asr_bakeoff_conv.json"),
+    ):  # fmt: skip
+        f = ROOT / "models" / "eval" / name
+        L += [f"**{title}** (`python -m {how}`)", ""]
+        L += [json.loads(f.read_text(encoding="utf-8")).get("markdown", "_see the json_"), ""] if f.exists() else ["_Not run on this machine yet._", ""]
     L.append("<!-- end conv_eval -->")
     md = ROOT / "docs" / "RESULTS.md"
     text = md.read_text(encoding="utf-8")
