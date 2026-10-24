@@ -74,8 +74,8 @@ data class Check(
         }
 }
 
-/** A scam call is (or just was) going on: the pay guard is on until [until]. */
-data class Scam(val checkId: String, val memberId: String, val label: String, val reason: Verdict, val until: Long)
+/** A scam call is (or just was) going on: the pay guard is on until [until]. [reason]: not_them, not_with_you or ring_no. */
+data class Scam(val checkId: String, val memberId: String, val label: String, val reason: String, val until: Long)
 
 enum class ApprovalKind(val wire: String) { CALL_CHECK("call_check"), BANK_CALL("bank_call") }
 

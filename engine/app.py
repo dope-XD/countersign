@@ -19,7 +19,7 @@ from contextlib import asynccontextmanager
 from fastapi import APIRouter, Depends, FastAPI, File, Form, HTTPException, Request, Response, UploadFile, WebSocket, WebSocketDisconnect
 from fastapi.responses import FileResponse, JSONResponse
 
-from engine import approvals, auth, cases, guard, indiacall, mobile, policy, schemas
+from engine import approvals, auth, callcheck, cases, guard, indiacall, mobile, policy, schemas
 from engine.agent import dialog
 from engine.config import settings
 from engine.db import db
@@ -61,6 +61,7 @@ async def _housekeeping() -> None:
     while True:
         await asyncio.sleep(5)
         guard.tick()  # payment holds, unanswered family checks, kill switches
+        callcheck.prune()
         n += 1
         if n % 120 == 0:
             cases.purge_expired()
@@ -483,6 +484,7 @@ async def demo_world():
 @staff.post("/api/demo/reset")
 async def demo_reset():
     world.reset()
+    callcheck.reset()
     for c in list(calls.calls.values()):
         await _send(c.caller_ws, json.dumps({"type": "ended"}))
         c.end()
@@ -633,6 +635,7 @@ async def ws_events(ws: WebSocket, topics: str = "calls"):
 app.include_router(public)
 app.include_router(connect_ingest.router)
 app.include_router(mobile.router)
+app.include_router(callcheck.router)
 app.include_router(mobile.files)
 app.include_router(staff)
 

@@ -20,7 +20,7 @@ from fastapi import APIRouter, HTTPException, Request
 from fastapi.responses import FileResponse
 from pydantic import BaseModel, Field, field_validator
 
-from engine import auth, guard
+from engine import auth, callcheck, guard
 from engine.config import settings
 from engine.db import db
 from engine.hub import hub
@@ -416,7 +416,9 @@ async def decide(aid: str, body: Decide, request: Request) -> dict:
     if a["target_customer"] != me.id:
         raise HTTPException(403, "this approval is for someone else's phone")
     a = devicekeys.decide(aid, body.decision, body.signature)
-    if a["kind"] == "family_ping":
+    if a["kind"] == "call_check":
+        callcheck.on_ring_decision(a)
+    elif a["kind"] == "family_ping":
         guard.on_family_decision(a)
     elif a["kind"] == "kill_switch_off":
         if a["status"] == "approved" and me.kill_switch:
