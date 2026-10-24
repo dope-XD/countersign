@@ -17,7 +17,7 @@ The engine (A) implements this; `RealRepository` (C) calls it; screens (B) see i
 ```
 → `{"token": "c_ab12.1767225600.9f…", "me": Me}`
 
-`Me` = `{"id": "c_ab12", "name": "Sunita Sharma", "mobile": "+919876543210", "lang": "hi", "check_channel": "ring", "share_call_status": true}`
+`Me` = `{"id": "c_ab12", "name": "Sunita Sharma", "mobile": "+919876543210", "lang": "hi", "check_channel": "ring", "share_call_status": true, "listen_calls": true, "stronger_check": true, "sms_fallback": true}`
 
 409 if the number already has an account; 429 if too many sign-ups from this phone.
 
@@ -25,7 +25,7 @@ The engine (A) implements this; `RealRepository` (C) calls it; screens (B) see i
 `{"customer_id": "sunita", "public_key": "…", "device": "Team phone"}` → same as sign-up.
 
 ### `POST /api/m/prefs`
-Any of `{"lang": "en"|"hi", "check_channel": "ring"|"notify", "share_call_status": bool}` → `Me`
+Any of `{"lang": "en"|"hi", "check_channel": "ring"|"notify", "share_call_status": bool, "listen_calls": bool, "stronger_check": bool, "sms_fallback": bool}` → `Me`
 
 ## Home
 
@@ -109,6 +109,44 @@ The user pressed "I understand" on the pay guard. → `{"scam": null}`. The pay 
 ```
 `reason` is `not_them`, `not_with_you` or `ring_no`. It's on from a ✗ verdict or a ring "No" until 10 minutes after the call ends, or until dismissed. While it's on, the app shows the pay guard over payment apps.
 
+## Call listener
+
+The phone listens to its own calls (an accessibility service records the mic; on speaker it hears the caller too) and decides how much the call looks like a scam. **Nothing is ever played into the call.** How the phone does it: `docs/agents/platform.md`, "Call listener".
+
+**Levels:** `none` < `watch` (keep quiet) < `warn` (amber card) < `scam` (red card, family alarmed, pay guard on). `scam` always needs two independent sources (`cues`, `phone_ai`, `server`, `context`, `caller_check`), or the user pressing "Alert family" (`user`). One keyword never makes `scam`.
+
+**Types:** `digital_arrest`, `bank_kyc`, `otp_upi`, `remote_access`, `family_emergency`, `courier_customs`, `trai_sim`, `job_task`, `investment`, `reward`, `impersonation`, `unknown`.
+
+**Rules:** `android/app/src/main/assets/scam_patterns.json` (cue categories and phrases) and `fusion.json` (thresholds), owned by A, read by both the app and the engine. Test transcripts: `android/app/src/test/resources/scam_transcripts.json`.
+
+### `POST /api/m/scam-alert`
+Sent once when a call first reaches `scam` (or the user presses "Alert family"). **Ids only: no words, no audio.**
+```json
+{"call_id": "local-uuid", "level": "scam", "type": "digital_arrest",
+ "cues": ["authority", "threat", "secrecy", "money_ask"], "sources": ["cues", "server"]}
+```
+→ `{"scam": Scam, "alarmed": ["c_cd34"], "text_these": ["c_ef56"]}`
+- Turns on scam context (`Scam.reason` = `listener:digital_arrest`), so the pay guard shows.
+- `alarmed`: members who got a `family_alarm` event. `text_these`: members whose app is offline. If `sms_fallback` is on, the phone texts them from its own SIM. If the request fails (no internet), the phone texts every member.
+- A second alert for the same `call_id` doesn't alarm anyone again.
+
+### `WS /ws/listen?token=<device token>&call_id=<id>&lang=en|hi`
+The stronger check, only when `stronger_check` is on and the server is reachable. Audio goes to the bank's own server only, is never stored, and is dropped when the socket closes.
+- Phone → server, binary: 16 kHz mono 16-bit little-endian PCM, 20–200 ms per frame, only while the call is active.
+- Phone → server, text: `{"type": "context", "signals": ["unknown_number", "remote_app_opened"], "caller_check": "not_them"}` whenever context changes.
+- Server → phone, text, every few seconds and on change:
+```json
+{"type": "listen_verdict", "level": "warn", "scam_type": "digital_arrest", "p_scam": 0.71,
+ "cues": ["authority", "threat"], "abstain": false, "at": 1761300150.0}
+```
+The phone fuses this with its own result (`fusion.json`). The server's verdict outweighs the phone's when both are present.
+
+### Context signal ids (sent in `context`, also used on the phone)
+`unknown_number`, `international_number`, `video_call_unknown`, `remote_app_opened` (AnyDesk, TeamViewer, RustDesk, QuickSupport), `payment_app_opened`, `long_call` (over 15 minutes), `caller_check_failed`.
+
+### `GET /api/m/models` → `[{"name": "shruti-hi-en", "lang": "hi", "size_mb": 30, "sha256": "…", "url": "/download/models/shruti-hi-en.zip"}]`
+The on-phone speech models for each language. The app downloads its language's model once during onboarding.
+
 ## Approvals (the ring screen)
 
 `Approval`:
@@ -136,6 +174,7 @@ One JSON object per message; `type` says which.
 | `scam` | `{"scam": Scam \| null}` | turns the pay guard on or off |
 | `family_request` | `{"customer_id": "c_ef56", "name": "Priya Sharma"}` | notification + home |
 | `family_joined` | `{"customer_id": "c_cd34", "name": "Rahul Sharma"}` | notification + home |
+| `family_alarm` | `{"from": "c_ab12", "label": "Mummy", "scam_type": "digital_arrest", "level": "scam", "at": 1761300155.0}` | full-screen alarm: "Mummy may be on a scam call", with Call / Message / OK |
 | `online` | `{"member": "c_cd34", "online": false}` | the face's dot. **Not sent yet**: refresh `home` for now. |
 
 ## Test accounts on the dev server

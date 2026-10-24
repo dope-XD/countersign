@@ -18,6 +18,12 @@ data class Me(
     val lang: Lang,
     val channel: CheckChannel,
     val shareCallStatus: Boolean,
+    /** Listen to calls and warn about scams (the call listener). */
+    val listenCalls: Boolean = true,
+    /** Also send call audio to the bank's own server for a stronger check, when it's reachable. */
+    val strongerCheck: Boolean = true,
+    /** Text family from this phone's SIM if their app is offline when a scam call is detected. */
+    val smsFallback: Boolean = true,
 )
 
 data class Member(
@@ -113,13 +119,88 @@ data class LiveCall(
     /** The family member whose saved number this is, or null for any other number. */
     val caller: Member?,
     val check: Check?,
+    /** Whether the call listener can hear this call. */
+    val listen: ListenState = ListenState.OFF,
+    val onSpeaker: Boolean = false,
+    /** How much this call looks like a scam, from everything the listener has heard and seen so far. */
+    val risk: Risk? = null,
 )
+
+/* ---- the call listener (docs/agents/CONTRACT.md, "Call listener") ---- */
+
+enum class ListenState {
+    /** Not a call, or the user turned listening off. */
+    OFF,
+
+    /** Mic and accessibility not granted. */
+    NO_PERMISSION,
+
+    /** The speech model hasn't been downloaded and the server isn't reachable. */
+    NO_MODEL,
+
+    /** Can hear only this phone's owner: ask for speaker. */
+    NEED_SPEAKER,
+    LISTENING,
+}
+
+/** none < watch (keep quiet) < warn (amber card) < scam (red card, family alarmed, pay guard on). */
+enum class RiskLevel(val wire: String) { NONE("none"), WATCH("watch"), WARN("warn"), SCAM("scam") }
+
+enum class ScamType(val wire: String) {
+    DIGITAL_ARREST("digital_arrest"),
+    BANK_KYC("bank_kyc"),
+    OTP_UPI("otp_upi"),
+    REMOTE_ACCESS("remote_access"),
+    FAMILY_EMERGENCY("family_emergency"),
+    COURIER_CUSTOMS("courier_customs"),
+    TRAI_SIM("trai_sim"),
+    JOB_TASK("job_task"),
+    INVESTMENT("investment"),
+    REWARD("reward"),
+
+    /** The caller check said this isn't the family member's phone. */
+    IMPERSONATION("impersonation"),
+    UNKNOWN("unknown"),
+}
+
+/** Where the evidence came from. `scam` always needs at least two of these (or USER). */
+enum class RiskSource(val wire: String) {
+    CUES("cues"),
+    PHONE_AI("phone_ai"),
+    SERVER("server"),
+    CONTEXT("context"),
+    CALLER_CHECK("caller_check"),
+    USER("user"),
+}
+
+data class Risk(
+    val level: RiskLevel,
+    val type: ScamType,
+    /** Cue and context ids that fired, e.g. "authority", "secrecy", "remote_app_opened" (scam_patterns.json). */
+    val cues: List<String>,
+    val sources: Set<RiskSource>,
+    /** When this level was first reached. */
+    val since: Long,
+)
+
+enum class ModelStatus { NOT_NEEDED, MISSING, DOWNLOADING, READY, FAILED }
+
+/** The on-phone speech model for the app's language. */
+data class ModelState(val status: ModelStatus, val progress: Float = 0f, val sizeMb: Int = 0)
 
 /** Everything the app asks for, in the order onboarding shows them. */
 enum class Permission {
     PHONE,
     CALL_SCREENING,
     CALL_REDIRECTION,
+
+    /** PROCESS_OUTGOING_CALLS: the number this phone dials, for the caller check (replaces CALL_REDIRECTION). */
+    OUTGOING_CALLS,
+    MICROPHONE,
+
+    /** The call listener's accessibility service (Android 13+ sideloads first need "Allow restricted settings"). */
+    ACCESSIBILITY,
+    SMS,
     NOTIFICATIONS,
     OVERLAY,
     USAGE_ACCESS,
@@ -143,6 +224,9 @@ sealed interface AppEvent {
     data class FamilyJoined(val customerId: String, val name: String) : AppEvent
 
     data class Error(val message: String) : AppEvent
+
+    /** A family member's phone thinks they're on a scam call right now. */
+    data class FamilyAlarm(val memberId: String, val label: String, val type: ScamType, val at: Long) : AppEvent
 }
 
 /* ---- state for the two overlay composables C shows from a service (docs/agents/ui.md) ---- */
@@ -152,7 +236,18 @@ sealed interface AppEvent {
  * - [caller] and [check] null: an unknown number, so show the "Says they're family? Check" chip and the faces in [family].
  * - [check] set: show its verdict and, on DANGER or UNKNOWN, Ring / Call [check]'s member.
  */
-data class CallCheckUi(val caller: Member?, val check: Check?, val family: List<Member>)
+data class CallCheckUi(
+    val caller: Member?,
+    val check: Check?,
+    val family: List<Member>,
+    val listen: ListenState = ListenState.OFF,
+    val onSpeaker: Boolean = false,
+    /** Show the amber card at WARN and the red one at SCAM, next to the caller check's verdict. */
+    val risk: Risk? = null,
+)
+
+/** The full-screen alarm on a family member's phone: "Mummy may be on a scam call". */
+data class FamilyAlarmUi(val memberId: String, val label: String, val type: ScamType, val at: Long)
 
 /** The red screen over a payment app while [scam] is on. */
 data class PayGuardUi(val scam: Scam, val appName: String?)

@@ -30,6 +30,13 @@ enum class Scenario {
     I_AM_BEING_RUNG,
     JOIN_REQUEST,
     NEW_USER,
+    LISTEN_NEED_SPEAKER,
+    LISTEN_LISTENING,
+    LISTEN_WARN_DIGITAL_ARREST,
+    LISTEN_SCAM,
+    LISTEN_SCAM_AND_NOT_THEM,
+    FAMILY_ALARM,
+    MODEL_DOWNLOADING,
 }
 
 /**
@@ -52,12 +59,17 @@ class FakeRepository(start: Scenario = Scenario.IDLE) : Repository {
     private val _call = MutableStateFlow<LiveCall?>(null)
     private val _permissions = MutableStateFlow(Permissions(Permission.entries.toSet()))
     private val _events = MutableSharedFlow<AppEvent>(extraBufferCapacity = 16)
+    private val _model = MutableStateFlow(ModelState(ModelStatus.READY, 1f, 30))
 
     override val signedIn: StateFlow<Boolean> = _signedIn
     override val home: StateFlow<Home?> = _home
     override val call: StateFlow<LiveCall?> = _call
     override val permissions: StateFlow<Permissions> = _permissions
     override val events: SharedFlow<AppEvent> = _events
+    override val modelState: StateFlow<ModelState> = _model
+
+    /** The family alarm currently showing on this phone (FAMILY_ALARM), for the alarm screen. */
+    val alarm = MutableStateFlow<FamilyAlarmUi?>(null)
 
     var scenario: Scenario = start
         private set
@@ -74,7 +86,11 @@ class FakeRepository(start: Scenario = Scenario.IDLE) : Repository {
         _permissions.value = if (s == Scenario.NEW_USER) Permissions(emptySet()) else Permissions(Permission.entries.toSet())
         _home.value = if (s == Scenario.NEW_USER) null else baseHome()
         _call.value = null
+        alarm.value = null
+        _model.value = ModelState(ModelStatus.READY, 1f, 30)
         val call = "call-1"
+        fun unknown(listen: ListenState, risk: Risk? = null, speaker: Boolean = true) =
+            LiveCall(call, true, true, null, null, listen = listen, onSpeaker = speaker, risk = risk)
         when (s) {
             Scenario.IDLE, Scenario.NEW_USER -> {}
             Scenario.CALL_CHECKING -> _call.value = LiveCall(call, true, false, rahul, check(rahul, Verdict.CHECKING))
@@ -107,6 +123,30 @@ class FakeRepository(start: Scenario = Scenario.IDLE) : Repository {
                 )
             }
             Scenario.JOIN_REQUEST -> _home.update { h -> h?.copy(joinRequests = listOf(JoinRequest("c_neha", "Neha Gupta", "Mummy"))) }
+            Scenario.LISTEN_NEED_SPEAKER -> _call.value = unknown(ListenState.NEED_SPEAKER, speaker = false)
+            Scenario.LISTEN_LISTENING -> _call.value = unknown(ListenState.LISTENING, risk(RiskLevel.WATCH, ScamType.UNKNOWN, "authority"))
+            Scenario.LISTEN_WARN_DIGITAL_ARREST ->
+                _call.value = unknown(ListenState.LISTENING, risk(RiskLevel.WARN, ScamType.DIGITAL_ARREST, "authority", "threat"))
+            Scenario.LISTEN_SCAM -> {
+                val r = risk(RiskLevel.SCAM, ScamType.DIGITAL_ARREST, "authority", "threat", "secrecy", "money_ask", sources = setOf(RiskSource.CUES, RiskSource.SERVER))
+                _call.value = unknown(ListenState.LISTENING, r)
+                _home.update { h -> h?.copy(scam = Scam("chk_l", "", "", "listener:digital_arrest", now + 600_000)) }
+            }
+            Scenario.LISTEN_SCAM_AND_NOT_THEM -> {
+                val c = check(rahul, Verdict.NOT_THEM, spoof = true)
+                val r = risk(RiskLevel.SCAM, ScamType.FAMILY_EMERGENCY, "family_emergency", "money_ask", "urgency", sources = setOf(RiskSource.CUES, RiskSource.CALLER_CHECK))
+                _call.value = LiveCall(call, true, true, rahul, c, ListenState.LISTENING, true, r)
+                setScam(c)
+            }
+            Scenario.FAMILY_ALARM -> {
+                val a = FamilyAlarmUi(papa.id, papa.label, ScamType.DIGITAL_ARREST, now)
+                alarm.value = a
+                _events.tryEmit(AppEvent.FamilyAlarm(a.memberId, a.label, a.type, a.at))
+            }
+            Scenario.MODEL_DOWNLOADING -> {
+                _model.value = ModelState(ModelStatus.DOWNLOADING, 0.35f, 30)
+                _call.value = unknown(ListenState.NO_MODEL)
+            }
         }
     }
 
@@ -130,6 +170,9 @@ class FakeRepository(start: Scenario = Scenario.IDLE) : Repository {
         numberMatched = spoof || v == Verdict.VERIFIED, spoofSuspected = spoof, ring = ring,
         createdAt = now - ago, decidedAt = if (v == Verdict.CHECKING) null else now - ago + 2_000,
     )
+
+    private fun risk(level: RiskLevel, type: ScamType, vararg cues: String, sources: Set<RiskSource> = setOf(RiskSource.CUES)) =
+        Risk(level, type, cues.toList(), sources, now)
 
     private fun setScam(c: Check) =
         _home.update { h -> h?.copy(scam = Scam(c.id, c.memberId, c.label, if (c.ring == RingState.NO) "ring_no" else c.verdict.wire, now + 600_000)) }
@@ -222,4 +265,32 @@ class FakeRepository(start: Scenario = Scenario.IDLE) : Repository {
 
     override fun request(permission: Permission, activity: ComponentActivity) =
         _permissions.update { Permissions(it.granted + permission) }
+
+    override suspend fun downloadModels() {
+        for (i in 1..10) {
+            _model.value = ModelState(ModelStatus.DOWNLOADING, i / 10f, 30)
+            delay(200)
+        }
+        _model.value = ModelState(ModelStatus.READY, 1f, 30)
+    }
+
+    override suspend fun setListening(listenCalls: Boolean?, strongerCheck: Boolean?, smsFallback: Boolean?): Me {
+        val h = _home.value ?: error("Not signed in.")
+        val m = h.me.copy(
+            listenCalls = listenCalls ?: h.me.listenCalls,
+            strongerCheck = strongerCheck ?: h.me.strongerCheck,
+            smsFallback = smsFallback ?: h.me.smsFallback,
+        )
+        _home.value = h.copy(me = m)
+        return m
+    }
+
+    override suspend fun alertFamily() {
+        delay(300)
+        _call.update { c ->
+            c?.copy(risk = Risk(RiskLevel.SCAM, c.risk?.type ?: ScamType.UNKNOWN, c.risk?.cues.orEmpty(), (c.risk?.sources.orEmpty()) + RiskSource.USER, now))
+        }
+    }
+
+    override fun messageMember(memberId: String) {}
 }

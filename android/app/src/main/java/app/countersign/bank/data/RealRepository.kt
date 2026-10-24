@@ -266,6 +266,8 @@ class RealRepository(private val app: Application) : Repository {
             Permission.USAGE_ACCESS -> open(Settings.ACTION_USAGE_ACCESS_SETTINGS, null)
             Permission.FULL_SCREEN -> if (Build.VERSION.SDK_INT >= 34) open(Settings.ACTION_MANAGE_APP_USE_FULL_SCREEN_INTENT)
             Permission.BATTERY -> open(Settings.ACTION_REQUEST_IGNORE_BATTERY_OPTIMIZATIONS)
+            // added by the call-listener contract change; agent C implements these
+            Permission.OUTGOING_CALLS, Permission.MICROPHONE, Permission.ACCESSIBILITY, Permission.SMS -> {}
         }
     }
 
