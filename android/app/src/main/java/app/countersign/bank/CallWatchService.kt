@@ -63,6 +63,7 @@ class CallWatchService : Service() {
         }
         watchCalls()
         real?.connect()
+        Overlay.start(this)
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int = START_STICKY
@@ -72,6 +73,7 @@ class CallWatchService : Service() {
         phoneCallback?.let { phone.unregisterTelephonyCallback(it) }
         modeListener?.let { audio.removeOnModeChangedListener(it) }
         real?.disconnect()
+        Overlay.stop(this)
         super.onDestroy()
     }
 

@@ -24,6 +24,7 @@ import app.countersign.bank.ApiError
 import app.countersign.bank.Bus
 import app.countersign.bank.CallWatchService
 import app.countersign.bank.DeviceKey
+import app.countersign.bank.ListenService
 import app.countersign.bank.Notify
 import app.countersign.bank.Prefs
 import app.countersign.bank.Ringer
@@ -82,6 +83,7 @@ class RealRepository(private val app: Application) : Repository {
             override fun onActivityDestroyed(activity: Activity) {}
         })
         if (Prefs.signedIn) scope.launch { runCatching { refresh() } }
+        scope.launch { ListenService.onSpeaker.collect { refreshListen() } }
     }
 
     // ------------------------------------------------------------------ account
@@ -186,6 +188,46 @@ class RealRepository(private val app: Application) : Repository {
     /** The phone's own call, from [CallWatchService]: null when it ends. */
     fun setCall(c: LiveCall?) {
         _call.value = c?.copy(check = c.check ?: _call.value?.takeIf { it.id == c.id }?.check)
+        refreshListen()
+    }
+
+    /**
+     * True once something can make sense of the call's audio: the on-phone speech model (#42) or
+     * the stronger check's socket (#39). Until then the listener says NO_MODEL, not LISTENING.
+     */
+    @Volatile var analysisReady = false
+        set(v) {
+            field = v
+            refreshListen()
+        }
+
+    /** [LiveCall.listen] and [LiveCall.onSpeaker], from the permissions, the user's setting and the speaker. */
+    private fun refreshListen() {
+        val speaker = ListenService.onSpeaker.value
+        val p = _permissions.value.granted
+        _call.update { c ->
+            c?.copy(
+                onSpeaker = speaker,
+                listen = when {
+                    _home.value?.me?.listenCalls == false -> ListenState.OFF
+                    Permission.MICROPHONE !in p || Permission.ACCESSIBILITY !in p -> ListenState.NO_PERMISSION
+                    !analysisReady && modelState.value.status != ModelStatus.READY -> ListenState.NO_MODEL
+                    !speaker -> ListenState.NEED_SPEAKER
+                    else -> ListenState.LISTENING
+                },
+            )
+        }
+    }
+
+    override suspend fun setListening(listenCalls: Boolean?, strongerCheck: Boolean?, smsFallback: Boolean?): Me {
+        val body = JSONObject()
+        listenCalls?.let { body.put("listen_calls", it) }
+        strongerCheck?.let { body.put("stronger_check", it) }
+        smsFallback?.let { body.put("sms_fallback", it) }
+        val me = parseMe(Api.post("/api/m/prefs", body).let { it.obj("me") ?: it })
+        _home.update { it?.copy(me = me) }
+        refreshListen()
+        return me
     }
 
     // This phone's calls, from CallWatchService: sent one at a time, in order, each saying how long it waited.
@@ -266,6 +308,9 @@ class RealRepository(private val app: Application) : Repository {
             if (role(RoleManager.ROLE_CALL_SCREENING)) add(Permission.CALL_SCREENING)
             @Suppress("DEPRECATION")
             if (has(Manifest.permission.PROCESS_OUTGOING_CALLS)) add(Permission.OUTGOING_CALLS)
+            if (has(Manifest.permission.RECORD_AUDIO)) add(Permission.MICROPHONE)
+            if (ListenService.enabled(app)) add(Permission.ACCESSIBILITY)
+            if (has(Manifest.permission.SEND_SMS)) add(Permission.SMS)
             if (app.getSystemService(NotificationManager::class.java).areNotificationsEnabled()) add(Permission.NOTIFICATIONS)
             if (Settings.canDrawOverlays(app)) add(Permission.OVERLAY)
             if (ops.unsafeCheckOpNoThrow(AppOpsManager.OPSTR_GET_USAGE_STATS, android.os.Process.myUid(), app.packageName) == AppOpsManager.MODE_ALLOWED) {
@@ -275,6 +320,7 @@ class RealRepository(private val app: Application) : Repository {
             if (app.getSystemService(PowerManager::class.java).isIgnoringBatteryOptimizations(app.packageName)) add(Permission.BATTERY)
         }
         _permissions.value = Permissions(granted)
+        refreshListen()
     }
 
     @Suppress("DEPRECATION") // startActivityForResult: the result is read on resume, not from the callback
@@ -314,8 +360,10 @@ class RealRepository(private val app: Application) : Repository {
             Permission.USAGE_ACCESS -> open(Settings.ACTION_USAGE_ACCESS_SETTINGS, null)
             Permission.FULL_SCREEN -> if (Build.VERSION.SDK_INT >= 34) open(Settings.ACTION_MANAGE_APP_USE_FULL_SCREEN_INTENT)
             Permission.BATTERY -> open(Settings.ACTION_REQUEST_IGNORE_BATTERY_OPTIMIZATIONS)
-            // added by the call-listener contract change; agent C implements these
-            Permission.MICROPHONE, Permission.ACCESSIBILITY, Permission.SMS -> {}
+            Permission.MICROPHONE -> ask(Manifest.permission.RECORD_AUDIO)
+            // Android 13+ greys the switch out for sideloaded apps until "Allow restricted settings" in App info (B shows the steps)
+            Permission.ACCESSIBILITY -> open(Settings.ACTION_ACCESSIBILITY_SETTINGS, null)
+            Permission.SMS -> ask(Manifest.permission.SEND_SMS)
         }
     }
 
@@ -425,6 +473,9 @@ class RealRepository(private val app: Application) : Repository {
         lang = Lang.entries.firstOrNull { it.code == o.optString("lang") } ?: Lang.EN,
         channel = CheckChannel.entries.firstOrNull { it.wire == o.optString("check_channel") } ?: CheckChannel.RING,
         shareCallStatus = o.optBoolean("share_call_status", true),
+        listenCalls = o.optBoolean("listen_calls", true),
+        strongerCheck = o.optBoolean("stronger_check", true),
+        smsFallback = o.optBoolean("sms_fallback", true),
     )
 
     private fun parseMember(o: JSONObject) = Member(

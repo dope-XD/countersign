@@ -91,7 +91,7 @@ object Api {
     suspend fun getArray(path: String): JSONArray = withContext(Dispatchers.IO) {
         http.newCall(request(path).get().build()).execute().use { r ->
             val text = r.body?.string().orEmpty()
-            if (!r.isSuccessful) throw ApiError(errorText(text, r.code), r.code)
+            if (!r.isSuccessful) throw failure(r, text)
             JSONArray(text)
         }
     }
@@ -100,13 +100,24 @@ object Api {
         try {
             http.newCall(b.build()).execute().use { r ->
                 val text = r.body?.string().orEmpty()
-                if (!r.isSuccessful) throw ApiError(errorText(text, r.code), r.code)
+                if (!r.isSuccessful) throw failure(r, text)
                 if (text.isBlank()) JSONObject() else JSONObject(text)
             }
         } catch (e: java.io.IOException) {
             throw ApiError("Can't reach CS Bank. Check your internet connection.", 0)
         }
     }
+
+    /**
+     * An engine error, or, when the answer isn't the engine's JSON (the tunnel's "endpoint offline"
+     * page), the server being unreachable: code 0, so callers retry it like a dropped connection.
+     */
+    private fun failure(r: okhttp3.Response, text: String): ApiError =
+        if (r.header("Content-Type")?.startsWith("application/json") == true) {
+            ApiError(errorText(text, r.code), r.code)
+        } else {
+            ApiError("Can't reach CS Bank right now. Try again in a minute.", 0)
+        }
 
     /** The engine answers errors as {"error": "..."} or FastAPI's {"detail": "..." | [{"msg": ...}]}. */
     private fun errorText(text: String, code: Int): String = try {
