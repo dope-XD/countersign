@@ -33,10 +33,23 @@ def test_importing_the_relay_loads_no_ml():
 
 
 def test_health_and_model_pack(relay):
-    h = relay.get("/health").json()
-    assert h["ok"] and h["analysis"] == "on the phone"
+    r = relay.get("/health")
+    h = r.json()
+    assert r.status_code == 200 and h["ok"] and h["analysis"] == "on the phone"
+    assert h["db"] in ("sqlite", "postgres")
     pack = relay.get("/api/m/models").json()[0]
     assert pack["url"].startswith("https://") and "voice" in pack["parts"]
+
+
+def test_health_is_503_when_the_database_is_down(relay, monkeypatch):
+    from engine import relay as relay_mod
+
+    def broken(*_a, **_k):
+        raise RuntimeError("database gone")
+
+    monkeypatch.setattr(relay_mod.db, "query", broken)
+    r = relay.get("/health")
+    assert r.status_code == 503 and r.json()["ok"] is False
 
 
 def test_scam_alarm_then_not_a_scam_reaches_the_family_over_the_socket(mom_son):
