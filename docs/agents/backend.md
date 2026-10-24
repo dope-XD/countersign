@@ -10,7 +10,7 @@ You own the engine, the contract, the docs and CI, and you are the only one who 
 ## Order
 
 1. Phase 0 (done once): briefs, contract, fakes, GitHub labels, issues, Standup, CI, dev server.
-2. `engine/calls.py`:
+2. `engine/callcheck.py` (done, #1):
    - the event ring (in memory, 30-minute TTL) and verdicts (`CONTRACT.md`);
    - `call-event`, `checks`, `checks/{id}/ring` (kind `call_check`), `scam/dismiss`;
    - scam context, the `IMPERSONATION_CALL` case, `spoof_alert`;

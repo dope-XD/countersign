@@ -105,9 +105,9 @@ The user pressed "I understand" on the pay guard. → `{"scam": null}`. The pay 
 
 `Scam`:
 ```json
-{"check_id": "chk_91af", "label": "Rahul", "reason": "not_them", "until": 1761300700.0}
+{"check_id": "chk_91af", "member": "c_cd34", "label": "Rahul", "reason": "not_them", "until": 1761300700.0}
 ```
-It's on from a ✗ verdict or a ring "No" until 10 minutes after the call ends, or until dismissed. While it's on, the app shows the pay guard over payment apps.
+`reason` is `not_them`, `not_with_you` or `ring_no`. It's on from a ✗ verdict or a ring "No" until 10 minutes after the call ends, or until dismissed. While it's on, the app shows the pay guard over payment apps.
 
 ## Approvals (the ring screen)
 

@@ -132,7 +132,7 @@ class FakeRepository(start: Scenario = Scenario.IDLE) : Repository {
     )
 
     private fun setScam(c: Check) =
-        _home.update { h -> h?.copy(scam = Scam(c.id, c.memberId, c.label, c.verdict, now + 600_000)) }
+        _home.update { h -> h?.copy(scam = Scam(c.id, c.memberId, c.label, if (c.ring == RingState.NO) "ring_no" else c.verdict.wire, now + 600_000)) }
 
     private fun member(id: String) = family.firstOrNull { it.id == id } ?: error("Not in your family.")
 
