@@ -1,0 +1,21 @@
+{
+  "version": 1,
+  "about": "Our scam classifier (engine/listener/classifier.py, data/listen/ScamClassifier.kt): hashed char 2-5 + word 1-2 grams, logistic regression. Trained by ml/listener_clf.py.",
+  "dim": 262144,
+  "ngram_min": 2,
+  "ngram_max": 5,
+  "bias": -7.4534219735480685,
+  "min_words_call": 25,
+  "min_words_text": 5,
+  "C": 64.0,
+  "trained_on": [
+    "bothbosu",
+    "hinglish_calls",
+    "india_sms",
+    "team_synth"
+  ],
+  "train_rows": 3922,
+  "train_rows_with_copies": 9987,
+  "seed": 13,
+  "sha256": "69e278d2cdd1e4991d9a4a4eae2f8bf44b4dc6ee73b5d0849b46fa182fab7f9c"
+}

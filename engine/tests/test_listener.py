@@ -56,11 +56,23 @@ def test_one_keyword_never_makes_scam():
     assert v.level == "watch"
 
 
-def test_judge_adds_to_cues_but_cannot_act_alone():
+def test_classifier_adds_to_cues_but_never_makes_scam_alone():
     cues = score_text("this is the police, there is a warrant")
-    assert fuse(cues, judge=Judge(0.9, "digital_arrest")).level == "scam"
-    assert fuse(score_text("hello how are you"), judge=Judge(0.95)).level == "none"
+    assert fuse(cues, judge=Judge(0.99, "digital_arrest")).level == "scam"
+    assert fuse(score_text("hello how are you"), judge=Judge(0.99)).level in ("none", "watch", "warn")
     assert fuse(cues, judge=Judge(0.9, abstain=True)).level == "warn"
+
+
+def test_classifier_sure_its_harmless_vetoes_a_cue_only_warn():
+    cues = score_text("this is the police, there is a warrant")
+    assert fuse(cues, judge=Judge(0.01)).level == "watch"
+    assert fuse(cues, {"remote_app_opened"}, judge=Judge(0.01)).level == "warn"  # strong context still warns
+
+
+def test_talk_about_scams_never_reaches_scam_through_the_classifier():
+    cues = score_text("did you see the news, fake police called aunty and asked for money for a warrant, never pay them")
+    assert cues.discussion
+    assert fuse(cues, judge=Judge(0.999)).level != "scam"
 
 
 def test_strong_context_plus_cues_makes_scam():

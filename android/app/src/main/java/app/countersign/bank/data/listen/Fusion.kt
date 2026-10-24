@@ -37,6 +37,7 @@ class FusionConfig(private val f: JSONObject) {
     val warnMinStrong = w.getInt("min_strong")
     val warnClfP = w.getDouble("clf_p")
     val warnClfMinCats = w.getInt("clf_min_categories")
+    val warnClfVetoBelow = w.getDouble("clf_veto_below")
     val warnContextAlone = list(w, "context_alone")
     private val s = f.getJSONObject("scam")
     val scamCuesMin = s.getInt("cues_min_categories")
@@ -45,6 +46,7 @@ class FusionConfig(private val f: JSONObject) {
     val scamDiscussionBlocks = s.getBoolean("discussion_blocks_cues")
     val scamClfP = s.getDouble("clf_p")
     val scamClfMinCats = s.getInt("clf_min_categories")
+    val scamClfNeedsCueWarn = s.getBoolean("clf_needs_cue_warn")
     val strongContext = list(s, "strong_context")
     val contextAsCategory = list(f, "context_as_category")
     val trustedContext = list(f, "trusted_context")
@@ -78,7 +80,8 @@ fun fuse(
         sources += "cues"
     }
 
-    val warnCues = strong.size >= f.warnMinStrong + extra
+    val vetoed = j != null && j.pScam < f.warnClfVetoBelow // the classifier is sure it's harmless
+    val warnCues = strong.size >= f.warnMinStrong + extra && !vetoed
     val warnClf = j != null && j.pScam >= f.warnClfP && cats.size >= f.warnClfMinCats
     val warnCtx = context intersect f.warnContextAlone
     if (warnCues || warnClf || warnCtx.isNotEmpty()) {
@@ -93,7 +96,9 @@ fun fuse(
         (!f.scamCuesNeedAction || (cats intersect rules.action).isNotEmpty()) &&
         (!f.scamCuesNeedType || cues.type != "unknown") &&
         !(f.scamDiscussionBlocks && cues.discussion)
-    val scamClf = j != null && j.pScam >= f.scamClfP && cats.size >= f.scamClfMinCats
+    val scamClf = j != null && j.pScam >= f.scamClfP && cats.size >= f.scamClfMinCats &&
+        (!f.scamClfNeedsCueWarn || warnCues) &&
+        !(f.scamDiscussionBlocks && cues.discussion)
     val strongCtx = context intersect f.strongContext
     // two independent kinds of evidence: what was said (cues or the classifier) and what the phone saw
     val scamCtx = strongCtx.isNotEmpty() && (warnCues || warnClf)
