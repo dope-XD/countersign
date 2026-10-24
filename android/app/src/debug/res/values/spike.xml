@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="spike_label" translatable="false">CS Bank listen test (team only)</string>
+    <string name="spike_about" translatable="false">Team test build: during a call, records 20 s from each microphone source to this phone, to see which one hears the caller. Only use it on calls between consenting team members.</string>
+</resources>
