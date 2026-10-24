@@ -37,10 +37,9 @@ def blame_counts(path: str, after: int) -> tuple[int, int]:
     for line in out.splitlines():
         if line.startswith("author-time "):
             t = int(line.split()[1])
-        elif line.startswith("\t"):
-            if line[1:].strip():
-                total += 1
-                new += t > after
+        elif line.startswith("\t") and line[1:].strip():
+            total += 1
+            new += t > after
     return total, new
 
 

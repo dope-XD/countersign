@@ -60,4 +60,25 @@ The Round 1 prototype (a bank-side voice engine on a laptop GPU) is everything u
 [`check-in`](https://github.com/dope-XD/countersign/releases/tag/check-in) tag. What we declared, and what was built,
 changed or cut on site: [docs/DISCLOSURE.md](docs/DISCLOSURE.md) and [docs/PLAN_VS_BUILT.md](docs/PLAN_VS_BUILT.md).
 
-ONSITE_SHARE
+Measured at 7f804d6 2026-10-24 20:27:49 +0530 with `python tools/onsite_share.py` (non-blank lines, `git blame`, after tag `check-in`):
+
+| Kind | Folder | Lines | Written at the finale |
+|---|---|---:|---:|
+| code | **all** | 24802 | 61% (15039) |
+| code | android | 9811 | 99% (9698) |
+| code | engine | 6528 | 40% (2579) |
+| code | ml | 4590 | 53% (2427) |
+| code | web | 2266 | 8% (187) |
+| code | integrations | 1320 | 0% (0) |
+| code | (root) | 100 | 34% (34) |
+| code | deploy | 74 | 1% (1) |
+| code | tools | 65 | 100% (65) |
+| code | .github | 48 | 100% (48) |
+| docs | **all** | 1454 | 72% (1043) |
+| docs | docs | 1115 | 84% (939) |
+| docs | integrations | 177 | 0% (0) |
+| docs | (root) | 70 | 96% (67) |
+| docs | deploy | 38 | 13% (5) |
+| docs | android | 33 | 73% (24) |
+| docs | web | 13 | 0% (0) |
+| docs | .github | 8 | 100% (8) |
