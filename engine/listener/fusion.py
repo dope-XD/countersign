@@ -61,7 +61,8 @@ def fuse(
         sources.add("cues")
 
     w = f["warn"]
-    warn_cues = len(strong) >= w["min_strong"] + extra
+    vetoed = bool(j and j.p_scam < w["clf_veto_below"])  # the classifier is sure it's harmless
+    warn_cues = len(strong) >= w["min_strong"] + extra and not vetoed
     warn_clf = bool(j and j.p_scam >= w["clf_p"] and len(cats) >= w["clf_min_categories"])
     warn_ctx = set(context) & set(w["context_alone"])
     if warn_cues or warn_clf or warn_ctx:
@@ -82,7 +83,11 @@ def fuse(
         and (not s["cues_need_type"] or cues.type != "unknown")
         and not (s["discussion_blocks_cues"] and cues.discussion)
     )
-    scam_clf = bool(j and j.p_scam >= s["clf_p"] and len(cats) >= s["clf_min_categories"])
+    scam_clf = (
+        bool(j and j.p_scam >= s["clf_p"] and len(cats) >= s["clf_min_categories"])
+        and (not s["clf_needs_cue_warn"] or warn_cues)
+        and not (s["discussion_blocks_cues"] and cues.discussion)
+    )
     strong_ctx = set(context) & set(s["strong_context"])
     # two independent kinds of evidence: what was said (cues or the classifier) and what the phone saw
     scam_ctx = bool(strong_ctx) and (warn_cues or warn_clf)
