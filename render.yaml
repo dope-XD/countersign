@@ -1,0 +1,16 @@
+# Render blueprint for the relay (engine/relay.py): render.com → New → Blueprint → this repository.
+# Free plan: it sleeps after 15 idle minutes and takes ~1 minute to wake (docs/DEPLOY.md).
+services:
+  - type: web
+    name: countersign-relay
+    runtime: docker
+    dockerfilePath: ./Dockerfile.relay
+    plan: free
+    region: singapore
+    healthCheckPath: /health
+    autoDeploy: true
+    envVars:
+      - key: COUNTERSIGN_ALLOW_TEST_NUMBERS
+        value: "1"
+      - key: COUNTERSIGN_STAFF_PIN
+        generateValue: true

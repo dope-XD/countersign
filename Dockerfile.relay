@@ -1,0 +1,12 @@
+# The Countersign relay for Hugging Face Spaces (Docker SDK, free CPU) or Render. No ML runs here.
+FROM python:3.12-slim
+RUN useradd -m -u 1000 user
+WORKDIR /app
+COPY requirements-relay.txt .
+RUN pip install --no-cache-dir -r requirements-relay.txt
+COPY --chown=user engine ./engine
+COPY --chown=user models/metrics.json ./models/metrics.json
+USER user
+ENV COUNTERSIGN_RUNTIME=/tmp/countersign COUNTERSIGN_DATA=/tmp/countersign COUNTERSIGN_ALLOW_TEST_NUMBERS=1 PYTHONUNBUFFERED=1
+EXPOSE 7860
+CMD ["sh", "-c", "uvicorn engine.relay:app --host 0.0.0.0 --port ${PORT:-7860} --proxy-headers --forwarded-allow-ips '*'"]
