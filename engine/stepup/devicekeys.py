@@ -17,7 +17,6 @@ import binascii
 import hashlib
 import json
 import os
-import sqlite3
 import time
 
 from cryptography.exceptions import InvalidSignature
@@ -85,7 +84,7 @@ def register_device(customer_id: str, public_key_b64: str, label: str) -> dict:
                 "kind": "device_key",
             },
         )
-    except sqlite3.IntegrityError as e:
+    except db.IntegrityError as e:
         raise StepUpError("this phone is already registered") from e
     db.audit(customer_id, "device_registered", did, device=label[:80])
     return {"device_id": did}

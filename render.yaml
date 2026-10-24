@@ -14,3 +14,9 @@ services:
         value: "1"
       - key: COUNTERSIGN_STAFF_PIN
         generateValue: true
+      # signs the phones' tokens: kept by Render, so a restart doesn't sign every phone out
+      - key: COUNTERSIGN_SECRET
+        generateValue: true
+      # Supabase → Connect → Session pooler connection string; Render asks for it (never in git)
+      - key: DATABASE_URL
+        sync: false
