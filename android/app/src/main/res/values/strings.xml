@@ -106,4 +106,38 @@
     <string name="history_safe">It was really them</string>
     <string name="history_danger">It wasn\'t them</string>
     <string name="history_pending">Checking…</string>
+    <!-- Add family, Member, Settings -->
+    <string name="action_done">Done</string>
+    <string name="add_choose_line">Both of you need the app. One shows a code, the other scans it.</string>
+    <string name="add_show_code">Show my code</string>
+    <string name="add_scan_code">Scan their code</string>
+    <string name="add_type_instead">Type their code instead</string>
+    <string name="add_scan_failed">That wasn\'t a family code. Try again, or type the numbers.</string>
+    <string name="add_show_line">Ask them to scan this, or type the numbers.</string>
+    <string name="add_qr_description">Your family code</string>
+    <plurals name="add_code_lasts">
+        <item quantity="one">This code works for %d more minute.</item>
+        <item quantity="other">This code works for %d more minutes.</item>
+    </plurals>
+    <string name="add_show_after">When they\'ve joined, you\'ll see them on Home to accept.</string>
+    <string name="add_type_label">Their 6-digit code</string>
+    <string name="add_waiting">Waiting for them to accept…</string>
+    <string name="add_waiting_line">They\'ll see your request on their phone.</string>
+    <string name="member_online">Online now</string>
+    <string name="member_offline">Not online</string>
+    <string name="member_new_link">Joined today. Checks become “really them” after a day.</string>
+    <string name="member_remove">Remove from family</string>
+    <string name="member_remove_title">Remove %1$s?</string>
+    <string name="member_remove_line">You won\'t be able to check their calls, and they won\'t be able to check yours.</string>
+    <string name="member_remove_yes">Remove</string>
+    <string name="settings_channel">When family checks with you</string>
+    <string name="settings_channel_ring">Ring, like a call</string>
+    <string name="settings_channel_notify">Show a notification</string>
+    <string name="settings_share">Share when I\'m on a call</string>
+    <string name="settings_share_why">Family checks need this to see it\'s really you calling.</string>
+    <string name="settings_permissions">Permissions</string>
+    <string name="settings_all_allowed">All allowed</string>
+    <string name="settings_sign_out">Sign out</string>
+    <string name="settings_sign_out_title">Sign out of this phone?</string>
+    <string name="settings_sign_out_line">Your family can\'t check your calls until you sign in again.</string>
 </resources>

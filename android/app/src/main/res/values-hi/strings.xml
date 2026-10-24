@@ -93,4 +93,37 @@
     <string name="history_safe">सच में वही थे</string>
     <string name="history_danger">वो नहीं थे</string>
     <string name="history_pending">जाँच हो रही है…</string>
+    <string name="action_done">हो गया</string>
+    <string name="add_choose_line">आप दोनों के पास ऐप होना चाहिए। एक कोड दिखाए, दूसरा उसे स्कैन करे।</string>
+    <string name="add_show_code">मेरा कोड दिखाएँ</string>
+    <string name="add_scan_code">उनका कोड स्कैन करें</string>
+    <string name="add_type_instead">कोड टाइप करें</string>
+    <string name="add_scan_failed">यह परिवार का कोड नहीं था। फिर से कोशिश करें, या नंबर टाइप करें।</string>
+    <string name="add_show_line">उनसे इसे स्कैन करने को कहें, या नंबर टाइप करने को।</string>
+    <string name="add_qr_description">आपका परिवार कोड</string>
+    <plurals name="add_code_lasts">
+        <item quantity="one">यह कोड %d मिनट और चलेगा।</item>
+        <item quantity="other">यह कोड %d मिनट और चलेगा।</item>
+    </plurals>
+    <string name="add_show_after">उनके जुड़ने पर, आप होम पर उन्हें स्वीकार कर पाएँगे।</string>
+    <string name="add_type_label">उनका 6 अंकों का कोड</string>
+    <string name="add_waiting">उनके हाँ कहने का इंतज़ार…</string>
+    <string name="add_waiting_line">उन्हें अपने फ़ोन पर आपका अनुरोध दिखेगा।</string>
+    <string name="member_online">अभी ऑनलाइन</string>
+    <string name="member_offline">ऑनलाइन नहीं</string>
+    <string name="member_new_link">आज जुड़े हैं। एक दिन बाद जाँच में “सच में वही” दिखेगा।</string>
+    <string name="member_remove">परिवार से हटाएँ</string>
+    <string name="member_remove_title">%1$s को हटाएँ?</string>
+    <string name="member_remove_line">फिर आप उनकी कॉल नहीं जाँच पाएँगे, और वे आपकी नहीं।</string>
+    <string name="member_remove_yes">हटाएँ</string>
+    <string name="settings_channel">जब परिवार आपसे जाँच करे</string>
+    <string name="settings_channel_ring">कॉल की तरह घंटी बजे</string>
+    <string name="settings_channel_notify">सूचना दिखे</string>
+    <string name="settings_share">कॉल पर होने की जानकारी दें</string>
+    <string name="settings_share_why">इससे परिवार की जाँच में पता चलता है कि कॉल सच में आप कर रहे हैं।</string>
+    <string name="settings_permissions">अनुमतियाँ</string>
+    <string name="settings_all_allowed">सब अनुमतियाँ दी गई हैं</string>
+    <string name="settings_sign_out">साइन आउट करें</string>
+    <string name="settings_sign_out_title">इस फ़ोन से साइन आउट करें?</string>
+    <string name="settings_sign_out_line">जब तक आप फिर से साइन इन नहीं करते, परिवार आपकी कॉल नहीं जाँच पाएगा।</string>
 </resources>

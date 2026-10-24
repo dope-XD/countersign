@@ -1,6 +1,7 @@
 package app.countersign.bank.ui
 
 import android.content.Intent
+import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -42,6 +43,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -65,6 +67,7 @@ import app.countersign.bank.Prefs
 import app.countersign.bank.data.FakeRepository
 import app.countersign.bank.data.Repo
 import app.countersign.bank.data.Scenario
+import app.countersign.bank.ui.components.familyColours
 import app.countersign.bank.inr
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
@@ -101,10 +104,39 @@ fun AppRoot(activity: MainActivity) {
     val signedIn by repo.signedIn.collectAsState()
     // set up already when the app opens signed in; otherwise setup runs to its end, permissions included
     var setUp by remember { mutableStateOf(repo.signedIn.value && Language.chosen(activity)) }
+    if (!signedIn || !setUp) {
+        SetupFlow(repo) { setUp = true }
+        return
+    }
+
+    // Home, and one level below it: "add", "settings", "member:<id>" (History arrives with #13)
+    var screen by rememberSaveable { mutableStateOf("home") }
+    val home by repo.home.collectAsState()
+    val scope = rememberCoroutineScope()
+    val goHome = { screen = "home" }
+    // a scanned csbank://family link opens Add family with the code filled in
+    LaunchedEffect(activity.inviteCode) { if (activity.inviteCode != null) screen = "add" }
+    BackHandler(screen != "home", goHome)
+
     when {
-        !signedIn || !setUp -> SetupFlow(repo) { setUp = true }
-        // Add family, Member, Settings and History arrive with #12 and #13
-        else -> HomeScreen(repo, onAddFamily = {}, onMember = {}, onSettings = {}, onHistory = {})
+        screen == "add" -> AddFamilyScreen(repo, activity.inviteCode) {
+            activity.inviteCode = null
+            goHome()
+        }
+        screen == "settings" -> SettingsScreen(repo, goHome)
+        screen.startsWith("member:") -> {
+            val family = home?.family.orEmpty()
+            val member = family.firstOrNull { it.id == screen.removePrefix("member:") }
+            if (member == null) {
+                LaunchedEffect(Unit) { goHome() }
+            } else {
+                MemberScreen(member, familyColours(family).getValue(member.id), onRemove = {
+                    scope.launch { runCatching { repo.removeMember(member.id) } }
+                    goHome()
+                }, onBack = goHome)
+            }
+        }
+        else -> HomeScreen(repo, onAddFamily = { screen = "add" }, onMember = { screen = "member:$it" }, onSettings = { screen = "settings" }, onHistory = {})
     }
 }
 

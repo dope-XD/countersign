@@ -46,9 +46,20 @@ private val FaceColours = listOf(
  */
 fun faceColour(key: String): Color = FaceColours[Math.floorMod(key.hashCode(), FaceColours.size)]
 
-/** A different colour for each member, in the order they joined, so a family of up to 6 never repeats one. */
-fun familyColours(family: List<Member>): Map<String, Color> =
-    family.sortedWith(compareBy({ it.since }, { it.id })).mapIndexed { i, m -> m.id to FaceColours[i % FaceColours.size] }.toMap()
+/**
+ * A different colour for each member, so a family of up to 6 never repeats one. Each keeps its own [faceColour]
+ * unless someone who joined earlier already has it; then it takes the next free one. So removing someone only
+ * moves the few who had clashed with them, and most faces match the ones shown without the family.
+ */
+fun familyColours(family: List<Member>): Map<String, Color> {
+    val taken = mutableSetOf<Int>()
+    return family.sortedWith(compareBy({ it.since }, { it.id })).associate { m ->
+        var i = Math.floorMod(m.id.hashCode(), FaceColours.size)
+        if (taken.size < FaceColours.size) while (i in taken) i = (i + 1) % FaceColours.size
+        taken += i
+        m.id to FaceColours[i]
+    }
+}
 
 /** "Rahul Sharma" → "RS", "Mummy" → "M", "राहुल" → "र". */
 fun initials(name: String): String =
