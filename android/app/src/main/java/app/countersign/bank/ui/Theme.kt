@@ -14,25 +14,58 @@ import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
+import androidx.compose.material3.Typography
 import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 
+// Every text colour here is at least 4.5:1 on the background it's used on (WCAG AA):
+// Green on white 5.4, on GreenSoft 4.7; Red 6.5 / 5.4; Grey 7.6 / 6.6; Muted on Paper 5.1.
 val Brand = Color(0xFF0B5CAD)
 val Ink = Color(0xFF14202B)
 val Muted = Color(0xFF5B6B79)
 val Paper = Color(0xFFF4F6F8)
+val Line = Color(0xFFD5DBE1)
 val Green = Color(0xFF137A3F)
 val GreenSoft = Color(0xFFE3F4E9)
 val Amber = Color(0xFF9A5B00)
 val AmberSoft = Color(0xFFFFF1D6)
 val Red = Color(0xFFB3261E)
 val RedSoft = Color(0xFFFCE4E2)
+val Grey = Color(0xFF4A5560)
+val GreySoft = Color(0xFFECEFF2)
+
+/** Tap targets: every main button is at least this tall. */
+val ButtonHeight = 56.dp
+
+// Large on purpose: the people we protect are often older and read without glasses.
+// Nothing is smaller than 18 sp, and headings are 26 sp or more.
+private val Body = TextStyle(fontSize = 18.sp, lineHeight = 26.sp)
+private val Heading = TextStyle(fontWeight = FontWeight.Bold)
+
+val CsType = Typography(
+    displayLarge = Heading.copy(fontSize = 40.sp, lineHeight = 48.sp),
+    displayMedium = Heading.copy(fontSize = 36.sp, lineHeight = 44.sp),
+    displaySmall = Heading.copy(fontSize = 32.sp, lineHeight = 40.sp),
+    headlineLarge = Heading.copy(fontSize = 30.sp, lineHeight = 38.sp),
+    headlineMedium = Heading.copy(fontSize = 28.sp, lineHeight = 36.sp),
+    headlineSmall = Heading.copy(fontSize = 26.sp, lineHeight = 34.sp),
+    titleLarge = Heading.copy(fontSize = 26.sp, lineHeight = 34.sp),
+    titleMedium = TextStyle(fontWeight = FontWeight.SemiBold, fontSize = 22.sp, lineHeight = 30.sp),
+    titleSmall = TextStyle(fontWeight = FontWeight.SemiBold, fontSize = 20.sp, lineHeight = 28.sp),
+    bodyLarge = Body.copy(fontSize = 20.sp, lineHeight = 28.sp),
+    bodyMedium = Body,
+    bodySmall = Body,
+    labelLarge = TextStyle(fontWeight = FontWeight.SemiBold, fontSize = 20.sp, lineHeight = 26.sp),
+    labelMedium = TextStyle(fontWeight = FontWeight.SemiBold, fontSize = 18.sp, lineHeight = 24.sp),
+    labelSmall = TextStyle(fontWeight = FontWeight.Medium, fontSize = 18.sp, lineHeight = 24.sp),
+)
 
 @Composable
 fun CsTheme(content: @Composable () -> Unit) {
@@ -42,10 +75,14 @@ fun CsTheme(content: @Composable () -> Unit) {
             onPrimary = Color.White,
             secondary = Ink,
             background = Paper,
+            onBackground = Ink,
             surface = Color.White,
             onSurface = Ink,
+            onSurfaceVariant = Muted,
+            outline = Line,
             error = Red,
         ),
+        typography = CsType,
         content = content,
     )
 }
@@ -101,7 +138,7 @@ fun Section(title: String, modifier: Modifier = Modifier, content: @Composable (
     }
 }
 
-/** A round face with initials, for family members. */
+/** A round face with initials, for family members. The bank screens' version; new screens use components.FaceCircle. */
 @Composable
 fun Face(label: String, size: Int = 44, color: Color = Brand) {
     Box(Modifier.size(size.dp).background(color.copy(alpha = 0.12f), CircleShape), contentAlignment = Alignment.Center) {

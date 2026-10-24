@@ -1,4 +1,33 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="app_name">CS Bank</string>
+    <string name="app_name" translatable="false">CS Bank</string>
+
+    <!-- Language: each name is written in its own language, the same in every locale -->
+    <string name="language_title">Choose your language</string>
+    <string name="language_setting">Language</string>
+    <string name="language_english" translatable="false">English</string>
+    <string name="language_hindi" translatable="false">हिंदी</string>
+
+    <!-- Call check verdicts (VerdictChip). %1$s is what this phone calls the member: "Rahul", "Mummy" -->
+    <string name="verdict_checking">Checking %1$s…</string>
+    <string name="verdict_verified">Really %1$s</string>
+    <string name="verdict_likely">%1$s\'s phone</string>
+    <string name="verdict_not_them">Not %1$s\'s phone</string>
+    <string name="verdict_cant_reach">Couldn\'t check</string>
+    <string name="verdict_spoof">Caller ID may be faked</string>
+
+    <!-- Family faces, read out by TalkBack -->
+    <string name="face_online">online</string>
+    <string name="face_offline">not online</string>
+
+    <!-- Common buttons -->
+    <string name="action_ok">OK</string>
+    <string name="action_cancel">Cancel</string>
+    <string name="action_close">Close</string>
+    <string name="action_back">Back</string>
+    <string name="action_allow">Allow</string>
+    <string name="action_skip">Skip</string>
+    <string name="action_call">Call</string>
+    <string name="action_yes_its_me">Yes, it\'s me</string>
+    <string name="action_no_not_me">No, not me</string>
 </resources>
