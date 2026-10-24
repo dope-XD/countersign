@@ -47,8 +47,10 @@ def fuse(
     judge: Judge | None = None,
     user: bool = False,
     prev: str = "none",
+    cfg: dict | None = None,
 ) -> Verdict:
-    f, r = config(), rules()
+    """[cfg]: fusion settings to use instead of fusion.json (the eval's leave-one-dataset-out runs)."""
+    f, r = cfg or config(), rules()
     cats = (set(cues.categories) - {"discussion"}) | (set(context) & set(f["context_as_category"]))
     strong = cats - r.weak
     extra = f["trusted_extra"] if set(context) & set(f["trusted_context"]) else 0

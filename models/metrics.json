@@ -1,1176 +1,2945 @@
 {
-  "generated_at": "2026-10-22T19:50:59",
-  "model": {
-    "s1": "add-wav2vec-large+add-xls-r-1b",
-    "fusion": "default weights"
+  "generated_at": "2026-10-24T19:57:08+0530",
+  "git": "7ee991c",
+  "frozen_at": "2441c18 2026-10-24T19:54:39+05:30",
+  "seed": 13,
+  "machine": "Darwin arm64, Python 3.12.15",
+  "quick": false,
+  "data": "| source | split | scam | harmless |\n|---|---|---:|---:|\n| adversarial | test | 16 | 14 |\n| bothbosu | train | 574 | 583 |\n| bothbosu | dev | 65 | 56 |\n| bothbosu | test | 160 | 160 |\n| hinglish_calls | train | 450 | 77 |\n| hinglish_calls | dev | 59 | 11 |\n| hinglish_calls | test | 124 | 22 |\n| india_sms | train | 994 | 974 |\n| india_sms | dev | 162 | 182 |\n| india_sms | test | 150 | 150 |\n| india_sms | test_other_lang | 550 | 549 |\n| team_calls | test | 15 | 12 |\n| team_synth | train | 84 | 186 |\n| team_synth | dev | 18 | 72 |\n| uci_sms | test | 630 | 2906 |",
+  "classifier": {
+    "version": 1,
+    "dim": 262144,
+    "ngram_min": 2,
+    "ngram_max": 5,
+    "bias": -7.4534219735480685,
+    "min_words_call": 25,
+    "min_words_text": 5,
+    "C": 64.0,
+    "trained_on": [
+      "bothbosu",
+      "hinglish_calls",
+      "india_sms",
+      "team_synth"
+    ],
+    "train_rows": 3922,
+    "train_rows_with_copies": 9987,
+    "seed": 13,
+    "sha256": "69e278d2cdd1e4991d9a4a4eae2f8bf44b4dc6ee73b5d0849b46fa182fab7f9c"
   },
-  "benchmarks": [
-    {
-      "set": "Hindi dev (FLEURS, IndicSynth)",
-      "condition": "g711u",
-      "model": "add-wav2vec-large+add-xls-r-1b",
-      "calibrated": true,
-      "n_bona": 174,
-      "n_spoof": 586,
-      "eer": 0.0,
-      "threshold": 0.793,
-      "detect_at_1pct_far": 1.0,
-      "false_alarm_amber": 0.0057,
-      "detect_amber": 1.0,
-      "false_alarm_red": 0.0,
-      "detect_red": 1.0,
-      "false_alarm_amber_ci": [
-        0.001,
-        0.0318
-      ],
-      "published_eer": null,
-      "seconds": 17.9
+  "fusion": {
+    "version": 2,
+    "about": "How the call listener turns evidence into a level (docs/agents/CONTRACT.md, 'Call listener'). Same logic in data/listen/Fusion.kt and engine/listener/fusion.py. Evidence: cue categories (scam_patterns.json), our scam classifier's p_scam on the transcript ('clf', abstains under ~25 words), context signals from the phone, the voice-clone check (context id 'synthetic_voice': warn at most, never scam on its own) and the user. When the classifier has heard enough and its p_scam is under warn.clf_veto_below, cue words alone don't make 'warn' (a real bank or police call uses the same words). A single model never makes 'scam' on its own: the classifier counts towards 'scam' only when the cue words alone already reach 'warn' (clf_needs_cue_warn) and the call isn't talk about scams. Levels never go down during a call, except when the user says 'Not a scam'. 'strong' = a category that isn't weak; 'discussion' never counts as a category.",
+    "watch": {
+      "min_categories": 1
     },
-    {
-      "set": "Hindi dev (FLEURS, IndicSynth)",
-      "condition": "amrnb_12k2",
-      "model": "add-wav2vec-large+add-xls-r-1b",
-      "calibrated": true,
-      "n_bona": 174,
-      "n_spoof": 586,
-      "eer": 0.0,
-      "threshold": 0.7678,
-      "detect_at_1pct_far": 1.0,
-      "false_alarm_amber": 0.0115,
-      "detect_amber": 1.0,
-      "false_alarm_red": 0.0,
-      "detect_red": 1.0,
-      "false_alarm_amber_ci": [
-        0.0032,
-        0.0409
-      ],
-      "published_eer": null,
-      "seconds": 32.8
+    "warn": {
+      "min_strong": 2,
+      "clf_p": 0.8,
+      "clf_min_categories": 0,
+      "clf_veto_below": 0.3,
+      "context_alone": [
+        "caller_check_failed",
+        "remote_app_opened",
+        "synthetic_voice"
+      ]
     },
-    {
-      "set": "Hindi dev (FLEURS, IndicSynth)",
-      "condition": "g711u+loss+noise",
-      "model": "add-wav2vec-large+add-xls-r-1b",
-      "calibrated": true,
-      "n_bona": 174,
-      "n_spoof": 586,
-      "eer": 0.0803,
-      "threshold": 0.0249,
-      "detect_at_1pct_far": 0.5751,
-      "false_alarm_amber": 0.0172,
-      "detect_amber": 0.6126,
-      "false_alarm_red": 0.0,
-      "detect_red": 0.3549,
-      "false_alarm_amber_ci": [
-        0.0059,
-        0.0495
+    "scam": {
+      "cues_min_categories": 4,
+      "cues_need_action": true,
+      "cues_need_type": true,
+      "discussion_blocks_cues": true,
+      "strong_context": [
+        "remote_app_opened",
+        "caller_check_failed",
+        "video_call_unknown",
+        "international_number"
       ],
-      "published_eer": null,
-      "seconds": 18.0
+      "clf_p": 0.9,
+      "clf_min_categories": 1,
+      "clf_needs_cue_warn": true
     },
-    {
-      "set": "Hindi dev (FLEURS, IndicSynth)",
-      "condition": "amrnb_12k2+loss+noise",
-      "model": "add-wav2vec-large+add-xls-r-1b",
-      "calibrated": true,
-      "n_bona": 174,
-      "n_spoof": 586,
-      "eer": 0.0866,
-      "threshold": 0.0591,
-      "detect_at_1pct_far": 0.6741,
-      "false_alarm_amber": 0.0115,
-      "detect_amber": 0.6604,
-      "false_alarm_red": 0.0,
-      "detect_red": 0.4147,
-      "false_alarm_amber_ci": [
-        0.0032,
-        0.0409
-      ],
-      "published_eer": null,
-      "seconds": 33.6
+    "context_as_category": [
+      "long_call",
+      "international_number",
+      "video_call_unknown"
+    ],
+    "trusted_context": [
+      "caller_verified",
+      "known_contact"
+    ],
+    "trusted_extra": 1
+  },
+  "text": {
+    "sets": {
+      "adversarial": {
+        "cues": {
+          "scams": 16,
+          "harmless": 14,
+          "recall_warn": {
+            "k": 13,
+            "n": 16,
+            "rate": 0.8125,
+            "ci95": [
+              0.5699,
+              0.9341
+            ]
+          },
+          "recall_scam": {
+            "k": 4,
+            "n": 16,
+            "rate": 0.25,
+            "ci95": [
+              0.1018,
+              0.495
+            ]
+          },
+          "fp_warn": {
+            "k": 4,
+            "n": 14,
+            "rate": 0.2857,
+            "ci95": [
+              0.1172,
+              0.5465
+            ]
+          },
+          "fp_scam": {
+            "k": 0,
+            "n": 14,
+            "rate": 0.0,
+            "ci95": [
+              0.0,
+              0.2153
+            ]
+          }
+        },
+        "classifier": {
+          "scams": 16,
+          "harmless": 14,
+          "recall_warn": {
+            "k": 13,
+            "n": 16,
+            "rate": 0.8125,
+            "ci95": [
+              0.5699,
+              0.9341
+            ]
+          },
+          "recall_scam": {
+            "k": 12,
+            "n": 16,
+            "rate": 0.75,
+            "ci95": [
+              0.505,
+              0.8982
+            ]
+          },
+          "fp_warn": {
+            "k": 0,
+            "n": 14,
+            "rate": 0.0,
+            "ci95": [
+              0.0,
+              0.2153
+            ]
+          },
+          "fp_scam": {
+            "k": 0,
+            "n": 14,
+            "rate": 0.0,
+            "ci95": [
+              0.0,
+              0.2153
+            ]
+          }
+        },
+        "fused": {
+          "scams": 16,
+          "harmless": 14,
+          "recall_warn": {
+            "k": 15,
+            "n": 16,
+            "rate": 0.9375,
+            "ci95": [
+              0.7167,
+              0.9889
+            ]
+          },
+          "recall_scam": {
+            "k": 10,
+            "n": 16,
+            "rate": 0.625,
+            "ci95": [
+              0.3864,
+              0.8152
+            ]
+          },
+          "fp_warn": {
+            "k": 2,
+            "n": 14,
+            "rate": 0.1429,
+            "ci95": [
+              0.0401,
+              0.3994
+            ]
+          },
+          "fp_scam": {
+            "k": 0,
+            "n": 14,
+            "rate": 0.0,
+            "ci95": [
+              0.0,
+              0.2153
+            ]
+          }
+        }
+      },
+      "bothbosu": {
+        "cues": {
+          "scams": 160,
+          "harmless": 160,
+          "recall_warn": {
+            "k": 81,
+            "n": 160,
+            "rate": 0.5062,
+            "ci95": [
+              0.4295,
+              0.5827
+            ]
+          },
+          "recall_scam": {
+            "k": 19,
+            "n": 160,
+            "rate": 0.1187,
+            "ci95": [
+              0.0774,
+              0.178
+            ]
+          },
+          "fp_warn": {
+            "k": 26,
+            "n": 160,
+            "rate": 0.1625,
+            "ci95": [
+              0.1134,
+              0.2275
+            ]
+          },
+          "fp_scam": {
+            "k": 0,
+            "n": 160,
+            "rate": 0.0,
+            "ci95": [
+              0.0,
+              0.0234
+            ]
+          }
+        },
+        "classifier": {
+          "scams": 160,
+          "harmless": 160,
+          "recall_warn": {
+            "k": 160,
+            "n": 160,
+            "rate": 1.0,
+            "ci95": [
+              0.9766,
+              1.0
+            ]
+          },
+          "recall_scam": {
+            "k": 160,
+            "n": 160,
+            "rate": 1.0,
+            "ci95": [
+              0.9766,
+              1.0
+            ]
+          },
+          "fp_warn": {
+            "k": 0,
+            "n": 160,
+            "rate": 0.0,
+            "ci95": [
+              0.0,
+              0.0234
+            ]
+          },
+          "fp_scam": {
+            "k": 0,
+            "n": 160,
+            "rate": 0.0,
+            "ci95": [
+              0.0,
+              0.0234
+            ]
+          }
+        },
+        "fused": {
+          "scams": 160,
+          "harmless": 160,
+          "recall_warn": {
+            "k": 160,
+            "n": 160,
+            "rate": 1.0,
+            "ci95": [
+              0.9766,
+              1.0
+            ]
+          },
+          "recall_scam": {
+            "k": 48,
+            "n": 160,
+            "rate": 0.3,
+            "ci95": [
+              0.2344,
+              0.375
+            ]
+          },
+          "fp_warn": {
+            "k": 0,
+            "n": 160,
+            "rate": 0.0,
+            "ci95": [
+              0.0,
+              0.0234
+            ]
+          },
+          "fp_scam": {
+            "k": 0,
+            "n": 160,
+            "rate": 0.0,
+            "ci95": [
+              0.0,
+              0.0234
+            ]
+          }
+        }
+      },
+      "hinglish_calls": {
+        "cues": {
+          "scams": 124,
+          "harmless": 22,
+          "recall_warn": {
+            "k": 30,
+            "n": 124,
+            "rate": 0.2419,
+            "ci95": [
+              0.175,
+              0.3243
+            ]
+          },
+          "recall_scam": {
+            "k": 0,
+            "n": 124,
+            "rate": 0.0,
+            "ci95": [
+              0.0,
+              0.03
+            ]
+          },
+          "fp_warn": {
+            "k": 0,
+            "n": 22,
+            "rate": 0.0,
+            "ci95": [
+              0.0,
+              0.1487
+            ]
+          },
+          "fp_scam": {
+            "k": 0,
+            "n": 22,
+            "rate": 0.0,
+            "ci95": [
+              0.0,
+              0.1487
+            ]
+          }
+        },
+        "classifier": {
+          "scams": 124,
+          "harmless": 22,
+          "recall_warn": {
+            "k": 124,
+            "n": 124,
+            "rate": 1.0,
+            "ci95": [
+              0.97,
+              1.0
+            ]
+          },
+          "recall_scam": {
+            "k": 124,
+            "n": 124,
+            "rate": 1.0,
+            "ci95": [
+              0.97,
+              1.0
+            ]
+          },
+          "fp_warn": {
+            "k": 0,
+            "n": 22,
+            "rate": 0.0,
+            "ci95": [
+              0.0,
+              0.1487
+            ]
+          },
+          "fp_scam": {
+            "k": 0,
+            "n": 22,
+            "rate": 0.0,
+            "ci95": [
+              0.0,
+              0.1487
+            ]
+          }
+        },
+        "fused": {
+          "scams": 124,
+          "harmless": 22,
+          "recall_warn": {
+            "k": 124,
+            "n": 124,
+            "rate": 1.0,
+            "ci95": [
+              0.97,
+              1.0
+            ]
+          },
+          "recall_scam": {
+            "k": 30,
+            "n": 124,
+            "rate": 0.2419,
+            "ci95": [
+              0.175,
+              0.3243
+            ]
+          },
+          "fp_warn": {
+            "k": 0,
+            "n": 22,
+            "rate": 0.0,
+            "ci95": [
+              0.0,
+              0.1487
+            ]
+          },
+          "fp_scam": {
+            "k": 0,
+            "n": 22,
+            "rate": 0.0,
+            "ci95": [
+              0.0,
+              0.1487
+            ]
+          }
+        }
+      },
+      "india_sms": {
+        "cues": {
+          "scams": 150,
+          "harmless": 150,
+          "recall_warn": {
+            "k": 27,
+            "n": 150,
+            "rate": 0.18,
+            "ci95": [
+              0.1268,
+              0.2492
+            ]
+          },
+          "recall_scam": {
+            "k": 3,
+            "n": 150,
+            "rate": 0.02,
+            "ci95": [
+              0.0068,
+              0.0571
+            ]
+          },
+          "fp_warn": {
+            "k": 2,
+            "n": 150,
+            "rate": 0.0133,
+            "ci95": [
+              0.0037,
+              0.0473
+            ]
+          },
+          "fp_scam": {
+            "k": 0,
+            "n": 150,
+            "rate": 0.0,
+            "ci95": [
+              0.0,
+              0.025
+            ]
+          }
+        },
+        "classifier": {
+          "scams": 150,
+          "harmless": 150,
+          "recall_warn": {
+            "k": 134,
+            "n": 150,
+            "rate": 0.8933,
+            "ci95": [
+              0.8338,
+              0.9333
+            ]
+          },
+          "recall_scam": {
+            "k": 124,
+            "n": 150,
+            "rate": 0.8267,
+            "ci95": [
+              0.7581,
+              0.8789
+            ]
+          },
+          "fp_warn": {
+            "k": 3,
+            "n": 150,
+            "rate": 0.02,
+            "ci95": [
+              0.0068,
+              0.0571
+            ]
+          },
+          "fp_scam": {
+            "k": 3,
+            "n": 150,
+            "rate": 0.02,
+            "ci95": [
+              0.0068,
+              0.0571
+            ]
+          }
+        },
+        "fused": {
+          "scams": 150,
+          "harmless": 150,
+          "recall_warn": {
+            "k": 138,
+            "n": 150,
+            "rate": 0.92,
+            "ci95": [
+              0.8654,
+              0.9536
+            ]
+          },
+          "recall_scam": {
+            "k": 22,
+            "n": 150,
+            "rate": 0.1467,
+            "ci95": [
+              0.0989,
+              0.2121
+            ]
+          },
+          "fp_warn": {
+            "k": 3,
+            "n": 150,
+            "rate": 0.02,
+            "ci95": [
+              0.0068,
+              0.0571
+            ]
+          },
+          "fp_scam": {
+            "k": 0,
+            "n": 150,
+            "rate": 0.0,
+            "ci95": [
+              0.0,
+              0.025
+            ]
+          }
+        }
+      },
+      "india_sms_other_lang": {
+        "cues": {
+          "scams": 550,
+          "harmless": 549,
+          "recall_warn": {
+            "k": 12,
+            "n": 550,
+            "rate": 0.0218,
+            "ci95": [
+              0.0125,
+              0.0377
+            ]
+          },
+          "recall_scam": {
+            "k": 0,
+            "n": 550,
+            "rate": 0.0,
+            "ci95": [
+              0.0,
+              0.0069
+            ]
+          },
+          "fp_warn": {
+            "k": 0,
+            "n": 549,
+            "rate": 0.0,
+            "ci95": [
+              0.0,
+              0.0069
+            ]
+          },
+          "fp_scam": {
+            "k": 0,
+            "n": 549,
+            "rate": 0.0,
+            "ci95": [
+              0.0,
+              0.0069
+            ]
+          }
+        },
+        "classifier": {
+          "scams": 550,
+          "harmless": 549,
+          "recall_warn": {
+            "k": 20,
+            "n": 550,
+            "rate": 0.0364,
+            "ci95": [
+              0.0237,
+              0.0555
+            ]
+          },
+          "recall_scam": {
+            "k": 14,
+            "n": 550,
+            "rate": 0.0255,
+            "ci95": [
+              0.0152,
+              0.0423
+            ]
+          },
+          "fp_warn": {
+            "k": 0,
+            "n": 549,
+            "rate": 0.0,
+            "ci95": [
+              0.0,
+              0.0069
+            ]
+          },
+          "fp_scam": {
+            "k": 0,
+            "n": 549,
+            "rate": 0.0,
+            "ci95": [
+              0.0,
+              0.0069
+            ]
+          }
+        },
+        "fused": {
+          "scams": 550,
+          "harmless": 549,
+          "recall_warn": {
+            "k": 23,
+            "n": 550,
+            "rate": 0.0418,
+            "ci95": [
+              0.028,
+              0.062
+            ]
+          },
+          "recall_scam": {
+            "k": 1,
+            "n": 550,
+            "rate": 0.0018,
+            "ci95": [
+              0.0003,
+              0.0102
+            ]
+          },
+          "fp_warn": {
+            "k": 0,
+            "n": 549,
+            "rate": 0.0,
+            "ci95": [
+              0.0,
+              0.0069
+            ]
+          },
+          "fp_scam": {
+            "k": 0,
+            "n": 549,
+            "rate": 0.0,
+            "ci95": [
+              0.0,
+              0.0069
+            ]
+          }
+        }
+      },
+      "team_calls": {
+        "cues": {
+          "scams": 15,
+          "harmless": 12,
+          "recall_warn": {
+            "k": 15,
+            "n": 15,
+            "rate": 1.0,
+            "ci95": [
+              0.7961,
+              1.0
+            ]
+          },
+          "recall_scam": {
+            "k": 10,
+            "n": 15,
+            "rate": 0.6667,
+            "ci95": [
+              0.4171,
+              0.8482
+            ]
+          },
+          "fp_warn": {
+            "k": 4,
+            "n": 12,
+            "rate": 0.3333,
+            "ci95": [
+              0.1381,
+              0.6094
+            ]
+          },
+          "fp_scam": {
+            "k": 0,
+            "n": 12,
+            "rate": 0.0,
+            "ci95": [
+              0.0,
+              0.2425
+            ]
+          }
+        },
+        "classifier": {
+          "scams": 15,
+          "harmless": 12,
+          "recall_warn": {
+            "k": 13,
+            "n": 15,
+            "rate": 0.8667,
+            "ci95": [
+              0.6212,
+              0.9626
+            ]
+          },
+          "recall_scam": {
+            "k": 13,
+            "n": 15,
+            "rate": 0.8667,
+            "ci95": [
+              0.6212,
+              0.9626
+            ]
+          },
+          "fp_warn": {
+            "k": 2,
+            "n": 12,
+            "rate": 0.1667,
+            "ci95": [
+              0.047,
+              0.448
+            ]
+          },
+          "fp_scam": {
+            "k": 2,
+            "n": 12,
+            "rate": 0.1667,
+            "ci95": [
+              0.047,
+              0.448
+            ]
+          }
+        },
+        "fused": {
+          "scams": 15,
+          "harmless": 12,
+          "recall_warn": {
+            "k": 14,
+            "n": 15,
+            "rate": 0.9333,
+            "ci95": [
+              0.7018,
+              0.9881
+            ]
+          },
+          "recall_scam": {
+            "k": 14,
+            "n": 15,
+            "rate": 0.9333,
+            "ci95": [
+              0.7018,
+              0.9881
+            ]
+          },
+          "fp_warn": {
+            "k": 3,
+            "n": 12,
+            "rate": 0.25,
+            "ci95": [
+              0.0889,
+              0.5323
+            ]
+          },
+          "fp_scam": {
+            "k": 1,
+            "n": 12,
+            "rate": 0.0833,
+            "ci95": [
+              0.0149,
+              0.3539
+            ]
+          }
+        }
+      },
+      "uci_sms": {
+        "cues": {
+          "scams": 630,
+          "harmless": 2906,
+          "recall_warn": {
+            "k": 5,
+            "n": 630,
+            "rate": 0.0079,
+            "ci95": [
+              0.0034,
+              0.0184
+            ]
+          },
+          "recall_scam": {
+            "k": 0,
+            "n": 630,
+            "rate": 0.0,
+            "ci95": [
+              0.0,
+              0.0061
+            ]
+          },
+          "fp_warn": {
+            "k": 6,
+            "n": 2906,
+            "rate": 0.0021,
+            "ci95": [
+              0.0009,
+              0.0045
+            ]
+          },
+          "fp_scam": {
+            "k": 0,
+            "n": 2906,
+            "rate": 0.0,
+            "ci95": [
+              0.0,
+              0.0013
+            ]
+          }
+        },
+        "classifier": {
+          "scams": 630,
+          "harmless": 2906,
+          "recall_warn": {
+            "k": 124,
+            "n": 630,
+            "rate": 0.1968,
+            "ci95": [
+              0.1677,
+              0.2297
+            ]
+          },
+          "recall_scam": {
+            "k": 87,
+            "n": 630,
+            "rate": 0.1381,
+            "ci95": [
+              0.1133,
+              0.1672
+            ]
+          },
+          "fp_warn": {
+            "k": 24,
+            "n": 2906,
+            "rate": 0.0083,
+            "ci95": [
+              0.0056,
+              0.0123
+            ]
+          },
+          "fp_scam": {
+            "k": 8,
+            "n": 2906,
+            "rate": 0.0028,
+            "ci95": [
+              0.0014,
+              0.0054
+            ]
+          }
+        },
+        "fused": {
+          "scams": 630,
+          "harmless": 2906,
+          "recall_warn": {
+            "k": 125,
+            "n": 630,
+            "rate": 0.1984,
+            "ci95": [
+              0.1691,
+              0.2313
+            ]
+          },
+          "recall_scam": {
+            "k": 4,
+            "n": 630,
+            "rate": 0.0063,
+            "ci95": [
+              0.0025,
+              0.0162
+            ]
+          },
+          "fp_warn": {
+            "k": 25,
+            "n": 2906,
+            "rate": 0.0086,
+            "ci95": [
+              0.0058,
+              0.0127
+            ]
+          },
+          "fp_scam": {
+            "k": 0,
+            "n": 2906,
+            "rate": 0.0,
+            "ci95": [
+              0.0,
+              0.0013
+            ]
+          }
+        }
+      }
     },
-    {
-      "set": "Hindi dev (FLEURS, IndicSynth)",
-      "condition": "ota+g711u",
-      "model": "add-wav2vec-large+add-xls-r-1b",
-      "calibrated": true,
-      "n_bona": 174,
-      "n_spoof": 586,
-      "eer": 0.333,
-      "threshold": 0.0089,
-      "detect_at_1pct_far": 0.0427,
-      "false_alarm_amber": 0.023,
-      "detect_amber": 0.0734,
-      "false_alarm_red": 0.0,
-      "detect_red": 0.0171,
-      "false_alarm_amber_ci": [
-        0.009,
-        0.0576
-      ],
-      "published_eer": null,
-      "seconds": 50.0
+    "by_type": {
+      "aadhaar": {
+        "scams": 1,
+        "harmless": 0,
+        "recall_warn": {
+          "k": 1,
+          "n": 1,
+          "rate": 1.0,
+          "ci95": [
+            0.2065,
+            1.0
+          ]
+        },
+        "recall_scam": {
+          "k": 0,
+          "n": 1,
+          "rate": 0.0,
+          "ci95": [
+            0.0,
+            0.7935
+          ]
+        },
+        "fp_warn": {
+          "k": 0,
+          "n": 0,
+          "rate": null,
+          "ci95": [
+            0.0,
+            1.0
+          ]
+        },
+        "fp_scam": {
+          "k": 0,
+          "n": 0,
+          "rate": null,
+          "ci95": [
+            0.0,
+            1.0
+          ]
+        }
+      },
+      "amazon": {
+        "scams": 5,
+        "harmless": 0,
+        "recall_warn": {
+          "k": 5,
+          "n": 5,
+          "rate": 1.0,
+          "ci95": [
+            0.5655,
+            1.0
+          ]
+        },
+        "recall_scam": {
+          "k": 2,
+          "n": 5,
+          "rate": 0.4,
+          "ci95": [
+            0.1176,
+            0.7693
+          ]
+        },
+        "fp_warn": {
+          "k": 0,
+          "n": 0,
+          "rate": null,
+          "ci95": [
+            0.0,
+            1.0
+          ]
+        },
+        "fp_scam": {
+          "k": 0,
+          "n": 0,
+          "rate": null,
+          "ci95": [
+            0.0,
+            1.0
+          ]
+        }
+      },
+      "bank_kyc": {
+        "scams": 12,
+        "harmless": 0,
+        "recall_warn": {
+          "k": 12,
+          "n": 12,
+          "rate": 1.0,
+          "ci95": [
+            0.7575,
+            1.0
+          ]
+        },
+        "recall_scam": {
+          "k": 6,
+          "n": 12,
+          "rate": 0.5,
+          "ci95": [
+            0.2538,
+            0.7462
+          ]
+        },
+        "fp_warn": {
+          "k": 0,
+          "n": 0,
+          "rate": null,
+          "ci95": [
+            0.0,
+            1.0
+          ]
+        },
+        "fp_scam": {
+          "k": 0,
+          "n": 0,
+          "rate": null,
+          "ci95": [
+            0.0,
+            1.0
+          ]
+        }
+      },
+      "courier_customs": {
+        "scams": 1,
+        "harmless": 0,
+        "recall_warn": {
+          "k": 1,
+          "n": 1,
+          "rate": 1.0,
+          "ci95": [
+            0.2065,
+            1.0
+          ]
+        },
+        "recall_scam": {
+          "k": 1,
+          "n": 1,
+          "rate": 1.0,
+          "ci95": [
+            0.2065,
+            1.0
+          ]
+        },
+        "fp_warn": {
+          "k": 0,
+          "n": 0,
+          "rate": null,
+          "ci95": [
+            0.0,
+            1.0
+          ]
+        },
+        "fp_scam": {
+          "k": 0,
+          "n": 0,
+          "rate": null,
+          "ci95": [
+            0.0,
+            1.0
+          ]
+        }
+      },
+      "digital_arrest": {
+        "scams": 4,
+        "harmless": 0,
+        "recall_warn": {
+          "k": 3,
+          "n": 4,
+          "rate": 0.75,
+          "ci95": [
+            0.3006,
+            0.9544
+          ]
+        },
+        "recall_scam": {
+          "k": 3,
+          "n": 4,
+          "rate": 0.75,
+          "ci95": [
+            0.3006,
+            0.9544
+          ]
+        },
+        "fp_warn": {
+          "k": 0,
+          "n": 0,
+          "rate": null,
+          "ci95": [
+            0.0,
+            1.0
+          ]
+        },
+        "fp_scam": {
+          "k": 0,
+          "n": 0,
+          "rate": null,
+          "ci95": [
+            0.0,
+            1.0
+          ]
+        }
+      },
+      "family_emergency": {
+        "scams": 2,
+        "harmless": 0,
+        "recall_warn": {
+          "k": 2,
+          "n": 2,
+          "rate": 1.0,
+          "ci95": [
+            0.3424,
+            1.0
+          ]
+        },
+        "recall_scam": {
+          "k": 2,
+          "n": 2,
+          "rate": 1.0,
+          "ci95": [
+            0.3424,
+            1.0
+          ]
+        },
+        "fp_warn": {
+          "k": 0,
+          "n": 0,
+          "rate": null,
+          "ci95": [
+            0.0,
+            1.0
+          ]
+        },
+        "fp_scam": {
+          "k": 0,
+          "n": 0,
+          "rate": null,
+          "ci95": [
+            0.0,
+            1.0
+          ]
+        }
+      },
+      "harmless": {
+        "scams": 0,
+        "harmless": 3264,
+        "recall_warn": {
+          "k": 0,
+          "n": 0,
+          "rate": null,
+          "ci95": [
+            0.0,
+            1.0
+          ]
+        },
+        "recall_scam": {
+          "k": 0,
+          "n": 0,
+          "rate": null,
+          "ci95": [
+            0.0,
+            1.0
+          ]
+        },
+        "fp_warn": {
+          "k": 33,
+          "n": 3264,
+          "rate": 0.0101,
+          "ci95": [
+            0.0072,
+            0.0142
+          ]
+        },
+        "fp_scam": {
+          "k": 1,
+          "n": 3264,
+          "rate": 0.0003,
+          "ci95": [
+            0.0001,
+            0.0017
+          ]
+        }
+      },
+      "investment": {
+        "scams": 1,
+        "harmless": 0,
+        "recall_warn": {
+          "k": 1,
+          "n": 1,
+          "rate": 1.0,
+          "ci95": [
+            0.2065,
+            1.0
+          ]
+        },
+        "recall_scam": {
+          "k": 1,
+          "n": 1,
+          "rate": 1.0,
+          "ci95": [
+            0.2065,
+            1.0
+          ]
+        },
+        "fp_warn": {
+          "k": 0,
+          "n": 0,
+          "rate": null,
+          "ci95": [
+            0.0,
+            1.0
+          ]
+        },
+        "fp_scam": {
+          "k": 0,
+          "n": 0,
+          "rate": null,
+          "ci95": [
+            0.0,
+            1.0
+          ]
+        }
+      },
+      "job_task": {
+        "scams": 1,
+        "harmless": 0,
+        "recall_warn": {
+          "k": 1,
+          "n": 1,
+          "rate": 1.0,
+          "ci95": [
+            0.2065,
+            1.0
+          ]
+        },
+        "recall_scam": {
+          "k": 1,
+          "n": 1,
+          "rate": 1.0,
+          "ci95": [
+            0.2065,
+            1.0
+          ]
+        },
+        "fp_warn": {
+          "k": 0,
+          "n": 0,
+          "rate": null,
+          "ci95": [
+            0.0,
+            1.0
+          ]
+        },
+        "fp_scam": {
+          "k": 0,
+          "n": 0,
+          "rate": null,
+          "ci95": [
+            0.0,
+            1.0
+          ]
+        }
+      },
+      "lottery": {
+        "scams": 4,
+        "harmless": 0,
+        "recall_warn": {
+          "k": 4,
+          "n": 4,
+          "rate": 1.0,
+          "ci95": [
+            0.5101,
+            1.0
+          ]
+        },
+        "recall_scam": {
+          "k": 1,
+          "n": 4,
+          "rate": 0.25,
+          "ci95": [
+            0.0456,
+            0.6994
+          ]
+        },
+        "fp_warn": {
+          "k": 0,
+          "n": 0,
+          "rate": null,
+          "ci95": [
+            0.0,
+            1.0
+          ]
+        },
+        "fp_scam": {
+          "k": 0,
+          "n": 0,
+          "rate": null,
+          "ci95": [
+            0.0,
+            1.0
+          ]
+        }
+      },
+      "misspelling": {
+        "scams": 2,
+        "harmless": 0,
+        "recall_warn": {
+          "k": 2,
+          "n": 2,
+          "rate": 1.0,
+          "ci95": [
+            0.3424,
+            1.0
+          ]
+        },
+        "recall_scam": {
+          "k": 2,
+          "n": 2,
+          "rate": 1.0,
+          "ci95": [
+            0.3424,
+            1.0
+          ]
+        },
+        "fp_warn": {
+          "k": 0,
+          "n": 0,
+          "rate": null,
+          "ci95": [
+            0.0,
+            1.0
+          ]
+        },
+        "fp_scam": {
+          "k": 0,
+          "n": 0,
+          "rate": null,
+          "ci95": [
+            0.0,
+            1.0
+          ]
+        }
+      },
+      "negation_abuse": {
+        "scams": 2,
+        "harmless": 0,
+        "recall_warn": {
+          "k": 2,
+          "n": 2,
+          "rate": 1.0,
+          "ci95": [
+            0.3424,
+            1.0
+          ]
+        },
+        "recall_scam": {
+          "k": 0,
+          "n": 2,
+          "rate": 0.0,
+          "ci95": [
+            0.0,
+            0.6576
+          ]
+        },
+        "fp_warn": {
+          "k": 0,
+          "n": 0,
+          "rate": null,
+          "ci95": [
+            0.0,
+            1.0
+          ]
+        },
+        "fp_scam": {
+          "k": 0,
+          "n": 0,
+          "rate": null,
+          "ci95": [
+            0.0,
+            1.0
+          ]
+        }
+      },
+      "no_cue_words": {
+        "scams": 1,
+        "harmless": 0,
+        "recall_warn": {
+          "k": 1,
+          "n": 1,
+          "rate": 1.0,
+          "ci95": [
+            0.2065,
+            1.0
+          ]
+        },
+        "recall_scam": {
+          "k": 0,
+          "n": 1,
+          "rate": 0.0,
+          "ci95": [
+            0.0,
+            0.7935
+          ]
+        },
+        "fp_warn": {
+          "k": 0,
+          "n": 0,
+          "rate": null,
+          "ci95": [
+            0.0,
+            1.0
+          ]
+        },
+        "fp_scam": {
+          "k": 0,
+          "n": 0,
+          "rate": null,
+          "ci95": [
+            0.0,
+            1.0
+          ]
+        }
+      },
+      "none": {
+        "scams": 1,
+        "harmless": 0,
+        "recall_warn": {
+          "k": 1,
+          "n": 1,
+          "rate": 1.0,
+          "ci95": [
+            0.2065,
+            1.0
+          ]
+        },
+        "recall_scam": {
+          "k": 1,
+          "n": 1,
+          "rate": 1.0,
+          "ci95": [
+            0.2065,
+            1.0
+          ]
+        },
+        "fp_warn": {
+          "k": 0,
+          "n": 0,
+          "rate": null,
+          "ci95": [
+            0.0,
+            1.0
+          ]
+        },
+        "fp_scam": {
+          "k": 0,
+          "n": 0,
+          "rate": null,
+          "ci95": [
+            0.0,
+            1.0
+          ]
+        }
+      },
+      "otp_upi": {
+        "scams": 1,
+        "harmless": 0,
+        "recall_warn": {
+          "k": 1,
+          "n": 1,
+          "rate": 1.0,
+          "ci95": [
+            0.2065,
+            1.0
+          ]
+        },
+        "recall_scam": {
+          "k": 1,
+          "n": 1,
+          "rate": 1.0,
+          "ci95": [
+            0.2065,
+            1.0
+          ]
+        },
+        "fp_warn": {
+          "k": 0,
+          "n": 0,
+          "rate": null,
+          "ci95": [
+            0.0,
+            1.0
+          ]
+        },
+        "fp_scam": {
+          "k": 0,
+          "n": 0,
+          "rate": null,
+          "ci95": [
+            0.0,
+            1.0
+          ]
+        }
+      },
+      "paraphrase": {
+        "scams": 5,
+        "harmless": 0,
+        "recall_warn": {
+          "k": 5,
+          "n": 5,
+          "rate": 1.0,
+          "ci95": [
+            0.5655,
+            1.0
+          ]
+        },
+        "recall_scam": {
+          "k": 4,
+          "n": 5,
+          "rate": 0.8,
+          "ci95": [
+            0.3755,
+            0.9638
+          ]
+        },
+        "fp_warn": {
+          "k": 0,
+          "n": 0,
+          "rate": null,
+          "ci95": [
+            0.0,
+            1.0
+          ]
+        },
+        "fp_scam": {
+          "k": 0,
+          "n": 0,
+          "rate": null,
+          "ci95": [
+            0.0,
+            1.0
+          ]
+        }
+      },
+      "police_blackmail": {
+        "scams": 26,
+        "harmless": 0,
+        "recall_warn": {
+          "k": 26,
+          "n": 26,
+          "rate": 1.0,
+          "ci95": [
+            0.8713,
+            1.0
+          ]
+        },
+        "recall_scam": {
+          "k": 9,
+          "n": 26,
+          "rate": 0.3462,
+          "ci95": [
+            0.1941,
+            0.5378
+          ]
+        },
+        "fp_warn": {
+          "k": 0,
+          "n": 0,
+          "rate": null,
+          "ci95": [
+            0.0,
+            1.0
+          ]
+        },
+        "fp_scam": {
+          "k": 0,
+          "n": 0,
+          "rate": null,
+          "ci95": [
+            0.0,
+            1.0
+          ]
+        }
+      },
+      "police_digital_arrest": {
+        "scams": 76,
+        "harmless": 0,
+        "recall_warn": {
+          "k": 76,
+          "n": 76,
+          "rate": 1.0,
+          "ci95": [
+            0.9519,
+            1.0
+          ]
+        },
+        "recall_scam": {
+          "k": 13,
+          "n": 76,
+          "rate": 0.1711,
+          "ci95": [
+            0.1028,
+            0.271
+          ]
+        },
+        "fp_warn": {
+          "k": 0,
+          "n": 0,
+          "rate": null,
+          "ci95": [
+            0.0,
+            1.0
+          ]
+        },
+        "fp_scam": {
+          "k": 0,
+          "n": 0,
+          "rate": null,
+          "ci95": [
+            0.0,
+            1.0
+          ]
+        }
+      },
+      "refund": {
+        "scams": 40,
+        "harmless": 0,
+        "recall_warn": {
+          "k": 40,
+          "n": 40,
+          "rate": 1.0,
+          "ci95": [
+            0.9124,
+            1.0
+          ]
+        },
+        "recall_scam": {
+          "k": 11,
+          "n": 40,
+          "rate": 0.275,
+          "ci95": [
+            0.1611,
+            0.4284
+          ]
+        },
+        "fp_warn": {
+          "k": 0,
+          "n": 0,
+          "rate": null,
+          "ci95": [
+            0.0,
+            1.0
+          ]
+        },
+        "fp_scam": {
+          "k": 0,
+          "n": 0,
+          "rate": null,
+          "ci95": [
+            0.0,
+            1.0
+          ]
+        }
+      },
+      "relative": {
+        "scams": 1,
+        "harmless": 0,
+        "recall_warn": {
+          "k": 1,
+          "n": 1,
+          "rate": 1.0,
+          "ci95": [
+            0.2065,
+            1.0
+          ]
+        },
+        "recall_scam": {
+          "k": 0,
+          "n": 1,
+          "rate": 0.0,
+          "ci95": [
+            0.0,
+            0.7935
+          ]
+        },
+        "fp_warn": {
+          "k": 0,
+          "n": 0,
+          "rate": null,
+          "ci95": [
+            0.0,
+            1.0
+          ]
+        },
+        "fp_scam": {
+          "k": 0,
+          "n": 0,
+          "rate": null,
+          "ci95": [
+            0.0,
+            1.0
+          ]
+        }
+      },
+      "remote_access": {
+        "scams": 1,
+        "harmless": 0,
+        "recall_warn": {
+          "k": 1,
+          "n": 1,
+          "rate": 1.0,
+          "ci95": [
+            0.2065,
+            1.0
+          ]
+        },
+        "recall_scam": {
+          "k": 1,
+          "n": 1,
+          "rate": 1.0,
+          "ci95": [
+            0.2065,
+            1.0
+          ]
+        },
+        "fp_warn": {
+          "k": 0,
+          "n": 0,
+          "rate": null,
+          "ci95": [
+            0.0,
+            1.0
+          ]
+        },
+        "fp_scam": {
+          "k": 0,
+          "n": 0,
+          "rate": null,
+          "ci95": [
+            0.0,
+            1.0
+          ]
+        }
+      },
+      "reward": {
+        "scams": 41,
+        "harmless": 0,
+        "recall_warn": {
+          "k": 41,
+          "n": 41,
+          "rate": 1.0,
+          "ci95": [
+            0.9143,
+            1.0
+          ]
+        },
+        "recall_scam": {
+          "k": 17,
+          "n": 41,
+          "rate": 0.4146,
+          "ci95": [
+            0.2776,
+            0.5663
+          ]
+        },
+        "fp_warn": {
+          "k": 0,
+          "n": 0,
+          "rate": null,
+          "ci95": [
+            0.0,
+            1.0
+          ]
+        },
+        "fp_scam": {
+          "k": 0,
+          "n": 0,
+          "rate": null,
+          "ci95": [
+            0.0,
+            1.0
+          ]
+        }
+      },
+      "slow_burn": {
+        "scams": 3,
+        "harmless": 0,
+        "recall_warn": {
+          "k": 2,
+          "n": 3,
+          "rate": 0.6667,
+          "ci95": [
+            0.2077,
+            0.9385
+          ]
+        },
+        "recall_scam": {
+          "k": 1,
+          "n": 3,
+          "rate": 0.3333,
+          "ci95": [
+            0.0615,
+            0.7923
+          ]
+        },
+        "fp_warn": {
+          "k": 0,
+          "n": 0,
+          "rate": null,
+          "ci95": [
+            0.0,
+            1.0
+          ]
+        },
+        "fp_scam": {
+          "k": 0,
+          "n": 0,
+          "rate": null,
+          "ci95": [
+            0.0,
+            1.0
+          ]
+        }
+      },
+      "sms": {
+        "scams": 780,
+        "harmless": 0,
+        "recall_warn": {
+          "k": 263,
+          "n": 780,
+          "rate": 0.3372,
+          "ci95": [
+            0.3049,
+            0.3711
+          ]
+        },
+        "recall_scam": {
+          "k": 26,
+          "n": 780,
+          "rate": 0.0333,
+          "ci95": [
+            0.0228,
+            0.0484
+          ]
+        },
+        "fp_warn": {
+          "k": 0,
+          "n": 0,
+          "rate": null,
+          "ci95": [
+            0.0,
+            1.0
+          ]
+        },
+        "fp_scam": {
+          "k": 0,
+          "n": 0,
+          "rate": null,
+          "ci95": [
+            0.0,
+            1.0
+          ]
+        }
+      },
+      "ssn": {
+        "scams": 40,
+        "harmless": 0,
+        "recall_warn": {
+          "k": 40,
+          "n": 40,
+          "rate": 1.0,
+          "ci95": [
+            0.9124,
+            1.0
+          ]
+        },
+        "recall_scam": {
+          "k": 13,
+          "n": 40,
+          "rate": 0.325,
+          "ci95": [
+            0.2008,
+            0.4798
+          ]
+        },
+        "fp_warn": {
+          "k": 0,
+          "n": 0,
+          "rate": null,
+          "ci95": [
+            0.0,
+            1.0
+          ]
+        },
+        "fp_scam": {
+          "k": 0,
+          "n": 0,
+          "rate": null,
+          "ci95": [
+            0.0,
+            1.0
+          ]
+        }
+      },
+      "support": {
+        "scams": 40,
+        "harmless": 0,
+        "recall_warn": {
+          "k": 40,
+          "n": 40,
+          "rate": 1.0,
+          "ci95": [
+            0.9124,
+            1.0
+          ]
+        },
+        "recall_scam": {
+          "k": 8,
+          "n": 40,
+          "rate": 0.2,
+          "ci95": [
+            0.105,
+            0.3476
+          ]
+        },
+        "fp_warn": {
+          "k": 0,
+          "n": 0,
+          "rate": null,
+          "ci95": [
+            0.0,
+            1.0
+          ]
+        },
+        "fp_scam": {
+          "k": 0,
+          "n": 0,
+          "rate": null,
+          "ci95": [
+            0.0,
+            1.0
+          ]
+        }
+      },
+      "trai_sim": {
+        "scams": 1,
+        "harmless": 0,
+        "recall_warn": {
+          "k": 1,
+          "n": 1,
+          "rate": 1.0,
+          "ci95": [
+            0.2065,
+            1.0
+          ]
+        },
+        "recall_scam": {
+          "k": 1,
+          "n": 1,
+          "rate": 1.0,
+          "ci95": [
+            0.2065,
+            1.0
+          ]
+        },
+        "fp_warn": {
+          "k": 0,
+          "n": 0,
+          "rate": null,
+          "ci95": [
+            0.0,
+            1.0
+          ]
+        },
+        "fp_scam": {
+          "k": 0,
+          "n": 0,
+          "rate": null,
+          "ci95": [
+            0.0,
+            1.0
+          ]
+        }
+      },
+      "transliteration": {
+        "scams": 3,
+        "harmless": 0,
+        "recall_warn": {
+          "k": 3,
+          "n": 3,
+          "rate": 1.0,
+          "ci95": [
+            0.4385,
+            1.0
+          ]
+        },
+        "recall_scam": {
+          "k": 3,
+          "n": 3,
+          "rate": 1.0,
+          "ci95": [
+            0.4385,
+            1.0
+          ]
+        },
+        "fp_warn": {
+          "k": 0,
+          "n": 0,
+          "rate": null,
+          "ci95": [
+            0.0,
+            1.0
+          ]
+        },
+        "fp_scam": {
+          "k": 0,
+          "n": 0,
+          "rate": null,
+          "ci95": [
+            0.0,
+            1.0
+          ]
+        }
+      }
     },
-    {
-      "set": "Hindi dev (FLEURS, IndicSynth)",
-      "condition": "ota+amrnb_12k2",
-      "model": "add-wav2vec-large+add-xls-r-1b",
-      "calibrated": true,
-      "n_bona": 174,
-      "n_spoof": 586,
-      "eer": 0.3159,
-      "threshold": 0.0398,
-      "detect_at_1pct_far": 0.1075,
-      "false_alarm_amber": 0.0805,
-      "detect_amber": 0.2782,
-      "false_alarm_red": 0.0,
-      "detect_red": 0.0307,
-      "false_alarm_amber_ci": [
-        0.0485,
-        0.1305
-      ],
-      "published_eer": null,
-      "seconds": 64.7
+    "by_lang": {
+      "en": {
+        "scams": 855,
+        "harmless": 3128,
+        "recall_warn": {
+          "k": 345,
+          "n": 855,
+          "rate": 0.4035,
+          "ci95": [
+            0.3711,
+            0.4368
+          ]
+        },
+        "recall_scam": {
+          "k": 71,
+          "n": 855,
+          "rate": 0.083,
+          "ci95": [
+            0.0664,
+            0.1035
+          ]
+        },
+        "fp_warn": {
+          "k": 30,
+          "n": 3128,
+          "rate": 0.0096,
+          "ci95": [
+            0.0067,
+            0.0137
+          ]
+        },
+        "fp_scam": {
+          "k": 1,
+          "n": 3128,
+          "rate": 0.0003,
+          "ci95": [
+            0.0001,
+            0.0018
+          ]
+        }
+      },
+      "hi": {
+        "scams": 55,
+        "harmless": 56,
+        "recall_warn": {
+          "k": 47,
+          "n": 55,
+          "rate": 0.8545,
+          "ci95": [
+            0.7384,
+            0.9244
+          ]
+        },
+        "recall_scam": {
+          "k": 14,
+          "n": 55,
+          "rate": 0.2545,
+          "ci95": [
+            0.1581,
+            0.383
+          ]
+        },
+        "fp_warn": {
+          "k": 2,
+          "n": 56,
+          "rate": 0.0357,
+          "ci95": [
+            0.0098,
+            0.1212
+          ]
+        },
+        "fp_scam": {
+          "k": 0,
+          "n": 56,
+          "rate": 0.0,
+          "ci95": [
+            0.0,
+            0.0642
+          ]
+        }
+      },
+      "hinglish": {
+        "scams": 185,
+        "harmless": 80,
+        "recall_warn": {
+          "k": 184,
+          "n": 185,
+          "rate": 0.9946,
+          "ci95": [
+            0.97,
+            0.999
+          ]
+        },
+        "recall_scam": {
+          "k": 43,
+          "n": 185,
+          "rate": 0.2324,
+          "ci95": [
+            0.1774,
+            0.2984
+          ]
+        },
+        "fp_warn": {
+          "k": 1,
+          "n": 80,
+          "rate": 0.0125,
+          "ci95": [
+            0.0022,
+            0.0675
+          ]
+        },
+        "fp_scam": {
+          "k": 0,
+          "n": 80,
+          "rate": 0.0,
+          "ci95": [
+            0.0,
+            0.0458
+          ]
+        }
+      }
     },
-    {
-      "set": "Hindi dev (FLEURS, IndicSynth)",
-      "condition": "ota+g711u+noise",
-      "model": "add-wav2vec-large+add-xls-r-1b",
-      "calibrated": true,
-      "n_bona": 174,
-      "n_spoof": 586,
-      "eer": 0.3502,
-      "threshold": 0.0615,
-      "detect_at_1pct_far": 0.0751,
-      "false_alarm_amber": 0.1264,
-      "detect_amber": 0.3942,
-      "false_alarm_red": 0.0172,
-      "detect_red": 0.1348,
-      "false_alarm_amber_ci": [
-        0.085,
-        0.184
-      ],
-      "published_eer": null,
-      "seconds": 46.1
+    "misses": [
+      {
+        "id": "india_sms/suite/207",
+        "label": 1,
+        "level": "watch",
+        "text": "You have won a brand new Hyundai Creta car in the KBC lucky draw season 12! Contact manager Mr. Sharma on WhatsApp at +91-9988776655."
+      },
+      {
+        "id": "india_sms/suite/243",
+        "label": 1,
+        "level": "none",
+        "text": "Exclusive offer: Buy 1 get 3 free on branded luxury watches. Order now on our cash-on-delivery secure checkout page: http://luxury-watches.s"
+      },
+      {
+        "id": "india_sms/suite/246",
+        "label": 1,
+        "level": "watch",
+        "text": "Your Instagram account is eligible for the verified blue badge! Submit your profile password to our verification bot: @BadgeVerifyBot"
+      },
+      {
+        "id": "india_sms/suite/416",
+        "label": 1,
+        "level": "watch",
+        "text": "अरे भाई, मुझे इमरजेंसी में पैसों की सख्त जरूरत है। मेरे इस नंबर पर तुरंत ₹5,000 गूगल पे कर दे, शाम को लौटा दूंगा।"
+      },
+      {
+        "id": "india_sms/suite/426",
+        "label": 1,
+        "level": "watch",
+        "text": "क्रिप्टोकरोजी ट्रेडिंग में निवेश करें और 7 दिन में अपने पैसे डबल करें। टेलीग्राम ग्रुप ज्वाइन करें: @CryptoKing"
+      },
+      {
+        "id": "india_sms/suite/427",
+        "label": 1,
+        "level": "watch",
+        "text": "प्रिय ग्राहक, आपका यूपीआई आईडी एक्सपायर हो गया है। नया बनाने के लिए नीचे दिए गए लिंक पर अपनी डिटेल्स भरें।"
+      },
+      {
+        "id": "india_sms/suite/432",
+        "label": 1,
+        "level": "none",
+        "text": "रेलवे टिकट बुकिंग फ्रॉड अलर्ट: आपकी आईआरसीटीसी आईडी ब्लॉक हो गई है। अनब्लॉक करने के लिए लिंक खोलें।"
+      },
+      {
+        "id": "india_sms/suite/433",
+        "label": 1,
+        "level": "none",
+        "text": "प्रिय ग्राहक, आपके क्रेडिट कार्ड के रिवॉर्ड पॉइंट्स एक्सपायर होने वाले हैं। उन्हें पैसों में बदलने के लिए क्लिक करें।"
+      },
+      {
+        "id": "india_sms/suite/436",
+        "label": 1,
+        "level": "watch",
+        "text": "सुपरमार्केट लकी कूपन: आपने ₹10,000 की शॉपिंग फ्री जीती है। वाउचर कलेक्ट करने के लिए स्टोर मैनेजर को कॉल करें।"
+      },
+      {
+        "id": "india_sms/suite/437",
+        "label": 1,
+        "level": "watch",
+        "text": "प्रिय सदस्य, आपके क्लब मेंबरशिप पॉइंट्स का नवीनीकरण बाकी है। भुगतान करने के लिए इस असुरक्षित लिंक का उपयोग करें।"
+      },
+      {
+        "id": "india_sms/suite/440",
+        "label": 1,
+        "level": "watch",
+        "text": "प्रिय ग्राहक, आपके बैंक अकाउंट में संदिग्ध गतिविधि पाई गई है। अपने नेटबैंकिंग पासवर्ड को रीसेट करें।"
+      },
+      {
+        "id": "india_sms/suite/524",
+        "label": 1,
+        "level": "watch",
+        "text": "Ghar baithe roz 5000 rupaye kamaayein! Kaam shuru karne ke liye pehle membership fee dein."
+      },
+      {
+        "id": "team_calls/en_short_digital_arrest_opening",
+        "label": 1,
+        "level": "watch",
+        "text": "This is the cyber crime branch, Delhi police. There is a warrant against your Aadhaar number."
+      },
+      {
+        "id": "team_calls/en_genuine_bank_fraud_alert",
+        "label": 0,
+        "level": "scam",
+        "text": "Hello, this is HDFC Bank calling about a card transaction of four thousand two hundred at Amazon. If this was you, no action is needed. Plea"
+      },
+      {
+        "id": "adversarial/slowburn_courier",
+        "label": 1,
+        "level": "watch",
+        "text": "Hello, am I speaking to Mrs Iyer? I'm calling from the courier company about a delivery. Are you at home today? Okay good. Your package was "
+      }
+    ]
+  },
+  "turns_to_warn": {
+    "calls": 347,
+    "scam_calls": 175,
+    "scams_reaching_warn": {
+      "k": 175,
+      "n": 175,
+      "rate": 1.0,
+      "ci95": [
+        0.9785,
+        1.0
+      ]
     },
-    {
-      "set": "In-the-Wild",
-      "condition": "clean",
-      "model": "add-wav2vec-large+add-xls-r-1b",
-      "calibrated": true,
-      "n_bona": 600,
-      "n_spoof": 600,
-      "eer": 0.025,
-      "threshold": 0.0707,
-      "detect_at_1pct_far": 0.95,
-      "false_alarm_amber": 0.0067,
-      "detect_amber": 0.94,
-      "false_alarm_red": 0.0017,
-      "detect_red": 0.8917,
-      "false_alarm_amber_ci": [
-        0.0026,
-        0.017
-      ],
-      "published_eer": 0.0746,
-      "seconds": 26.9
-    },
-    {
-      "set": "In-the-Wild",
-      "condition": "g711u",
-      "model": "add-wav2vec-large+add-xls-r-1b",
-      "calibrated": true,
-      "n_bona": 600,
-      "n_spoof": 600,
-      "eer": 0.0333,
-      "threshold": 0.0668,
-      "detect_at_1pct_far": 0.9167,
-      "false_alarm_amber": 0.015,
-      "detect_amber": 0.9233,
-      "false_alarm_red": 0.0017,
-      "detect_red": 0.8517,
-      "false_alarm_amber_ci": [
-        0.0079,
-        0.0283
-      ],
-      "published_eer": null,
-      "seconds": 26.6
-    },
-    {
-      "set": "In-the-Wild",
-      "condition": "amrnb_12k2",
-      "model": "add-wav2vec-large+add-xls-r-1b",
-      "calibrated": true,
-      "n_bona": 600,
-      "n_spoof": 600,
-      "eer": 0.04,
-      "threshold": 0.1412,
-      "detect_at_1pct_far": 0.92,
-      "false_alarm_amber": 0.015,
-      "detect_amber": 0.9233,
-      "false_alarm_red": 0.0033,
-      "detect_red": 0.865,
-      "false_alarm_amber_ci": [
-        0.0079,
-        0.0283
-      ],
-      "published_eer": null,
-      "seconds": 50.2
-    },
-    {
-      "set": "In-the-Wild",
-      "condition": "opus_12k",
-      "model": "add-wav2vec-large+add-xls-r-1b",
-      "calibrated": true,
-      "n_bona": 600,
-      "n_spoof": 600,
-      "eer": 0.045,
-      "threshold": 0.3465,
-      "detect_at_1pct_far": 0.8967,
-      "false_alarm_amber": 0.0567,
-      "detect_amber": 0.9567,
-      "false_alarm_red": 0.0133,
-      "detect_red": 0.9133,
-      "false_alarm_amber_ci": [
-        0.0408,
-        0.0781
-      ],
-      "published_eer": null,
-      "seconds": 52.2
-    },
-    {
-      "set": "In-the-Wild",
-      "condition": "g711u+loss+noise",
-      "model": "add-wav2vec-large+add-xls-r-1b",
-      "calibrated": true,
-      "n_bona": 600,
-      "n_spoof": 600,
-      "eer": 0.0583,
-      "threshold": 0.0754,
-      "detect_at_1pct_far": 0.82,
-      "false_alarm_amber": 0.02,
-      "detect_amber": 0.8583,
-      "false_alarm_red": 0.0017,
-      "detect_red": 0.73,
-      "false_alarm_amber_ci": [
-        0.0115,
-        0.0346
-      ],
-      "published_eer": null,
-      "seconds": 28.5
-    },
-    {
-      "set": "In-the-Wild",
-      "condition": "amrnb_12k2+loss+noise",
-      "model": "add-wav2vec-large+add-xls-r-1b",
-      "calibrated": true,
-      "n_bona": 600,
-      "n_spoof": 600,
-      "eer": 0.0933,
-      "threshold": 0.1614,
-      "detect_at_1pct_far": 0.77,
-      "false_alarm_amber": 0.0367,
-      "detect_amber": 0.8617,
-      "false_alarm_red": 0.0083,
-      "detect_red": 0.71,
-      "false_alarm_amber_ci": [
-        0.0243,
-        0.0549
-      ],
-      "published_eer": null,
-      "seconds": 49.8
-    },
-    {
-      "set": "In-the-Wild",
-      "condition": "ota+g711u",
-      "model": "add-wav2vec-large+add-xls-r-1b",
-      "calibrated": true,
-      "n_bona": 600,
-      "n_spoof": 600,
-      "eer": 0.2367,
-      "threshold": 0.0239,
-      "detect_at_1pct_far": 0.1983,
-      "false_alarm_amber": 0.025,
-      "detect_amber": 0.31,
-      "false_alarm_red": 0.0,
-      "detect_red": 0.11,
-      "false_alarm_amber_ci": [
-        0.0152,
-        0.0408
-      ],
-      "published_eer": null,
-      "seconds": 56.5
-    },
-    {
-      "set": "In-the-Wild",
-      "condition": "ota+amrnb_12k2",
-      "model": "add-wav2vec-large+add-xls-r-1b",
-      "calibrated": true,
-      "n_bona": 600,
-      "n_spoof": 600,
-      "eer": 0.2383,
-      "threshold": 0.1005,
-      "detect_at_1pct_far": 0.255,
-      "false_alarm_amber": 0.0933,
-      "detect_amber": 0.5383,
-      "false_alarm_red": 0.0067,
-      "detect_red": 0.22,
-      "false_alarm_amber_ci": [
-        0.0726,
-        0.1193
-      ],
-      "published_eer": null,
-      "seconds": 75.6
-    },
-    {
-      "set": "In-the-Wild",
-      "condition": "ota+g711u+noise",
-      "model": "add-wav2vec-large+add-xls-r-1b",
-      "calibrated": true,
-      "n_bona": 600,
-      "n_spoof": 600,
-      "eer": 0.2917,
-      "threshold": 0.116,
-      "detect_at_1pct_far": 0.125,
-      "false_alarm_amber": 0.1433,
-      "detect_amber": 0.5383,
-      "false_alarm_red": 0.025,
-      "detect_red": 0.2283,
-      "false_alarm_amber_ci": [
-        0.1176,
-        0.1736
-      ],
-      "published_eer": null,
-      "seconds": 56.3
-    },
-    {
-      "set": "ReplayDF (real speaker-to-mic replays)",
-      "condition": "clean",
-      "model": "add-wav2vec-large+add-xls-r-1b",
-      "calibrated": true,
-      "n_bona": 800,
-      "n_spoof": 800,
-      "eer": 0.1875,
-      "threshold": 0.0377,
-      "detect_at_1pct_far": 0.2913,
-      "false_alarm_amber": 0.0762,
-      "detect_amber": 0.5825,
-      "false_alarm_red": 0.0325,
-      "detect_red": 0.4075,
-      "false_alarm_amber_ci": [
-        0.0598,
-        0.0967
-      ],
-      "published_eer": null,
-      "seconds": 36.6
-    },
-    {
-      "set": "ReplayDF (real speaker-to-mic replays)",
-      "condition": "g711u",
-      "model": "add-wav2vec-large+add-xls-r-1b",
-      "calibrated": true,
-      "n_bona": 800,
-      "n_spoof": 800,
-      "eer": 0.2812,
-      "threshold": 0.0507,
-      "detect_at_1pct_far": 0.1875,
-      "false_alarm_amber": 0.1125,
-      "detect_amber": 0.5175,
-      "false_alarm_red": 0.0638,
-      "detect_red": 0.3762,
-      "false_alarm_amber_ci": [
-        0.0924,
-        0.1363
-      ],
-      "published_eer": null,
-      "seconds": 36.2
-    },
-    {
-      "set": "ReplayDF (real speaker-to-mic replays)",
-      "condition": "amrnb_12k2",
-      "model": "add-wav2vec-large+add-xls-r-1b",
-      "calibrated": true,
-      "n_bona": 800,
-      "n_spoof": 800,
-      "eer": 0.2662,
-      "threshold": 0.1561,
-      "detect_at_1pct_far": 0.1938,
-      "false_alarm_amber": 0.1888,
-      "detect_amber": 0.6288,
-      "false_alarm_red": 0.0788,
-      "detect_red": 0.4175,
-      "false_alarm_amber_ci": [
-        0.1631,
-        0.2173
-      ],
-      "published_eer": null,
-      "seconds": 70.2
-    },
-    {
-      "set": "Stock AI voices",
-      "condition": "clean",
-      "model": "add-wav2vec-large+add-xls-r-1b",
-      "calibrated": true,
-      "n_bona": 474,
-      "n_spoof": 223,
-      "eer": 0.0315,
-      "threshold": 0.0611,
-      "detect_at_1pct_far": 0.9103,
-      "false_alarm_amber": 0.0084,
-      "detect_amber": 0.8969,
-      "false_alarm_red": 0.0,
-      "detect_red": 0.8027,
-      "false_alarm_amber_ci": [
-        0.0033,
-        0.0215
-      ],
-      "published_eer": null,
-      "seconds": 16.2
-    },
-    {
-      "set": "Stock AI voices",
-      "condition": "g711u",
-      "model": "add-wav2vec-large+add-xls-r-1b",
-      "calibrated": true,
-      "n_bona": 474,
-      "n_spoof": 223,
-      "eer": 0.0402,
-      "threshold": 0.0552,
-      "detect_at_1pct_far": 0.8341,
-      "false_alarm_amber": 0.0127,
-      "detect_amber": 0.8341,
-      "false_alarm_red": 0.0,
-      "detect_red": 0.7623,
-      "false_alarm_amber_ci": [
-        0.0058,
-        0.0273
-      ],
-      "published_eer": null,
-      "seconds": 15.7
-    },
-    {
-      "set": "Stock AI voices",
-      "condition": "ota+g711u",
-      "model": "add-wav2vec-large+add-xls-r-1b",
-      "calibrated": true,
-      "n_bona": 474,
-      "n_spoof": 223,
-      "eer": 0.4,
-      "threshold": 0.0077,
-      "detect_at_1pct_far": 0.0269,
-      "false_alarm_amber": 0.0295,
-      "detect_amber": 0.0628,
-      "false_alarm_red": 0.0,
-      "detect_red": 0.0135,
-      "false_alarm_amber_ci": [
-        0.0177,
-        0.049
-      ],
-      "published_eer": null,
-      "seconds": 45.0
-    },
-    {
-      "set": "Stock AI voices",
-      "condition": "ota+amrnb_12k2",
-      "model": "add-wav2vec-large+add-xls-r-1b",
-      "calibrated": true,
-      "n_bona": 474,
-      "n_spoof": 223,
-      "eer": 0.3446,
-      "threshold": 0.0534,
-      "detect_at_1pct_far": 0.0628,
-      "false_alarm_amber": 0.1055,
-      "detect_amber": 0.2466,
-      "false_alarm_red": 0.0084,
-      "detect_red": 0.0448,
-      "false_alarm_amber_ci": [
-        0.0809,
-        0.1364
-      ],
-      "published_eer": null,
-      "seconds": 63.3
-    },
-    {
-      "set": "Stock AI voices",
-      "condition": "ota+g711u+noise",
-      "model": "add-wav2vec-large+add-xls-r-1b",
-      "calibrated": true,
-      "n_bona": 474,
-      "n_spoof": 223,
-      "eer": 0.3892,
-      "threshold": 0.0559,
-      "detect_at_1pct_far": 0.0717,
-      "false_alarm_amber": 0.1519,
-      "detect_amber": 0.3632,
-      "false_alarm_red": 0.0338,
-      "detect_red": 0.1525,
-      "false_alarm_amber_ci": [
-        0.1224,
-        0.187
-      ],
-      "published_eer": null,
-      "seconds": 43.6
+    "median_turns_to_warn": 2,
+    "median_words_to_warn": 29,
+    "harmless_ever_warned": {
+      "k": 6,
+      "n": 172,
+      "rate": 0.0349,
+      "ci95": [
+        0.0161,
+        0.074
+      ]
     }
-  ],
-  "phone_mic": {
-    "families": [
-      {
-        "condition": "ota+g711u",
-        "family": "commercial",
-        "label": "Commercial TTS (Microsoft, Google, ElevenLabs, ...)",
-        "n": 133,
-        "k": 9,
-        "rate": 0.06766917293233082,
-        "ci": [
-          0.0360059783846149,
-          0.12360630326073269
+  },
+  "lodo": {
+    "hinglish_calls": {
+      "scams": 124,
+      "harmless": 22,
+      "recall_warn": {
+        "k": 89,
+        "n": 124,
+        "rate": 0.7177,
+        "ci95": [
+          0.6329,
+          0.7895
         ]
       },
-      {
-        "condition": "ota+g711u",
-        "family": "open",
-        "label": "Open TTS and voice clones",
-        "n": 676,
-        "k": 48,
-        "rate": 0.07100591715976332,
-        "ci": [
-          0.0539718482839351,
-          0.09288824383164006
+      "recall_scam": {
+        "k": 11,
+        "n": 124,
+        "rate": 0.0887,
+        "ci95": [
+          0.0503,
+          0.1519
         ]
       },
-      {
-        "condition": "ota+g711u",
-        "family": "unknown",
-        "label": "Unknown generators (In-the-Wild)",
-        "n": 600,
-        "k": 186,
-        "rate": 0.31,
-        "ci": [
-          0.2742997080464879,
-          0.34811782661823215
+      "fp_warn": {
+        "k": 0,
+        "n": 22,
+        "rate": 0.0,
+        "ci95": [
+          0.0,
+          0.1487
         ]
       },
-      {
-        "condition": "ota+amrnb_12k2",
-        "family": "commercial",
-        "label": "Commercial TTS (Microsoft, Google, ElevenLabs, ...)",
-        "n": 133,
-        "k": 34,
-        "rate": 0.2556390977443609,
-        "ci": [
-          0.18908882696541707,
-          0.3359094191819532
+      "fp_scam": {
+        "k": 0,
+        "n": 22,
+        "rate": 0.0,
+        "ci95": [
+          0.0,
+          0.1487
         ]
       },
-      {
-        "condition": "ota+amrnb_12k2",
-        "family": "open",
-        "label": "Open TTS and voice clones",
-        "n": 676,
-        "k": 184,
-        "rate": 0.27218934911242604,
-        "ci": [
-          0.23999412140289486,
-          0.3069591688929623
+      "trained_on": [
+        "bothbosu",
+        "india_sms",
+        "team_synth"
+      ],
+      "dev_auc": 0.9999
+    },
+    "bothbosu": {
+      "scams": 160,
+      "harmless": 160,
+      "recall_warn": {
+        "k": 150,
+        "n": 160,
+        "rate": 0.9375,
+        "ci95": [
+          0.8888,
+          0.9657
         ]
       },
-      {
-        "condition": "ota+amrnb_12k2",
-        "family": "unknown",
-        "label": "Unknown generators (In-the-Wild)",
-        "n": 600,
-        "k": 323,
-        "rate": 0.5383333333333333,
-        "ci": [
-          0.4983252253048696,
-          0.5778536931399676
+      "recall_scam": {
+        "k": 47,
+        "n": 160,
+        "rate": 0.2938,
+        "ci95": [
+          0.2287,
+          0.3685
         ]
       },
-      {
-        "condition": "ota+g711u+noise",
-        "family": "commercial",
-        "label": "Commercial TTS (Microsoft, Google, ElevenLabs, ...)",
-        "n": 133,
-        "k": 50,
-        "rate": 0.37593984962406013,
-        "ci": [
-          0.29819216386268604,
-          0.46065309956597883
+      "fp_warn": {
+        "k": 90,
+        "n": 160,
+        "rate": 0.5625,
+        "ci95": [
+          0.4851,
+          0.637
         ]
       },
-      {
-        "condition": "ota+g711u+noise",
-        "family": "open",
-        "label": "Open TTS and voice clones",
-        "n": 676,
-        "k": 262,
-        "rate": 0.3875739644970414,
-        "ci": [
-          0.35158054085005847,
-          0.4248379660491957
-        ]
-      },
-      {
-        "condition": "ota+g711u+noise",
-        "family": "unknown",
-        "label": "Unknown generators (In-the-Wild)",
-        "n": 600,
-        "k": 323,
-        "rate": 0.5383333333333333,
-        "ci": [
-          0.4983252253048696,
-          0.5778536931399676
-        ]
-      }
-    ],
-    "generators": [
-      {
-        "condition": "ota+g711u",
-        "generator": "edge-tts",
-        "family": "commercial",
-        "sets": [
-          "Stock AI voices"
-        ],
-        "red": 0.0115,
-        "n": 87,
-        "k": 7,
-        "rate": 0.08045977011494253,
-        "ci": [
-          0.03951976844435234,
-          0.1568836414471511
-        ]
-      },
-      {
-        "condition": "ota+g711u",
-        "generator": "freevc24",
-        "family": "open",
-        "sets": [
-          "Hindi dev (FLEURS, IndicSynth)"
-        ],
-        "red": 0.0171,
-        "n": 586,
-        "k": 43,
-        "rate": 0.07337883959044368,
-        "ci": [
-          0.05493091706549534,
-          0.09738387388855063
-        ]
-      },
-      {
-        "condition": "ota+g711u",
-        "generator": "gtts",
-        "family": "commercial",
-        "sets": [
-          "Stock AI voices"
-        ],
-        "red": 0.0,
-        "n": 46,
-        "k": 2,
-        "rate": 0.043478260869565216,
-        "ci": [
-          0.012005193588830823,
-          0.14532522919053417
-        ]
-      },
-      {
-        "condition": "ota+g711u",
-        "generator": "piper-vits",
-        "family": "open",
-        "sets": [
-          "Stock AI voices"
-        ],
-        "red": 0.0222,
-        "n": 90,
-        "k": 5,
-        "rate": 0.05555555555555555,
-        "ci": [
-          0.023960618284343187,
-          0.12353899809048417
-        ]
-      },
-      {
-        "condition": "ota+g711u",
-        "generator": "unknown",
-        "family": "unknown",
-        "sets": [
-          "In-the-Wild"
-        ],
-        "red": 0.11,
-        "n": 600,
-        "k": 186,
-        "rate": 0.31,
-        "ci": [
-          0.2742997080464879,
-          0.34811782661823215
-        ]
-      },
-      {
-        "condition": "ota+amrnb_12k2",
-        "generator": "edge-tts",
-        "family": "commercial",
-        "sets": [
-          "Stock AI voices"
-        ],
-        "red": 0.023,
-        "n": 87,
-        "k": 22,
-        "rate": 0.25287356321839083,
-        "ci": [
-          0.17333087433749275,
-          0.3533177095712012
-        ]
-      },
-      {
-        "condition": "ota+amrnb_12k2",
-        "generator": "freevc24",
-        "family": "open",
-        "sets": [
-          "Hindi dev (FLEURS, IndicSynth)"
-        ],
-        "red": 0.0307,
-        "n": 586,
-        "k": 163,
-        "rate": 0.2781569965870307,
-        "ci": [
-          0.24341080140822313,
-          0.3157928898878807
-        ]
-      },
-      {
-        "condition": "ota+amrnb_12k2",
-        "generator": "gtts",
-        "family": "commercial",
-        "sets": [
-          "Stock AI voices"
-        ],
-        "red": 0.0217,
-        "n": 46,
-        "k": 12,
-        "rate": 0.2608695652173913,
-        "ci": [
-          0.15600735194449333,
-          0.402594298082793
-        ]
-      },
-      {
-        "condition": "ota+amrnb_12k2",
-        "generator": "piper-vits",
-        "family": "open",
-        "sets": [
-          "Stock AI voices"
-        ],
-        "red": 0.0778,
-        "n": 90,
-        "k": 21,
-        "rate": 0.23333333333333334,
-        "ci": [
-          0.15798078393937456,
-          0.3305189858855218
-        ]
-      },
-      {
-        "condition": "ota+amrnb_12k2",
-        "generator": "unknown",
-        "family": "unknown",
-        "sets": [
-          "In-the-Wild"
-        ],
-        "red": 0.22,
-        "n": 600,
-        "k": 323,
-        "rate": 0.5383333333333333,
-        "ci": [
-          0.4983252253048696,
-          0.5778536931399676
-        ]
-      },
-      {
-        "condition": "ota+g711u+noise",
-        "generator": "edge-tts",
-        "family": "commercial",
-        "sets": [
-          "Stock AI voices"
-        ],
-        "red": 0.1839,
-        "n": 87,
-        "k": 32,
-        "rate": 0.367816091954023,
-        "ci": [
-          0.2740853339545992,
-          0.4727266992988882
-        ]
-      },
-      {
-        "condition": "ota+g711u+noise",
-        "generator": "freevc24",
-        "family": "open",
-        "sets": [
-          "Hindi dev (FLEURS, IndicSynth)"
-        ],
-        "red": 0.1348,
-        "n": 586,
-        "k": 231,
-        "rate": 0.39419795221843,
-        "ci": [
-          0.3554433741127062,
-          0.4343306940438971
-        ]
-      },
-      {
-        "condition": "ota+g711u+noise",
-        "generator": "gtts",
-        "family": "commercial",
-        "sets": [
-          "Stock AI voices"
-        ],
-        "red": 0.0652,
-        "n": 46,
-        "k": 18,
-        "rate": 0.391304347826087,
-        "ci": [
-          0.26393022355248846,
-          0.5354341628235507
-        ]
-      },
-      {
-        "condition": "ota+g711u+noise",
-        "generator": "piper-vits",
-        "family": "open",
-        "sets": [
-          "Stock AI voices"
-        ],
-        "red": 0.1667,
-        "n": 90,
-        "k": 31,
-        "rate": 0.34444444444444444,
-        "ci": [
-          0.25445765921462965,
-          0.44716720651655983
-        ]
-      },
-      {
-        "condition": "ota+g711u+noise",
-        "generator": "unknown",
-        "family": "unknown",
-        "sets": [
-          "In-the-Wild"
-        ],
-        "red": 0.2283,
-        "n": 600,
-        "k": 323,
-        "rate": 0.5383333333333333,
-        "ci": [
-          0.4983252253048696,
-          0.5778536931399676
-        ]
-      }
-    ],
-    "genuine": [
-      {
-        "set": "Hindi dev (FLEURS, IndicSynth)",
-        "condition": "ota+g711u",
-        "n": 174,
-        "k": 4,
-        "rate": 0.022988505747126436,
-        "ci": [
-          0.008975105790863708,
-          0.05760999015969005
-        ]
-      },
-      {
-        "set": "Hindi dev (FLEURS, IndicSynth)",
-        "condition": "ota+amrnb_12k2",
-        "n": 174,
-        "k": 14,
-        "rate": 0.08045977011494253,
-        "ci": [
-          0.04853065268904716,
-          0.13051407025541578
-        ]
-      },
-      {
-        "set": "Hindi dev (FLEURS, IndicSynth)",
-        "condition": "ota+g711u+noise",
-        "n": 174,
-        "k": 22,
-        "rate": 0.12643678160919541,
-        "ci": [
-          0.08499879351988789,
-          0.18401363101970244
-        ]
-      },
-      {
-        "set": "In-the-Wild",
-        "condition": "ota+g711u",
-        "n": 600,
+      "fp_scam": {
         "k": 15,
-        "rate": 0.025,
-        "ci": [
-          0.015207702971629591,
-          0.04083613369017047
+        "n": 160,
+        "rate": 0.0938,
+        "ci95": [
+          0.0576,
+          0.1489
         ]
       },
-      {
-        "set": "In-the-Wild",
-        "condition": "ota+amrnb_12k2",
-        "n": 600,
-        "k": 56,
-        "rate": 0.09333333333333334,
-        "ci": [
-          0.07257411793779556,
-          0.11926692116914908
+      "trained_on": [
+        "hinglish_calls",
+        "india_sms",
+        "team_synth"
+      ],
+      "dev_auc": 0.9992
+    },
+    "india_sms": {
+      "scams": 150,
+      "harmless": 150,
+      "recall_warn": {
+        "k": 100,
+        "n": 150,
+        "rate": 0.6667,
+        "ci95": [
+          0.5879,
+          0.7371
         ]
       },
-      {
-        "set": "In-the-Wild",
-        "condition": "ota+g711u+noise",
-        "n": 600,
-        "k": 86,
-        "rate": 0.14333333333333334,
-        "ci": [
-          0.11756096265477348,
-          0.1736438831193501
+      "recall_scam": {
+        "k": 10,
+        "n": 150,
+        "rate": 0.0667,
+        "ci95": [
+          0.0366,
+          0.1184
         ]
       },
+      "fp_warn": {
+        "k": 37,
+        "n": 150,
+        "rate": 0.2467,
+        "ci95": [
+          0.1846,
+          0.3214
+        ]
+      },
+      "fp_scam": {
+        "k": 2,
+        "n": 150,
+        "rate": 0.0133,
+        "ci95": [
+          0.0037,
+          0.0473
+        ]
+      },
+      "trained_on": [
+        "bothbosu",
+        "hinglish_calls",
+        "team_synth"
+      ],
+      "dev_auc": 1.0
+    }
+  },
+  "gates": {
+    "scams at warn ≥ 90% (Indian held-out sets pooled)": "95.5% → met",
+    "harmless at warn ≤ 8%": "2.7% → met",
+    "harmless at scam ≤ 1%": "0.0% → met"
+  },
+  "seconds": 178.7,
+  "laptop_s1_legacy": {
+    "note": "The old laptop voice model (cut from the demo path); kept for PLAN_VS_BUILT.",
+    "benchmarks": [
       {
-        "set": "Stock AI voices",
+        "set": "Hindi dev (FLEURS, IndicSynth)",
+        "condition": "g711u",
+        "model": "add-wav2vec-large+add-xls-r-1b",
+        "calibrated": true,
+        "n_bona": 174,
+        "n_spoof": 586,
+        "eer": 0.0,
+        "threshold": 0.793,
+        "detect_at_1pct_far": 1.0,
+        "false_alarm_amber": 0.0057,
+        "detect_amber": 1.0,
+        "false_alarm_red": 0.0,
+        "detect_red": 1.0,
+        "false_alarm_amber_ci": [
+          0.001,
+          0.0318
+        ],
+        "published_eer": null,
+        "seconds": 17.9
+      },
+      {
+        "set": "Hindi dev (FLEURS, IndicSynth)",
+        "condition": "amrnb_12k2",
+        "model": "add-wav2vec-large+add-xls-r-1b",
+        "calibrated": true,
+        "n_bona": 174,
+        "n_spoof": 586,
+        "eer": 0.0,
+        "threshold": 0.7678,
+        "detect_at_1pct_far": 1.0,
+        "false_alarm_amber": 0.0115,
+        "detect_amber": 1.0,
+        "false_alarm_red": 0.0,
+        "detect_red": 1.0,
+        "false_alarm_amber_ci": [
+          0.0032,
+          0.0409
+        ],
+        "published_eer": null,
+        "seconds": 32.8
+      },
+      {
+        "set": "Hindi dev (FLEURS, IndicSynth)",
+        "condition": "g711u+loss+noise",
+        "model": "add-wav2vec-large+add-xls-r-1b",
+        "calibrated": true,
+        "n_bona": 174,
+        "n_spoof": 586,
+        "eer": 0.0803,
+        "threshold": 0.0249,
+        "detect_at_1pct_far": 0.5751,
+        "false_alarm_amber": 0.0172,
+        "detect_amber": 0.6126,
+        "false_alarm_red": 0.0,
+        "detect_red": 0.3549,
+        "false_alarm_amber_ci": [
+          0.0059,
+          0.0495
+        ],
+        "published_eer": null,
+        "seconds": 18.0
+      },
+      {
+        "set": "Hindi dev (FLEURS, IndicSynth)",
+        "condition": "amrnb_12k2+loss+noise",
+        "model": "add-wav2vec-large+add-xls-r-1b",
+        "calibrated": true,
+        "n_bona": 174,
+        "n_spoof": 586,
+        "eer": 0.0866,
+        "threshold": 0.0591,
+        "detect_at_1pct_far": 0.6741,
+        "false_alarm_amber": 0.0115,
+        "detect_amber": 0.6604,
+        "false_alarm_red": 0.0,
+        "detect_red": 0.4147,
+        "false_alarm_amber_ci": [
+          0.0032,
+          0.0409
+        ],
+        "published_eer": null,
+        "seconds": 33.6
+      },
+      {
+        "set": "Hindi dev (FLEURS, IndicSynth)",
         "condition": "ota+g711u",
-        "n": 474,
-        "k": 14,
-        "rate": 0.029535864978902954,
-        "ci": [
-          0.017673811636050276,
-          0.04896249629528094
-        ]
+        "model": "add-wav2vec-large+add-xls-r-1b",
+        "calibrated": true,
+        "n_bona": 174,
+        "n_spoof": 586,
+        "eer": 0.333,
+        "threshold": 0.0089,
+        "detect_at_1pct_far": 0.0427,
+        "false_alarm_amber": 0.023,
+        "detect_amber": 0.0734,
+        "false_alarm_red": 0.0,
+        "detect_red": 0.0171,
+        "false_alarm_amber_ci": [
+          0.009,
+          0.0576
+        ],
+        "published_eer": null,
+        "seconds": 50.0
       },
       {
-        "set": "Stock AI voices",
+        "set": "Hindi dev (FLEURS, IndicSynth)",
         "condition": "ota+amrnb_12k2",
-        "n": 474,
-        "k": 50,
-        "rate": 0.10548523206751055,
-        "ci": [
-          0.08093238784063506,
-          0.13638146679236465
-        ]
+        "model": "add-wav2vec-large+add-xls-r-1b",
+        "calibrated": true,
+        "n_bona": 174,
+        "n_spoof": 586,
+        "eer": 0.3159,
+        "threshold": 0.0398,
+        "detect_at_1pct_far": 0.1075,
+        "false_alarm_amber": 0.0805,
+        "detect_amber": 0.2782,
+        "false_alarm_red": 0.0,
+        "detect_red": 0.0307,
+        "false_alarm_amber_ci": [
+          0.0485,
+          0.1305
+        ],
+        "published_eer": null,
+        "seconds": 64.7
       },
       {
-        "set": "Stock AI voices",
+        "set": "Hindi dev (FLEURS, IndicSynth)",
         "condition": "ota+g711u+noise",
-        "n": 474,
-        "k": 72,
-        "rate": 0.1518987341772152,
-        "ci": [
-          0.12239368913552306,
-          0.18700088848182964
-        ]
-      }
-    ],
-    "real": [
+        "model": "add-wav2vec-large+add-xls-r-1b",
+        "calibrated": true,
+        "n_bona": 174,
+        "n_spoof": 586,
+        "eer": 0.3502,
+        "threshold": 0.0615,
+        "detect_at_1pct_far": 0.0751,
+        "false_alarm_amber": 0.1264,
+        "detect_amber": 0.3942,
+        "false_alarm_red": 0.0172,
+        "detect_red": 0.1348,
+        "false_alarm_amber_ci": [
+          0.085,
+          0.184
+        ],
+        "published_eer": null,
+        "seconds": 46.1
+      },
+      {
+        "set": "In-the-Wild",
+        "condition": "clean",
+        "model": "add-wav2vec-large+add-xls-r-1b",
+        "calibrated": true,
+        "n_bona": 600,
+        "n_spoof": 600,
+        "eer": 0.025,
+        "threshold": 0.0707,
+        "detect_at_1pct_far": 0.95,
+        "false_alarm_amber": 0.0067,
+        "detect_amber": 0.94,
+        "false_alarm_red": 0.0017,
+        "detect_red": 0.8917,
+        "false_alarm_amber_ci": [
+          0.0026,
+          0.017
+        ],
+        "published_eer": 0.0746,
+        "seconds": 26.9
+      },
+      {
+        "set": "In-the-Wild",
+        "condition": "g711u",
+        "model": "add-wav2vec-large+add-xls-r-1b",
+        "calibrated": true,
+        "n_bona": 600,
+        "n_spoof": 600,
+        "eer": 0.0333,
+        "threshold": 0.0668,
+        "detect_at_1pct_far": 0.9167,
+        "false_alarm_amber": 0.015,
+        "detect_amber": 0.9233,
+        "false_alarm_red": 0.0017,
+        "detect_red": 0.8517,
+        "false_alarm_amber_ci": [
+          0.0079,
+          0.0283
+        ],
+        "published_eer": null,
+        "seconds": 26.6
+      },
+      {
+        "set": "In-the-Wild",
+        "condition": "amrnb_12k2",
+        "model": "add-wav2vec-large+add-xls-r-1b",
+        "calibrated": true,
+        "n_bona": 600,
+        "n_spoof": 600,
+        "eer": 0.04,
+        "threshold": 0.1412,
+        "detect_at_1pct_far": 0.92,
+        "false_alarm_amber": 0.015,
+        "detect_amber": 0.9233,
+        "false_alarm_red": 0.0033,
+        "detect_red": 0.865,
+        "false_alarm_amber_ci": [
+          0.0079,
+          0.0283
+        ],
+        "published_eer": null,
+        "seconds": 50.2
+      },
+      {
+        "set": "In-the-Wild",
+        "condition": "opus_12k",
+        "model": "add-wav2vec-large+add-xls-r-1b",
+        "calibrated": true,
+        "n_bona": 600,
+        "n_spoof": 600,
+        "eer": 0.045,
+        "threshold": 0.3465,
+        "detect_at_1pct_far": 0.8967,
+        "false_alarm_amber": 0.0567,
+        "detect_amber": 0.9567,
+        "false_alarm_red": 0.0133,
+        "detect_red": 0.9133,
+        "false_alarm_amber_ci": [
+          0.0408,
+          0.0781
+        ],
+        "published_eer": null,
+        "seconds": 52.2
+      },
+      {
+        "set": "In-the-Wild",
+        "condition": "g711u+loss+noise",
+        "model": "add-wav2vec-large+add-xls-r-1b",
+        "calibrated": true,
+        "n_bona": 600,
+        "n_spoof": 600,
+        "eer": 0.0583,
+        "threshold": 0.0754,
+        "detect_at_1pct_far": 0.82,
+        "false_alarm_amber": 0.02,
+        "detect_amber": 0.8583,
+        "false_alarm_red": 0.0017,
+        "detect_red": 0.73,
+        "false_alarm_amber_ci": [
+          0.0115,
+          0.0346
+        ],
+        "published_eer": null,
+        "seconds": 28.5
+      },
+      {
+        "set": "In-the-Wild",
+        "condition": "amrnb_12k2+loss+noise",
+        "model": "add-wav2vec-large+add-xls-r-1b",
+        "calibrated": true,
+        "n_bona": 600,
+        "n_spoof": 600,
+        "eer": 0.0933,
+        "threshold": 0.1614,
+        "detect_at_1pct_far": 0.77,
+        "false_alarm_amber": 0.0367,
+        "detect_amber": 0.8617,
+        "false_alarm_red": 0.0083,
+        "detect_red": 0.71,
+        "false_alarm_amber_ci": [
+          0.0243,
+          0.0549
+        ],
+        "published_eer": null,
+        "seconds": 49.8
+      },
+      {
+        "set": "In-the-Wild",
+        "condition": "ota+g711u",
+        "model": "add-wav2vec-large+add-xls-r-1b",
+        "calibrated": true,
+        "n_bona": 600,
+        "n_spoof": 600,
+        "eer": 0.2367,
+        "threshold": 0.0239,
+        "detect_at_1pct_far": 0.1983,
+        "false_alarm_amber": 0.025,
+        "detect_amber": 0.31,
+        "false_alarm_red": 0.0,
+        "detect_red": 0.11,
+        "false_alarm_amber_ci": [
+          0.0152,
+          0.0408
+        ],
+        "published_eer": null,
+        "seconds": 56.5
+      },
+      {
+        "set": "In-the-Wild",
+        "condition": "ota+amrnb_12k2",
+        "model": "add-wav2vec-large+add-xls-r-1b",
+        "calibrated": true,
+        "n_bona": 600,
+        "n_spoof": 600,
+        "eer": 0.2383,
+        "threshold": 0.1005,
+        "detect_at_1pct_far": 0.255,
+        "false_alarm_amber": 0.0933,
+        "detect_amber": 0.5383,
+        "false_alarm_red": 0.0067,
+        "detect_red": 0.22,
+        "false_alarm_amber_ci": [
+          0.0726,
+          0.1193
+        ],
+        "published_eer": null,
+        "seconds": 75.6
+      },
+      {
+        "set": "In-the-Wild",
+        "condition": "ota+g711u+noise",
+        "model": "add-wav2vec-large+add-xls-r-1b",
+        "calibrated": true,
+        "n_bona": 600,
+        "n_spoof": 600,
+        "eer": 0.2917,
+        "threshold": 0.116,
+        "detect_at_1pct_far": 0.125,
+        "false_alarm_amber": 0.1433,
+        "detect_amber": 0.5383,
+        "false_alarm_red": 0.025,
+        "detect_red": 0.2283,
+        "false_alarm_amber_ci": [
+          0.1176,
+          0.1736
+        ],
+        "published_eer": null,
+        "seconds": 56.3
+      },
       {
         "set": "ReplayDF (real speaker-to-mic replays)",
-        "kind": "replaydf",
         "condition": "clean",
+        "model": "add-wav2vec-large+add-xls-r-1b",
+        "calibrated": true,
         "n_bona": 800,
         "n_spoof": 800,
         "eer": 0.1875,
+        "threshold": 0.0377,
+        "detect_at_1pct_far": 0.2913,
         "false_alarm_amber": 0.0762,
+        "detect_amber": 0.5825,
+        "false_alarm_red": 0.0325,
+        "detect_red": 0.4075,
         "false_alarm_amber_ci": [
           0.0598,
           0.0967
         ],
-        "detect_amber": 0.5825,
-        "detect_red": 0.4075,
-        "by_generator": [
-          {
-            "generator": "bark",
-            "family": "open",
-            "n": 200,
-            "k": 133,
-            "detect_amber": 0.665,
-            "ci": [
-              0.597,
-              0.7268
-            ],
-            "detect_red": 0.47
-          },
-          {
-            "generator": "vits",
-            "family": "open",
-            "n": 200,
-            "k": 81,
-            "detect_amber": 0.405,
-            "ci": [
-              0.3394,
-              0.4742
-            ],
-            "detect_red": 0.18
-          },
-          {
-            "generator": "xtts_v1.1",
-            "family": "open",
-            "n": 200,
-            "k": 127,
-            "detect_amber": 0.635,
-            "ci": [
-              0.5663,
-              0.6986
-            ],
-            "detect_red": 0.49
-          },
-          {
-            "generator": "xtts_v2",
-            "family": "open",
-            "n": 200,
-            "k": 125,
-            "detect_amber": 0.625,
-            "ci": [
-              0.5561,
-              0.6891
-            ],
-            "detect_red": 0.49
-          }
-        ]
+        "published_eer": null,
+        "seconds": 36.6
       },
       {
         "set": "ReplayDF (real speaker-to-mic replays)",
-        "kind": "replaydf",
         "condition": "g711u",
+        "model": "add-wav2vec-large+add-xls-r-1b",
+        "calibrated": true,
         "n_bona": 800,
         "n_spoof": 800,
         "eer": 0.2812,
+        "threshold": 0.0507,
+        "detect_at_1pct_far": 0.1875,
         "false_alarm_amber": 0.1125,
+        "detect_amber": 0.5175,
+        "false_alarm_red": 0.0638,
+        "detect_red": 0.3762,
         "false_alarm_amber_ci": [
           0.0924,
           0.1363
         ],
-        "detect_amber": 0.5175,
-        "detect_red": 0.3762,
-        "by_generator": [
-          {
-            "generator": "bark",
-            "family": "open",
-            "n": 200,
-            "k": 140,
-            "detect_amber": 0.7,
-            "ci": [
-              0.6332,
-              0.7593
-            ],
-            "detect_red": 0.495
-          },
-          {
-            "generator": "vits",
-            "family": "open",
-            "n": 200,
-            "k": 35,
-            "detect_amber": 0.175,
-            "ci": [
-              0.1286,
-              0.2336
-            ],
-            "detect_red": 0.095
-          },
-          {
-            "generator": "xtts_v1.1",
-            "family": "open",
-            "n": 200,
-            "k": 123,
-            "detect_amber": 0.615,
-            "ci": [
-              0.546,
-              0.6797
-            ],
-            "detect_red": 0.465
-          },
-          {
-            "generator": "xtts_v2",
-            "family": "open",
-            "n": 200,
-            "k": 116,
-            "detect_amber": 0.58,
-            "ci": [
-              0.5107,
-              0.6463
-            ],
-            "detect_red": 0.45
-          }
-        ]
+        "published_eer": null,
+        "seconds": 36.2
       },
       {
         "set": "ReplayDF (real speaker-to-mic replays)",
-        "kind": "replaydf",
         "condition": "amrnb_12k2",
+        "model": "add-wav2vec-large+add-xls-r-1b",
+        "calibrated": true,
         "n_bona": 800,
         "n_spoof": 800,
         "eer": 0.2662,
+        "threshold": 0.1561,
+        "detect_at_1pct_far": 0.1938,
         "false_alarm_amber": 0.1888,
+        "detect_amber": 0.6288,
+        "false_alarm_red": 0.0788,
+        "detect_red": 0.4175,
         "false_alarm_amber_ci": [
           0.1631,
           0.2173
         ],
-        "detect_amber": 0.6288,
-        "detect_red": 0.4175,
-        "by_generator": [
-          {
-            "generator": "bark",
-            "family": "open",
-            "n": 200,
-            "k": 144,
-            "detect_amber": 0.72,
-            "ci": [
-              0.6541,
-              0.7776
-            ],
-            "detect_red": 0.42
-          },
-          {
-            "generator": "vits",
-            "family": "open",
-            "n": 200,
-            "k": 65,
-            "detect_amber": 0.325,
-            "ci": [
-              0.2639,
-              0.3927
-            ],
-            "detect_red": 0.12
-          },
-          {
-            "generator": "xtts_v1.1",
-            "family": "open",
-            "n": 200,
-            "k": 142,
-            "detect_amber": 0.71,
-            "ci": [
-              0.6436,
-              0.7685
-            ],
-            "detect_red": 0.555
-          },
-          {
-            "generator": "xtts_v2",
-            "family": "open",
-            "n": 200,
-            "k": 152,
-            "detect_amber": 0.76,
-            "ci": [
-              0.6963,
-              0.8139
-            ],
-            "detect_red": 0.575
-          }
-        ]
+        "published_eer": null,
+        "seconds": 70.2
+      },
+      {
+        "set": "Stock AI voices",
+        "condition": "clean",
+        "model": "add-wav2vec-large+add-xls-r-1b",
+        "calibrated": true,
+        "n_bona": 474,
+        "n_spoof": 223,
+        "eer": 0.0315,
+        "threshold": 0.0611,
+        "detect_at_1pct_far": 0.9103,
+        "false_alarm_amber": 0.0084,
+        "detect_amber": 0.8969,
+        "false_alarm_red": 0.0,
+        "detect_red": 0.8027,
+        "false_alarm_amber_ci": [
+          0.0033,
+          0.0215
+        ],
+        "published_eer": null,
+        "seconds": 16.2
+      },
+      {
+        "set": "Stock AI voices",
+        "condition": "g711u",
+        "model": "add-wav2vec-large+add-xls-r-1b",
+        "calibrated": true,
+        "n_bona": 474,
+        "n_spoof": 223,
+        "eer": 0.0402,
+        "threshold": 0.0552,
+        "detect_at_1pct_far": 0.8341,
+        "false_alarm_amber": 0.0127,
+        "detect_amber": 0.8341,
+        "false_alarm_red": 0.0,
+        "detect_red": 0.7623,
+        "false_alarm_amber_ci": [
+          0.0058,
+          0.0273
+        ],
+        "published_eer": null,
+        "seconds": 15.7
+      },
+      {
+        "set": "Stock AI voices",
+        "condition": "ota+g711u",
+        "model": "add-wav2vec-large+add-xls-r-1b",
+        "calibrated": true,
+        "n_bona": 474,
+        "n_spoof": 223,
+        "eer": 0.4,
+        "threshold": 0.0077,
+        "detect_at_1pct_far": 0.0269,
+        "false_alarm_amber": 0.0295,
+        "detect_amber": 0.0628,
+        "false_alarm_red": 0.0,
+        "detect_red": 0.0135,
+        "false_alarm_amber_ci": [
+          0.0177,
+          0.049
+        ],
+        "published_eer": null,
+        "seconds": 45.0
+      },
+      {
+        "set": "Stock AI voices",
+        "condition": "ota+amrnb_12k2",
+        "model": "add-wav2vec-large+add-xls-r-1b",
+        "calibrated": true,
+        "n_bona": 474,
+        "n_spoof": 223,
+        "eer": 0.3446,
+        "threshold": 0.0534,
+        "detect_at_1pct_far": 0.0628,
+        "false_alarm_amber": 0.1055,
+        "detect_amber": 0.2466,
+        "false_alarm_red": 0.0084,
+        "detect_red": 0.0448,
+        "false_alarm_amber_ci": [
+          0.0809,
+          0.1364
+        ],
+        "published_eer": null,
+        "seconds": 63.3
+      },
+      {
+        "set": "Stock AI voices",
+        "condition": "ota+g711u+noise",
+        "model": "add-wav2vec-large+add-xls-r-1b",
+        "calibrated": true,
+        "n_bona": 474,
+        "n_spoof": 223,
+        "eer": 0.3892,
+        "threshold": 0.0559,
+        "detect_at_1pct_far": 0.0717,
+        "false_alarm_amber": 0.1519,
+        "detect_amber": 0.3632,
+        "false_alarm_red": 0.0338,
+        "detect_red": 0.1525,
+        "false_alarm_amber_ci": [
+          0.1224,
+          0.187
+        ],
+        "published_eer": null,
+        "seconds": 43.6
       }
-    ],
-    "max_genuine_amber": 0.05,
-    "genuine_target_met": false
-  },
-  "indiacall": null,
-  "notes": [
-    "Detector EERs use the first 4 s of each clip, passed through the named phone channel (ffmpeg codecs).",
-    "IndiaCall: teammates' and volunteers' consented voices and the teammates' clones, streamed through the live engine over G.711. Genuine reply delays are sampled from a placeholder distribution (log-normal, median 0.64 s, clipped to 0.3-1.6 s), because data/indiacall/human_lags.json did not exist yet; attacker delays come from the attack model. Audio, words, scoring, policy and passkey signatures are real.",
-    "Genuine calls from another number are reported apart from the registered number: the policy gives them a liveness check by design, so they are expected to reach AMBER and are not counted against the 5% target.",
-    "Detection only: attacks that spoof the registered number carry no caller-ID flag, so their tier comes from the voice signals alone.",
-    "Speakers whose voices were cloned were never in S1 training data.",
-    "Phone mic, played through a speaker: \"ota\" channels are simulated (ml/augment/telephony.py over_the_air): a small loudspeaker 15 cm to 1 m from the phone in a synthetic room, room noise, the phone's noise suppressor and AGC, then the codec. Genuine clips in those channels are spoken into the same phone from 3 to 80 cm, without the loudspeaker. ReplayDF rows are real re-recordings in which genuine speech was replayed through the loudspeaker too, so their false alarms are a worst case."
-  ]
+    ]
+  }
 }
