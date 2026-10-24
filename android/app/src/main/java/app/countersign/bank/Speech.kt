@@ -6,6 +6,7 @@ import com.k2fsa.sherpa.onnx.FeatureConfig
 import com.k2fsa.sherpa.onnx.OfflineDolphinModelConfig
 import com.k2fsa.sherpa.onnx.OfflineModelConfig
 import com.k2fsa.sherpa.onnx.OfflineMoonshineModelConfig
+import com.k2fsa.sherpa.onnx.OfflineNemoEncDecCtcModelConfig
 import com.k2fsa.sherpa.onnx.OfflineOmnilingualAsrCtcModelConfig
 import com.k2fsa.sherpa.onnx.OfflineRecognizer
 import com.k2fsa.sherpa.onnx.OfflineRecognizerConfig
@@ -50,6 +51,7 @@ object Speech {
                 when (a.getString("kind")) {
                     "dolphin" -> dolphin = OfflineDolphinModelConfig(f(a, "model"))
                     "omnilingual" -> omnilingual = OfflineOmnilingualAsrCtcModelConfig(f(a, "model"))
+                    "nemo_ctc" -> nemo = OfflineNemoEncDecCtcModelConfig(f(a, "model")) // IndicConformer (Hindi), fast-conformer (English)
                     "moonshine_v2" -> moonshine = OfflineMoonshineModelConfig().apply {
                         encoder = f(a, "encoder")
                         mergedDecoder = f(a, "decoder")

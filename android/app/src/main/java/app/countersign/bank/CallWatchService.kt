@@ -128,7 +128,7 @@ class CallWatchService : Service() {
         val peer = family(number)
         val c = Current(UUID.randomUUID().toString(), kind, incoming, peer, answered = event == "answered")
         current = c
-        CallRisk.reset(c.id)
+        CallRisk.reset(c.id, this)
         CallContext.started(this, c.id, kind, incoming, number, peer)
         real?.callEvent(c.id, event, kind, peer)
         if (incoming && peer != null) real?.autoCheck(c.id, peer)

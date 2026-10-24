@@ -1,7 +1,11 @@
 """The server's stronger check (`/ws/listen`): the phone streams a suspicious call here and gets verdicts back.
 
-    phone ──16 kHz PCM──► VAD ──utterance──► speech-to-text (Omnilingual 1B) ──► cues + our classifier ──┐
-                     └──► 4 s windows of speech ──► S1, the full AntiDeepfake W2V-Large (24 layers) ──────┴► fusion ─► listen_verdict
+    phone ──16 kHz PCM──► VAD ──utterance──► speech-to-text (Omnilingual 1B) ──► the conversation check ──┐
+                     └──► 4 s windows of speech ──► S1, the full AntiDeepfake W2V-Large (24 layers) ───────┴► listen_verdict
+
+The conversation check is the phone's own (engine/listener/conversation.py: the fine-tuned conversation model, the
+move matcher, the accumulator), run here on better audio and a larger speech-to-text model. Without those models on
+the laptop it falls back to basic mode (cue rules + the small classifier through fusion).
 
 When it runs: the phone always checks the call itself first; only once the phone's own level reaches amber does
 it open this socket (a likely scam is what the stronger check is for). The server can raise the level, never
@@ -24,10 +28,22 @@ import numpy as np
 
 from engine.audio.vad import StreamingVAD
 from engine.listener.classifier import classifier
-from engine.listener.fusion import Verdict, fuse
+from engine.listener.fusion import LEVELS, Verdict, fuse
 from engine.listener.rules import CallScorer
 
 log = logging.getLogger(__name__)
+
+
+def conversation_call():
+    """A conversation-check call, or None (basic mode) when the models aren't on this laptop."""
+    from engine.listener import conversation
+
+    try:
+        conversation.conv_model(), conversation.base_model(), conversation.config()
+    except Exception as e:  # noqa: BLE001 - any missing file or runtime means basic mode
+        log.warning("conversation models not loaded, basic mode: %s", e)
+        return None
+    return conversation.Call()
 
 RATE = 16000
 MAX_UTTERANCE_S = 8.0
@@ -51,6 +67,7 @@ class ListenSession:
         self.customer_id, self.call_id, self.lang = customer_id, call_id, lang
         self.transcribe, self.voice, self.send, self.on_scam = transcribe, voice, send, on_scam
         self.vad = StreamingVAD(sample_rate=RATE)
+        self.conv = conversation_call()
         self.scorer = CallScorer()
         self.clf = classifier()
         self.context: set[str] = set()
@@ -66,6 +83,7 @@ class ListenSession:
         self._last_sent = 0.0
         self._tasks: set[asyncio.Task] = set()
         self._asr = asyncio.Lock()
+        self._conv_lock = asyncio.Lock()
 
     # ------------------------------------------------------------------ input
     async def on_audio(self, pcm: bytes) -> None:
@@ -128,15 +146,25 @@ class ListenSession:
 
     async def on_text(self, text: str) -> None:
         self.heard.append(text)
-        self.scorer.feed(text)
+        if self.conv is not None:
+            async with self._conv_lock:  # segments in order, one at a time
+                await asyncio.to_thread(self.conv.feed, text)
+        else:
+            self.scorer.feed(text)
         await self._refresh()
 
     async def _refresh(self) -> None:
         before = self.verdict.level
-        j = self.clf.judge(" ".join(self.heard))
-        self.p_scam = None if j.abstain else j.p_scam
-        v = fuse(self.scorer.result(), self.context, judge=j, prev=before)
-        self.verdict = Verdict(v.level, v.type, v.cues, sorted(set(v.sources) | {"server"}))
+        if self.conv is not None:
+            st = self.conv.set_context(self.context)
+            self.p_scam = st.p
+            level = st.level if LEVELS.index(st.level) >= LEVELS.index(before) else before
+            self.verdict = Verdict(level, st.type, st.reasons, sorted(set(st.sources) | {"server"}))
+        else:
+            j = self.clf.judge(" ".join(self.heard))
+            self.p_scam = None if j.abstain else j.p_scam
+            v = fuse(self.scorer.result(), self.context, judge=j, prev=before)
+            self.verdict = Verdict(v.level, v.type, v.cues, sorted(set(v.sources) | {"server"}))
         if self.verdict.level == "scam" and before != "scam" and self.on_scam:
             self.on_scam(self.verdict, self._ring.copy())
         await self._publish()

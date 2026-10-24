@@ -3,10 +3,11 @@
     python -m ml.eval.kit data/kit             # our kit, with its expected.csv: a pass/fail table in a few minutes
     python -m ml.eval.kit /path/to/jury/folder # any folder: .wav/.mp3/.m4a/.ogg/.flac/.amr recordings and .txt messages
 
-The same model files the phone ships: Silero VAD + Omnilingual speech-to-text (sherpa-onnx), the cue rules, our
-classifier and fusion (assets/), and the voice-clone model (ONNX). A recording gets two answers: what the words say
-(cues + classifier, as on "Check a recording") and whether the voice sounds AI-made. Reproducibility only: on the
-phone this all runs on the phone.
+The same model files the phone ships: Silero VAD + Omnilingual speech-to-text (sherpa-onnx), the conversation check
+(the fine-tuned conversation model, the move matcher and the accumulator, engine/listener/conversation.py) and the
+voice-clone model (ONNX). A recording gets two answers: what the call says (as on "Check a recording") and whether the
+voice sounds AI-made. `--basic` uses basic mode instead (cue rules + our small classifier, what the phone does before
+the model pack is installed). Reproducibility only: on the phone this all runs on the phone.
 """
 
 from __future__ import annotations
@@ -73,7 +74,18 @@ class Phone:
         return float(np.asarray(out).reshape(-1)[-1])
 
 
-def run(folder: Path) -> list[dict]:
+def check(text: str, basic: bool, min_words: int | None = None) -> tuple[str, str, list[str], float | None]:
+    """(level, type, why, p) from the conversation check, or from basic mode."""
+    if basic:
+        a = analyze_text(text, min_words=min_words)
+        return a.level, a.type, a.cues, a.p_scam
+    from engine.listener.conversation import analyze_text as conv_text
+
+    st = conv_text(text)
+    return st.level, st.type, st.reasons, st.p
+
+
+def run(folder: Path, basic: bool = False) -> list[dict]:
     expected = {}
     if (folder / "expected.csv").exists():
         with open(folder / "expected.csv", encoding="utf-8") as fh:
@@ -85,24 +97,24 @@ def run(folder: Path) -> list[dict]:
         t0 = time.time()
         if p.suffix.lower() == ".txt":
             text, voice, secs = p.read_text(encoding="utf-8").strip(), None, 0.0
-            a = analyze_text(text)
+            level, kind, why, p_scam = check(text, basic)
         else:
             x = load_audio(p)
             text, secs = phone.transcribe(x), len(x) / 16000
             voice = phone.voice_score(x)
-            a = analyze_text(text, min_words=12)  # the words alone, as the phone's "what the words say"
+            level, kind, why, p_scam = check(text, basic, min_words=12)  # what the call says, as on "Check a recording"
         thr = phone.voice_meta["threshold"] if phone and phone.voice_meta else 0.5
         e = expected.get(p.name, {})
         want = e.get("expect")
         if want in ("scam", "harmless"):
-            ok = (a.level in ("warn", "scam")) == (want == "scam")
+            ok = (level in ("warn", "scam")) == (want == "scam")
         elif want in ("ai", "real"):
             ok = None if voice is None else (voice >= thr) == (want == "ai")
         else:
             ok = None
         out.append({
             "file": p.name, "kind": e.get("kind", "text" if p.suffix == ".txt" else "recording"), "expect": want or "?",
-            "level": a.level, "type": a.type, "why": a.cues[:4], "p_scam": None if a.p_scam is None else round(a.p_scam, 3),
+            "level": level, "type": kind, "why": why[:4], "p_scam": None if p_scam is None else round(p_scam, 3),
             "voice_ai": None if voice is None else round(voice, 3), "pass": ok, "seconds": round(secs, 1), "took_s": round(time.time() - t0, 2),
             "heard": text[:160],
         })  # fmt: skip
@@ -133,9 +145,10 @@ def main() -> int:
     ap = argparse.ArgumentParser()
     ap.add_argument("folder", type=Path)
     ap.add_argument("--json", type=Path, help="also write the rows here")
+    ap.add_argument("--basic", action="store_true", help="basic mode (no conversation models)")
     a = ap.parse_args()
     t0 = time.time()
-    rows = run(a.folder)
+    rows = run(a.folder, a.basic)
     print(table(rows))
     print(f"\n{len(rows)} items in {time.time() - t0:.0f} s on CPU", file=sys.stderr)
     out = a.json or (ROOT / "models" / "eval" / "kit.json" if a.folder.resolve() == (ROOT / "data" / "kit").resolve() else None)

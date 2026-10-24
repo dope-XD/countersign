@@ -1,0 +1,41 @@
+{
+  "version": 1,
+  "about": "The call accumulator (engine/listener/conversation.py, data/listen/Conversation.kt): thresholds on the conversation model's p, set on dev calls only (ml/eval/conv_eval.py) so that 10% / 3% / 0.5% of genuine dev calls ever reach watch / warn / scam (trusted caller: 3% / 0.5% / 0.1%).",
+  "dev_genuine_calls": {
+    "icfd": 1467,
+    "ours": 321
+  },
+  "smooth": 2,
+  "scam_run": 2,
+  "why_rise": 0.15,
+  "trusted_context": [
+    "caller_verified",
+    "known_contact"
+  ],
+  "warn_context": [
+    "caller_check_failed",
+    "remote_app_opened"
+  ],
+  "scam_context": [
+    "remote_app_opened",
+    "caller_check_failed",
+    "video_call_unknown",
+    "international_number"
+  ],
+  "shown_context": [
+    "remote_app_opened",
+    "caller_check_failed",
+    "video_call_unknown",
+    "international_number",
+    "long_call",
+    "synthetic_voice"
+  ],
+  "t_watch": 0.2213,
+  "t_warn": 0.9442,
+  "t_scam": 0.9442,
+  "trusted": {
+    "t_watch": 0.9442,
+    "t_warn": 0.9846,
+    "t_scam": 0.9846
+  }
+}
