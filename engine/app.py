@@ -592,6 +592,69 @@ def _event_topics(conn: Request | WebSocket, topics: str) -> list[str]:
     return [t for t in names if t.startswith("app:") and auth.is_device(conn, t.split(":", 1)[1])]
 
 
+@app.websocket("/ws/listen")
+async def ws_listen(ws: WebSocket, call_id: str = "", lang: str = "en", token: str = ""):
+    """The call listener's stronger check (docs/agents/CONTRACT.md, "Call listener"). Audio is kept in memory only."""
+    from engine.listener.judge import OllamaJudge
+    from engine.listener.live import ListenSession
+
+    cid = auth.device_customer(ws) or auth.token_customer(token)
+    me = world.customer(cid) if cid else None
+    await ws.accept()
+    if me is None or not call_id or len(call_id) > 64:
+        await ws.close(code=4401)
+        return
+    if not me.stronger_check:
+        await ws.close(code=4403)
+        return
+    if len(_listens) >= settings.max_listens:
+        await _send(ws, json.dumps({"type": "busy"}))
+        await ws.close(code=1013)
+        return
+    judge = None if settings.listen_judge == "off" else OllamaJudge(settings.listen_judge, timeout=20)
+
+    async def send(msg: dict) -> bool:
+        return await _send(ws, json.dumps(msg))
+
+    def on_scam(v):
+        callcheck.raise_alert(me, call_id, v.type, v.cues, sorted(set(v.sources) | {"server"}))
+
+    sess = ListenSession(
+        me.id,
+        call_id,
+        lang if lang in ("en", "hi", "hinglish") else "en",
+        lambda audio, language: s3_liveness.asr.transcribe(audio, language=language),
+        judge.judge if judge else None,
+        send,
+        on_scam,
+    )
+    _listens.add(sess)
+    db.audit(me.id, "listen_started", call_id)
+    try:
+        while True:
+            msg = await ws.receive()
+            if msg["type"] == "websocket.disconnect":
+                break
+            if msg.get("bytes"):
+                await sess.on_audio(msg["bytes"])
+            elif msg.get("text"):
+                try:
+                    data = json.loads(msg["text"])
+                except json.JSONDecodeError:
+                    continue
+                if data.get("type") == "context":
+                    await sess.on_context(list(data.get("signals") or [])[:20], data.get("caller_check"))
+    except WebSocketDisconnect:
+        pass
+    finally:
+        _listens.discard(sess)
+        await sess.close()
+        db.audit(me.id, "listen_ended", call_id, level=sess.verdict.level)
+
+
+_listens: set = set()
+
+
 @app.websocket("/ws/events")
 async def ws_events(ws: WebSocket, topics: str = "calls"):
     names = _event_topics(ws, topics)

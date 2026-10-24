@@ -62,6 +62,9 @@ class Settings:
     max_live_calls: int = int(_env("MAX_CALLS", "4"))
     # dev server only: sign-up also takes Android emulator numbers (+1 555 521 5554) so `adb emu gsm call` matches
     allow_test_numbers: bool = _env("ALLOW_TEST_NUMBERS", "0") == "1"
+    # the call listener's stronger check (/ws/listen): an LLM judge through Ollama on this machine ("off" = cues only)
+    listen_judge: str = _env("LISTEN_JUDGE", "qwen2.5:7b")
+    max_listens: int = int(_env("MAX_LISTENS", "4"))  # phones streaming call audio at once
 
     # Amazon Connect ingest (engine/ingest/connect.py). The secret is the Lambda's
     # CONNECT_HMAC_SECRET; empty turns the endpoint off. The AWS profile (or the usual AWS_*

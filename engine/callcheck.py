@@ -426,8 +426,12 @@ async def scam_alert(body: ScamAlert, request: Request) -> dict:
     """The listener's verdict reached "scam" (or the user pressed "Alert family"): pay guard on, a fraud-desk case,
     and every family member's phone rings. Members whose app is offline come back in `text_these`, so the phone can
     text them from its own SIM."""
-    me = _me(request)
-    key = (me.id, body.call_id)
+    return raise_alert(_me(request), body.call_id, body.type, body.cues, body.sources)
+
+
+def raise_alert(me: Customer, call_id: str, scam_type: str, cues: list[str], sources: list[str]) -> dict:
+    """Scam context, a case and the family alarm, once per call: from the phone's POST or from /ws/listen's own verdict."""
+    key = (me.id, call_id)
     first = key not in _alerts
     aid = _alerts.setdefault(key, new_id("lsn"))
     if me.id not in _scam:  # a caller-check scam on this call already has the pay guard on: keep its reason
@@ -436,15 +440,15 @@ async def scam_alert(body: ScamAlert, request: Request) -> dict:
             aid,
             "",
             "",
-            f"listener:{body.type}",
-            body.call_id,
-            ["SCAM_CALL", body.type.upper()],
-            {"cues": body.cues, "sources": body.sources},
+            f"listener:{scam_type}",
+            call_id,
+            ["SCAM_CALL", scam_type.upper()],
+            {"cues": cues, "sources": sources},
             event="listener_scam",
         )
     alarmed, text_these = [], []
     if first:
-        db.audit(me.id, "scam_call_alert", aid, type=body.type, cues=body.cues, sources=body.sources)
+        db.audit(me.id, "scam_call_alert", aid, type=scam_type, cues=cues, sources=sources)
         now = time.time()
         for fid in me.family:
             member = world.customer(fid)
@@ -452,7 +456,7 @@ async def scam_alert(body: ScamAlert, request: Request) -> dict:
                 continue
             hub.publish(
                 f"app:{fid}",
-                {"type": "family_alarm", "from": me.id, "label": member.label_for(me.id), "scam_type": body.type, "level": "scam", "at": now},
+                {"type": "family_alarm", "from": me.id, "label": member.label_for(me.id), "scam_type": scam_type, "level": "scam", "at": now},
             )
             (alarmed if now - seen(fid) <= ONLINE_S else text_these).append(fid)
         db.audit(me.id, "family_alarmed", aid, online=alarmed, offline=text_these)

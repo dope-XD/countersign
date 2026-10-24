@@ -130,8 +130,8 @@ Sent once when a call first reaches `scam` (or the user presses "Alert family").
 - `alarmed`: members who got a `family_alarm` event. `text_these`: members whose app is offline. If `sms_fallback` is on, the phone texts them from its own SIM. If the request fails (no internet), the phone texts every member.
 - A second alert for the same `call_id` doesn't alarm anyone again.
 
-### `WS /ws/listen?token=<device token>&call_id=<id>&lang=en|hi`
-The stronger check, only when `stronger_check` is on and the server is reachable. Audio goes to the bank's own server only, is never stored, and is dropped when the socket closes.
+### `WS /ws/listen?call_id=<id>&lang=en|hi|hinglish`
+The stronger check, only when `stronger_check` is on and the server is reachable. Auth: the `X-Device-Token` header (OkHttp sets it on the upgrade request), or `&token=<device token>`. Close codes: 4401 not signed in, 4403 `stronger_check` is off, 1013 busy (carry on phone-only). When the server's verdict reaches `scam`, the server raises the alert itself (same as `scam-alert`, once per call), so the family is alarmed even if the phone's POST fails. Audio goes to the bank's own server only, is never stored, and is dropped when the socket closes.
 - Phone → server, binary: 16 kHz mono 16-bit little-endian PCM, 20–200 ms per frame, only while the call is active.
 - Phone → server, text: `{"type": "context", "signals": ["unknown_number", "remote_app_opened"], "caller_check": "not_them"}` whenever context changes.
 - Server → phone, text, every few seconds and on change:
