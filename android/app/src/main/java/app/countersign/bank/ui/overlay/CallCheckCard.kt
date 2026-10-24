@@ -65,6 +65,7 @@ import app.countersign.bank.ui.Red
 import app.countersign.bank.ui.components.BigButton
 import app.countersign.bank.ui.components.ButtonKind
 import app.countersign.bank.ui.components.MemberFace
+import app.countersign.bank.ui.components.familyColours
 import app.countersign.bank.ui.components.VerdictChip
 import kotlinx.coroutines.delay
 
@@ -189,11 +190,13 @@ private fun UnknownCaller(family: List<Member>, onPickMember: (String) -> Unit, 
     }
     if (picking) {
         Row(Modifier.horizontalScroll(rememberScrollState()), horizontalArrangement = Arrangement.spacedBy(4.dp)) {
+            val colours = remember(family) { familyColours(family) }
             family.forEach { m ->
                 MemberFace(
                     m,
                     Modifier.clickable(role = Role.Button, onClickLabel = stringResource(R.string.card_pick_action, m.label)) { onPickMember(m.id) },
                     size = 56.dp,
+                    colour = colours.getValue(m.id),
                 )
             }
         }

@@ -74,4 +74,23 @@
     <string name="perm_sms">SMS</string>
     <string name="perm_sms_why">धोखे की कॉल के दौरान, अगर परिवार का ऐप बंद हो, तो उन्हें SMS भेजने के लिए।</string>
     <string name="setup_done">सब तैयार है</string>
+    <string name="settings">सेटिंग</string>
+    <string name="home_protected">आप सुरक्षित हैं</string>
+    <string name="home_needs_ok">कुछ चीज़ों को आपकी मंज़ूरी चाहिए</string>
+    <string name="home_fix">अनुमति देने के लिए दबाएँ: %1$s</string>
+    <string name="home_family">आपका परिवार</string>
+    <string name="home_add_family">परिवार जोड़ें</string>
+    <string name="home_recent">हाल की जाँचें</string>
+    <string name="home_see_all">सब देखें</string>
+    <string name="home_no_checks">अभी कोई जाँच नहीं हुई।</string>
+    <string name="home_join_title">%1$s आपके परिवार में जुड़ना चाहते हैं</string>
+    <string name="home_scam">सावधान: वो कॉल करने वाले %1$s नहीं थे। उन्हें पैसे न भेजें।</string>
+    <string name="join_label_title">आप इन्हें क्या कहते हैं?</string>
+    <string name="join_label_hint">राहुल, मम्मी, पापा…</string>
+    <string name="action_accept">हाँ, जोड़ें</string>
+    <string name="action_no">नहीं</string>
+    <string name="action_save">सहेजें</string>
+    <string name="history_safe">सच में वही थे</string>
+    <string name="history_danger">वो नहीं थे</string>
+    <string name="history_pending">जाँच हो रही है…</string>
 </resources>

@@ -193,6 +193,9 @@ private fun Permission.copy() = when (this) {
     Permission.BATTERY -> PermissionCopy(Icons.Filled.Settings, R.string.perm_battery, R.string.perm_battery_why)
 }
 
+/** What a permission is called on screen: "Show over other apps". */
+internal fun Permission.title(): Int = copy().title
+
 /** One permission: an icon, what it is, one line why, "Allow", and a small "Skip". The card moves on when it's granted. */
 @Composable
 internal fun PermissionStep(permission: Permission, number: Int, of: Int, onAllow: () -> Unit, onSkip: () -> Unit) {
