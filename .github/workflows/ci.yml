@@ -38,9 +38,9 @@ jobs:
         with:
           packages: "platform-tools platforms;android-36 build-tools;36.0.0"
       - uses: gradle/actions/setup-gradle@v4
-      - name: Build and lint
+      - name: Build, lint and unit tests
         working-directory: android
-        run: ./gradlew assembleDebug lintDebug
+        run: ./gradlew assembleDebug lintDebug testDebugUnitTest
       - uses: actions/upload-artifact@v4
         if: always()
         with:
@@ -48,4 +48,5 @@ jobs:
           path: |
             android/app/build/outputs/apk/debug/*.apk
             android/app/build/reports/lint-results-debug.html
+            android/app/build/reports/tests/
           if-no-files-found: ignore
