@@ -637,9 +637,6 @@
         "new bank account",
         "updated account details",
         "new account details",
-        "wire transfer",
-        "rtgs",
-        "neft",
         "process the payment",
         "release the payment",
         "clear the invoice",
@@ -651,7 +648,10 @@
         "payment release karo",
         "वेंडर को पेमेंट",
         "नया खाता",
-        "पेमेंट अभी कर दो"
+        "पेमेंट अभी कर दो",
+        "do the rtgs",
+        "send by neft today",
+        "urgent wire transfer"
       ]
     },
     "discussion": {
