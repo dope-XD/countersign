@@ -23,6 +23,7 @@ import time
 from contextlib import asynccontextmanager
 
 from fastapi import FastAPI, WebSocket, WebSocketDisconnect
+from fastapi.responses import JSONResponse
 
 from engine import auth, callcheck, cases, mobile
 from engine.config import settings
@@ -73,8 +74,23 @@ app.include_router(mobile.files)
 
 @app.get("/health")
 @app.get("/api/health")
-async def health() -> dict:
-    return {"ok": True, "role": "relay", "uptime_s": round(time.time() - STARTED), "customers": len(world.customers), "analysis": "on the phone"}
+async def health() -> JSONResponse:
+    """Also asks the database, so a keep-alive pinging this keeps a free Postgres from pausing
+    and a broken database shows up as 503 (docs/DEPLOY.md)."""
+    try:
+        db_ok = db.query("SELECT 1 AS ok")[0]["ok"] == 1
+    except Exception as e:
+        log.warning("health: database unreachable: %s", e)
+        db_ok = False
+    body = {
+        "ok": db_ok,
+        "role": "relay",
+        "db": "postgres" if db.url else "sqlite",
+        "uptime_s": round(time.time() - STARTED),
+        "customers": len(world.customers),
+        "analysis": "on the phone",
+    }
+    return JSONResponse(body, status_code=200 if db_ok else 503)
 
 
 @app.get("/api/m/models")
