@@ -29,11 +29,35 @@ const GENERATOR: Record<string, string> = {
   chatterbox: 'Chatterbox (TTS)',
   seedvc: 'Seed-VC (live voice conversion)',
 }
+type CiRow = { n: number; k: number; rate: number; ci: [number, number] }
+type GenBench = { generator: string; family: string; n: number; k: number; detect_amber: number; ci: [number, number]; detect_red: number }
+type RealRow = {
+  set: string
+  kind: 'replaydf' | 'recorded'
+  condition: string
+  n_bona: number
+  n_spoof: number
+  eer: number | null
+  false_alarm_amber: number | null
+  false_alarm_amber_ci?: [number, number]
+  detect_amber: number | null
+  detect_red: number | null
+  by_generator: GenBench[]
+}
+type PhoneMic = {
+  families: (CiRow & { condition: string; family: string; label: string })[]
+  generators: (CiRow & { condition: string; generator: string; family: string; sets: string[]; red: number })[]
+  genuine: (CiRow & { set: string; condition: string })[]
+  real: RealRow[]
+  max_genuine_amber: number
+  genuine_target_met: boolean | null
+}
 type Detection = { level: string; cli_kind: CliKind; spoofed_cli: boolean; n: number; k: number; rate: number; ci: [number, number]; red: number; ended_green: number }
 type Report = {
   generated_at: string
   model: Record<string, string>
   benchmarks: Bench[]
+  phone_mic?: PhoneMic | null
   indiacall?: {
     targets: Target[]
     levels: Level[]
@@ -56,7 +80,11 @@ const CH: Record<string, string> = {
   opus_12k: 'Opus 12k (VoIP)',
   'g711u+loss+noise': 'G.711 + room noise + 3% loss',
   'amrnb_12k2+loss+noise': 'AMR-NB + room noise + 3% loss',
+  'ota+g711u': 'Speaker → phone mic → G.711',
+  'ota+amrnb_12k2': 'Speaker → phone mic → AMR-NB',
+  'ota+g711u+noise': 'Speaker → phone mic in a noisy room → G.711',
 }
+const FAMILY: Record<string, string> = { commercial: 'Commercial TTS', open: 'Open TTS and clones', unknown: 'Unknown (In-the-Wild)' }
 const opt = (x?: number | null) => (x != null ? pct(x) : '—')
 const pct = (x: number) => `${(x * 100).toFixed(x < 0.1 ? 2 : 1)}%`
 const ci = (c: [number, number]) => `[${pct(c[0])}, ${pct(c[1])}]`
@@ -215,6 +243,8 @@ export default function Metrics() {
           </section>
         )}
 
+        {r?.phone_mic && <PhoneMicSection pm={r.phone_mic} />}
+
         {r && r.benchmarks.length > 0 && (
           <section>
             <h2 className="text-xl font-bold">Detector (S1) error on public test sets</h2>
@@ -280,6 +310,108 @@ export default function Metrics() {
         )}
       </main>
     </div>
+  )
+}
+
+function PhoneMicSection({ pm }: { pm: PhoneMic }) {
+  const conds = [...new Set(pm.families.map((f) => f.condition))]
+  const fams = [...new Set(pm.families.map((f) => f.family))]
+  const main = conds[0]
+  return (
+    <section className="space-y-4">
+      <div>
+        <h2 className="text-xl font-bold">Phone mic, played through a speaker</h2>
+        <p className="text-xs text-muted">
+          The test a judge can run: download an AI voice, play it from a laptop into the phone during a call. S1 alone, one 4 s window: the share of fake windows
+          that reach AMBER (score ≥ 0.30), with 95% Wilson intervals. These channels are simulated (speaker, room, the phone&apos;s noise suppressor and AGC, codec),
+          so they are an estimate; real re-recordings are further down.
+        </p>
+      </div>
+      {fams.length > 0 && (
+        <table className="w-full text-sm">
+          <thead>
+            <tr className="border-b border-ink text-left"><th className="py-2">Generators</th>{conds.map((c) => <th key={c}>{CH[c] || c}</th>)}</tr>
+          </thead>
+          <tbody>
+            {fams.map((f) => (
+              <tr key={f} className="border-b border-line">
+                <td className="py-2 font-semibold">{FAMILY[f] || f}</td>
+                {conds.map((c) => {
+                  const x = pm.families.find((y) => y.family === f && y.condition === c)
+                  return (
+                    <td key={c}>
+                      {x ? <>{pct(x.rate)} <span className="font-mono text-xs text-muted">{ci(x.ci)} n={x.n}</span></> : '—'}
+                    </td>
+                  )
+                })}
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      )}
+      <div className="grid gap-6 lg:grid-cols-2">
+        {main && (
+          <div>
+            <h3 className="font-bold">By generator, {CH[main] || main}</h3>
+            <table className="mt-2 w-full text-sm">
+              <thead><tr className="border-b border-ink text-left"><th className="py-2">Generator</th><th>Fakes at AMBER</th><th>RED</th><th>n</th></tr></thead>
+              <tbody>
+                {pm.generators.filter((g) => g.condition === main).map((g) => (
+                  <tr key={g.generator} className="border-b border-line">
+                    <td className="py-2">{g.generator}<div className="text-xs text-muted">{FAMILY[g.family] || g.family}</div></td>
+                    <td className={g.rate < 0.5 ? 'font-semibold text-red' : ''}>{pct(g.rate)} <span className="font-mono text-xs text-muted">{ci(g.ci)}</span></td>
+                    <td>{pct(g.red)}</td>
+                    <td className="font-mono text-xs">{g.n}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
+        <div>
+          <h3 className="font-bold">False alarms on genuine phone-mic speech</h3>
+          <p className="text-xs text-muted">Genuine clips spoken into the same phone (3–80 cm, no loudspeaker) that reach AMBER. Target {pct(pm.max_genuine_amber)} or fewer.</p>
+          <table className="mt-2 w-full text-sm">
+            <thead><tr className="border-b border-ink text-left"><th className="py-2">Set</th><th>Channel</th><th>Real at AMBER</th><th>n</th></tr></thead>
+            <tbody>
+              {pm.genuine.map((g) => (
+                <tr key={`${g.set}-${g.condition}`} className="border-b border-line">
+                  <td className="py-2">{g.set}</td>
+                  <td>{CH[g.condition] || g.condition}</td>
+                  <td className={g.rate > pm.max_genuine_amber ? 'font-semibold text-red' : 'text-green'}>{pct(g.rate)} <span className="font-mono text-xs text-muted">{ci(g.ci)}</span></td>
+                  <td className="font-mono text-xs">{g.n}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </div>
+      {pm.real.length > 0 && (
+        <div>
+          <h3 className="font-bold">Real re-recordings</h3>
+          <p className="text-xs text-muted">
+            ReplayDF: speech actually played through laptop, monitor and Bluetooth speakers into iPhone, laptop and USB mics (Müller et al., Interspeech 2025). Its
+            genuine speech was replayed through the speaker too, so its false alarms are a worst case. Phone mic recordings: our own calls, once recorded.
+          </p>
+          <table className="mt-2 w-full text-sm">
+            <thead><tr className="border-b border-ink text-left"><th className="py-2">Set</th><th>Channel</th><th>EER</th><th>Real at AMBER</th><th>Fakes at AMBER</th><th>Fakes at RED</th><th>n (real / fake)</th></tr></thead>
+            <tbody>
+              {pm.real.map((x) => (
+                <tr key={`${x.set}-${x.condition}`} className="border-b border-line">
+                  <td className="py-2">{x.set}</td>
+                  <td>{CH[x.condition] || x.condition}</td>
+                  <td>{opt(x.eer)}</td>
+                  <td>{opt(x.false_alarm_amber)}{x.false_alarm_amber_ci && <span className="font-mono text-xs text-muted"> {ci(x.false_alarm_amber_ci)}</span>}</td>
+                  <td>{opt(x.detect_amber)}</td>
+                  <td>{opt(x.detect_red)}</td>
+                  <td className="font-mono text-xs">{x.n_bona} / {x.n_spoof}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
+    </section>
   )
 }
 

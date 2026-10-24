@@ -1,11 +1,20 @@
 {
   "model": "add-wav2vec-large+add-xls-r-1b",
+  "calibration": {
+    "w": [
+      0.2448,
+      0.5171
+    ],
+    "b": -0.3546
+  },
   "set": "Hindi dev (FLEURS, IndicSynth)",
   "manifest": "data/manifests/dev.csv",
   "sources": [
     "fleurs_hi",
     "indicsynth"
   ],
+  "split": null,
+  "tag": null,
   "results": [
     {
       "set": "Hindi dev (FLEURS, IndicSynth)",
@@ -21,8 +30,26 @@
       "detect_amber": 1.0,
       "false_alarm_red": 0.0,
       "detect_red": 1.0,
+      "false_alarm_amber_ci": [
+        0.001,
+        0.0318
+      ],
+      "by_generator": [
+        {
+          "generator": "freevc24",
+          "family": "open",
+          "n": 586,
+          "k": 586,
+          "detect_amber": 1.0,
+          "ci": [
+            0.9935,
+            1.0
+          ],
+          "detect_red": 1.0
+        }
+      ],
       "published_eer": null,
-      "seconds": 17.4
+      "seconds": 17.9
     },
     {
       "set": "Hindi dev (FLEURS, IndicSynth)",
@@ -38,8 +65,26 @@
       "detect_amber": 1.0,
       "false_alarm_red": 0.0,
       "detect_red": 1.0,
+      "false_alarm_amber_ci": [
+        0.0032,
+        0.0409
+      ],
+      "by_generator": [
+        {
+          "generator": "freevc24",
+          "family": "open",
+          "n": 586,
+          "k": 586,
+          "detect_amber": 1.0,
+          "ci": [
+            0.9935,
+            1.0
+          ],
+          "detect_red": 1.0
+        }
+      ],
       "published_eer": null,
-      "seconds": 28.5
+      "seconds": 32.8
     },
     {
       "set": "Hindi dev (FLEURS, IndicSynth)",
@@ -55,8 +100,26 @@
       "detect_amber": 0.6126,
       "false_alarm_red": 0.0,
       "detect_red": 0.3549,
+      "false_alarm_amber_ci": [
+        0.0059,
+        0.0495
+      ],
+      "by_generator": [
+        {
+          "generator": "freevc24",
+          "family": "open",
+          "n": 586,
+          "k": 359,
+          "detect_amber": 0.6126,
+          "ci": [
+            0.5726,
+            0.6512
+          ],
+          "detect_red": 0.3549
+        }
+      ],
       "published_eer": null,
-      "seconds": 16.9
+      "seconds": 18.0
     },
     {
       "set": "Hindi dev (FLEURS, IndicSynth)",
@@ -72,8 +135,131 @@
       "detect_amber": 0.6604,
       "false_alarm_red": 0.0,
       "detect_red": 0.4147,
+      "false_alarm_amber_ci": [
+        0.0032,
+        0.0409
+      ],
+      "by_generator": [
+        {
+          "generator": "freevc24",
+          "family": "open",
+          "n": 586,
+          "k": 387,
+          "detect_amber": 0.6604,
+          "ci": [
+            0.6211,
+            0.6976
+          ],
+          "detect_red": 0.4147
+        }
+      ],
       "published_eer": null,
-      "seconds": 30.0
+      "seconds": 33.6
+    },
+    {
+      "set": "Hindi dev (FLEURS, IndicSynth)",
+      "condition": "ota+g711u",
+      "model": "add-wav2vec-large+add-xls-r-1b",
+      "calibrated": true,
+      "n_bona": 174,
+      "n_spoof": 586,
+      "eer": 0.333,
+      "threshold": 0.0089,
+      "detect_at_1pct_far": 0.0427,
+      "false_alarm_amber": 0.023,
+      "detect_amber": 0.0734,
+      "false_alarm_red": 0.0,
+      "detect_red": 0.0171,
+      "false_alarm_amber_ci": [
+        0.009,
+        0.0576
+      ],
+      "by_generator": [
+        {
+          "generator": "freevc24",
+          "family": "open",
+          "n": 586,
+          "k": 43,
+          "detect_amber": 0.0734,
+          "ci": [
+            0.0549,
+            0.0974
+          ],
+          "detect_red": 0.0171
+        }
+      ],
+      "published_eer": null,
+      "seconds": 50.0
+    },
+    {
+      "set": "Hindi dev (FLEURS, IndicSynth)",
+      "condition": "ota+amrnb_12k2",
+      "model": "add-wav2vec-large+add-xls-r-1b",
+      "calibrated": true,
+      "n_bona": 174,
+      "n_spoof": 586,
+      "eer": 0.3159,
+      "threshold": 0.0398,
+      "detect_at_1pct_far": 0.1075,
+      "false_alarm_amber": 0.0805,
+      "detect_amber": 0.2782,
+      "false_alarm_red": 0.0,
+      "detect_red": 0.0307,
+      "false_alarm_amber_ci": [
+        0.0485,
+        0.1305
+      ],
+      "by_generator": [
+        {
+          "generator": "freevc24",
+          "family": "open",
+          "n": 586,
+          "k": 163,
+          "detect_amber": 0.2782,
+          "ci": [
+            0.2434,
+            0.3158
+          ],
+          "detect_red": 0.0307
+        }
+      ],
+      "published_eer": null,
+      "seconds": 64.7
+    },
+    {
+      "set": "Hindi dev (FLEURS, IndicSynth)",
+      "condition": "ota+g711u+noise",
+      "model": "add-wav2vec-large+add-xls-r-1b",
+      "calibrated": true,
+      "n_bona": 174,
+      "n_spoof": 586,
+      "eer": 0.3502,
+      "threshold": 0.0615,
+      "detect_at_1pct_far": 0.0751,
+      "false_alarm_amber": 0.1264,
+      "detect_amber": 0.3942,
+      "false_alarm_red": 0.0172,
+      "detect_red": 0.1348,
+      "false_alarm_amber_ci": [
+        0.085,
+        0.184
+      ],
+      "by_generator": [
+        {
+          "generator": "freevc24",
+          "family": "open",
+          "n": 586,
+          "k": 231,
+          "detect_amber": 0.3942,
+          "ci": [
+            0.3554,
+            0.4343
+          ],
+          "detect_red": 0.1348
+        }
+      ],
+      "published_eer": null,
+      "seconds": 46.1
     }
   ]
 }

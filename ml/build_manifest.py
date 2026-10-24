@@ -1,13 +1,14 @@
 """Turn downloaded parquet shards into 16 kHz FLAC clips + CSV manifests.
 
     python -m ml.build_manifest
+    python -m ml.build_manifest --replaydf     only data/manifests/replaydf.csv
 
 Writes data/clips/<source>/*.flac and data/manifests/{train,dev,asv19_eval,itw}.csv.
 Clips are cut to at most 6 s, which is all S1 ever sees (4 s windows).
 
 Splits keep sources honest:
   train/dev : ASVspoof19 LA train, IndicSynth Hindi, FLEURS hi (bona fide), Kathbath / MLAAD if present
-  eval only : ASVspoof19 LA eval, In-the-Wild, and IndiaCall (never used here)
+  eval only : ASVspoof19 LA eval, In-the-Wild, ReplayDF, and IndiaCall (never used here)
 """
 
 from __future__ import annotations
@@ -199,6 +200,39 @@ def build_mlaad(limit=3000):
     return out
 
 
+def build_replaydf():
+    """ReplayDF (English): real and MLAAD-generated speech already played through a loudspeaker and
+    re-recorded, so it is benchmarked through the codec only. Extra columns name the setup."""
+    out = []
+    for meta in sorted((DS / "replaydf" / "wav").glob("*/meta.csv")):
+        with open(meta, encoding="utf-8", newline="") as f:
+            rows = [r for r in csv.DictReader(f, delimiter="|") if r["language"] == "en"]
+        for r in rows:
+            p = DS / "replaydf" / r["recorded_file"]
+            if not p.exists():
+                continue
+            x, sr = sf.read(p, dtype="float32", always_2d=True)
+            x = resample(x.mean(axis=1), sr, 16000)[: int(MAX_S * 16000)]
+            bona = r["label"] == "bona-fide"
+            parts = r["original_file"].split("/")
+            out.append(
+                {
+                    "path": _write("replaydf", f"{r['uid']}_{p.stem}", x),
+                    "label": "bonafide" if bona else "spoof",
+                    # M-AILABS paths are <lang>/by_book/<gender>/<speaker>/...; MLAAD ones fake/<lang>/<model>/...
+                    "speaker": parts[3] if bona and len(parts) > 4 else r["architecture"],
+                    "language": "en",
+                    "generator": "-" if bona else r["architecture"],
+                    "source": "replaydf",
+                    "split": "eval",
+                    "setup": r["uid"],
+                    "mic": r["mic"],
+                    "loudspeaker": r["speaker"],
+                }
+            )
+    return out
+
+
 def split_train_dev(rows: list[dict], dev_frac=0.1, seed=0):
     """Per source, hold out whole speakers (or generators when speakers are unknown) for dev,
     until about dev_frac of that source's rows are in dev."""
@@ -225,10 +259,10 @@ def split_train_dev(rows: list[dict], dev_frac=0.1, seed=0):
     return rows
 
 
-def write(name: str, rows: list[dict]):
+def write(name: str, rows: list[dict], extra: tuple[str, ...] = ()):
     MAN.mkdir(parents=True, exist_ok=True)
     with open(MAN / f"{name}.csv", "w", newline="", encoding="utf-8") as f:
-        w = csv.DictWriter(f, FIELDS)
+        w = csv.DictWriter(f, [*FIELDS, *extra])
         w.writeheader()
         w.writerows(rows)
     nb = sum(r["label"] == "bonafide" for r in rows)
@@ -238,6 +272,9 @@ def write(name: str, rows: list[dict]):
 if __name__ == "__main__":
     import sys
 
+    if "--replaydf" in sys.argv:
+        write("replaydf", build_replaydf(), extra=("setup", "mic", "loudspeaker"))
+        sys.exit(0)
     if "--resplit" in sys.argv:
         pool = [r for n in ("train", "dev") for r in read(MAN / f"{n}.csv")]
         pool = split_train_dev(pool)

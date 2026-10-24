@@ -1,0 +1,230 @@
+{
+  "model": "add-wav2vec-large+add-xls-r-1b",
+  "calibration": {
+    "w": [
+      0.2448,
+      0.5171
+    ],
+    "b": -0.3546
+  },
+  "set": "ReplayDF (real speaker-to-mic replays)",
+  "manifest": "data/manifests/replaydf.csv",
+  "sources": null,
+  "split": null,
+  "tag": null,
+  "results": [
+    {
+      "set": "ReplayDF (real speaker-to-mic replays)",
+      "condition": "clean",
+      "model": "add-wav2vec-large+add-xls-r-1b",
+      "calibrated": true,
+      "n_bona": 800,
+      "n_spoof": 800,
+      "eer": 0.1875,
+      "threshold": 0.0377,
+      "detect_at_1pct_far": 0.2913,
+      "false_alarm_amber": 0.0762,
+      "detect_amber": 0.5825,
+      "false_alarm_red": 0.0325,
+      "detect_red": 0.4075,
+      "false_alarm_amber_ci": [
+        0.0598,
+        0.0967
+      ],
+      "by_generator": [
+        {
+          "generator": "bark",
+          "family": "open",
+          "n": 200,
+          "k": 133,
+          "detect_amber": 0.665,
+          "ci": [
+            0.597,
+            0.7268
+          ],
+          "detect_red": 0.47
+        },
+        {
+          "generator": "vits",
+          "family": "open",
+          "n": 200,
+          "k": 81,
+          "detect_amber": 0.405,
+          "ci": [
+            0.3394,
+            0.4742
+          ],
+          "detect_red": 0.18
+        },
+        {
+          "generator": "xtts_v1.1",
+          "family": "open",
+          "n": 200,
+          "k": 127,
+          "detect_amber": 0.635,
+          "ci": [
+            0.5663,
+            0.6986
+          ],
+          "detect_red": 0.49
+        },
+        {
+          "generator": "xtts_v2",
+          "family": "open",
+          "n": 200,
+          "k": 125,
+          "detect_amber": 0.625,
+          "ci": [
+            0.5561,
+            0.6891
+          ],
+          "detect_red": 0.49
+        }
+      ],
+      "published_eer": null,
+      "seconds": 36.6
+    },
+    {
+      "set": "ReplayDF (real speaker-to-mic replays)",
+      "condition": "g711u",
+      "model": "add-wav2vec-large+add-xls-r-1b",
+      "calibrated": true,
+      "n_bona": 800,
+      "n_spoof": 800,
+      "eer": 0.2812,
+      "threshold": 0.0507,
+      "detect_at_1pct_far": 0.1875,
+      "false_alarm_amber": 0.1125,
+      "detect_amber": 0.5175,
+      "false_alarm_red": 0.0638,
+      "detect_red": 0.3762,
+      "false_alarm_amber_ci": [
+        0.0924,
+        0.1363
+      ],
+      "by_generator": [
+        {
+          "generator": "bark",
+          "family": "open",
+          "n": 200,
+          "k": 140,
+          "detect_amber": 0.7,
+          "ci": [
+            0.6332,
+            0.7593
+          ],
+          "detect_red": 0.495
+        },
+        {
+          "generator": "vits",
+          "family": "open",
+          "n": 200,
+          "k": 35,
+          "detect_amber": 0.175,
+          "ci": [
+            0.1286,
+            0.2336
+          ],
+          "detect_red": 0.095
+        },
+        {
+          "generator": "xtts_v1.1",
+          "family": "open",
+          "n": 200,
+          "k": 123,
+          "detect_amber": 0.615,
+          "ci": [
+            0.546,
+            0.6797
+          ],
+          "detect_red": 0.465
+        },
+        {
+          "generator": "xtts_v2",
+          "family": "open",
+          "n": 200,
+          "k": 116,
+          "detect_amber": 0.58,
+          "ci": [
+            0.5107,
+            0.6463
+          ],
+          "detect_red": 0.45
+        }
+      ],
+      "published_eer": null,
+      "seconds": 36.2
+    },
+    {
+      "set": "ReplayDF (real speaker-to-mic replays)",
+      "condition": "amrnb_12k2",
+      "model": "add-wav2vec-large+add-xls-r-1b",
+      "calibrated": true,
+      "n_bona": 800,
+      "n_spoof": 800,
+      "eer": 0.2662,
+      "threshold": 0.1561,
+      "detect_at_1pct_far": 0.1938,
+      "false_alarm_amber": 0.1888,
+      "detect_amber": 0.6288,
+      "false_alarm_red": 0.0788,
+      "detect_red": 0.4175,
+      "false_alarm_amber_ci": [
+        0.1631,
+        0.2173
+      ],
+      "by_generator": [
+        {
+          "generator": "bark",
+          "family": "open",
+          "n": 200,
+          "k": 144,
+          "detect_amber": 0.72,
+          "ci": [
+            0.6541,
+            0.7776
+          ],
+          "detect_red": 0.42
+        },
+        {
+          "generator": "vits",
+          "family": "open",
+          "n": 200,
+          "k": 65,
+          "detect_amber": 0.325,
+          "ci": [
+            0.2639,
+            0.3927
+          ],
+          "detect_red": 0.12
+        },
+        {
+          "generator": "xtts_v1.1",
+          "family": "open",
+          "n": 200,
+          "k": 142,
+          "detect_amber": 0.71,
+          "ci": [
+            0.6436,
+            0.7685
+          ],
+          "detect_red": 0.555
+        },
+        {
+          "generator": "xtts_v2",
+          "family": "open",
+          "n": 200,
+          "k": 152,
+          "detect_amber": 0.76,
+          "ci": [
+            0.6963,
+            0.8139
+          ],
+          "detect_red": 0.575
+        }
+      ],
+      "published_eer": null,
+      "seconds": 70.2
+    }
+  ]
+}

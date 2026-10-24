@@ -16,6 +16,11 @@ The channels include the noisy, lossy ones (HARD_CHANNELS). Fitted on clean code
 calibration pushed most fakes on a noisy line below AMBER (28% of Hindi fakes reached AMBER
 through G.711 + loss + noise).
 
+The over-the-air channels (OTA_CHANNELS, part of HARD_CHANNELS) play each fake from a small
+speaker into a phone mic and each genuine clip into the same phone from a talker's distance.
+`--extra data/manifests/ota_real.csv` adds the train split of real phone-mic recordings
+(ml/ota_recordings.py) as they are: they already went through a phone.
+
 Models that never trained on our train split (the AntiDeepfake ports) are calibrated on
 train.csv instead, which leaves the whole dev split as a held-out test. A model fine-tuned on
 train.csv (the SLS phone/Indic checkpoint) must stay on dev.csv.
@@ -46,6 +51,7 @@ def main():
     ap.add_argument("--checkpoint", default=str(settings.s1_checkpoint))
     ap.add_argument("--dev", "--manifest", dest="dev", default="data/manifests/dev.csv", help="clips to fit on (see the module docstring)")
     ap.add_argument("--n", type=int, default=1500)
+    ap.add_argument("--extra", action="append", default=[], help="manifest of real phone recordings; its train split is added unchanged")
     a = ap.parse_args()
     det = S1Detector()
     det.load(a.checkpoint)
@@ -55,11 +61,16 @@ def main():
     bona = [r for r in rows if r["label"] == "bonafide"]
     spoof = [r for r in rows if r["label"] != "bonafide"]
     rows = rng.sample(bona, min(len(bona), a.n // 2)) + rng.sample(spoof, min(len(spoof), a.n // 2))
+    chans = [CHANNELS[i % len(CHANNELS)] for i in range(len(rows))]
+    for m in a.extra:
+        real = [r for r in read(m) if r.get("split") == "train"]
+        rows += real
+        chans += ["recorded"] * len(real)
 
     def prep(i_r):
         i, r = i_r
         x = load_audio(r["path"])[: settings.window_samples]
-        return channel(x, CHANNELS[i % len(CHANNELS)], seed=i)
+        return x if chans[i] == "recorded" else channel(x, chans[i], seed=i, genuine=r["label"] == "bonafide")
 
     z, y = [], []
     with ThreadPoolExecutor(8) as pool:
@@ -73,6 +84,15 @@ def main():
     W, B = [float(w) for w in clf.coef_[0]], float(clf.intercept_[0])
     p = 1 / (1 + np.exp(-(z @ np.array(W) + B)))
     e, _ = eer(p[y == 0], p[y == 1])
+    ch = np.array(chans)
+    per_channel = {
+        c: {
+            "genuine_above_0.3": round(float(np.mean(p[(ch == c) & (y == 0)] >= 0.3)), 4),
+            "spoof_above_0.3": round(float(np.mean(p[(ch == c) & (y == 1)] >= 0.3)), 4),
+        }
+        for c in dict.fromkeys(chans)
+        if ((ch == c) & (y == 0)).any() and ((ch == c) & (y == 1)).any()
+    }
     out = {
         "version": det.version,
         "w": W,
@@ -84,7 +104,9 @@ def main():
         "genuine_above_0.7": round(float(np.mean(p[y == 0] >= 0.7)), 4),
         "spoof_above_0.7": round(float(np.mean(p[y == 1] >= 0.7)), 4),
         "channels": CHANNELS,
+        "per_channel": per_channel,
         "fitted_on": a.dev,
+        "extra": a.extra,
     }
     path = settings.models_dir / "s1_calibration.json"
     allc = json.loads(path.read_text()) if path.exists() else {}

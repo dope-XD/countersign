@@ -1,0 +1,430 @@
+{
+  "fit": {
+    "n": 6000,
+    "manifest": "data/manifests/train.csv",
+    "channels": [
+      "amrnb_12k2",
+      "amrnb_12k2+loss+noise",
+      "clean",
+      "g711u",
+      "g711u+loss+noise",
+      "gsm",
+      "opus_12k",
+      "ota+amrnb_12k2",
+      "ota+g711u",
+      "ota+g711u+noise"
+    ],
+    "stats": {
+      "current": {
+        "genuine_at_amber": 0.077,
+        "fakes_at_amber": 0.621,
+        "fakes_at_amber_ci": [
+          0.6035,
+          0.6382
+        ],
+        "eer": 0.189,
+        "fakes_at_current_fa": 0.5593
+      },
+      "ota_refit": {
+        "genuine_at_amber": 0.3317,
+        "fakes_at_amber": 0.9103,
+        "fakes_at_amber_ci": [
+          0.8996,
+          0.92
+        ],
+        "eer": 0.1893,
+        "fakes_at_current_fa": 0.55
+      },
+      "ota_5pct": {
+        "genuine_at_amber": 0.05,
+        "fakes_at_amber": 0.55,
+        "fakes_at_amber_ci": [
+          0.5321,
+          0.5677
+        ],
+        "eer": 0.1893,
+        "fakes_at_current_fa": 0.55
+      },
+      "head": {
+        "genuine_at_amber": 0.05,
+        "fakes_at_amber": 0.9993,
+        "fakes_at_amber_ci": [
+          0.9976,
+          0.9998
+        ],
+        "eer": 0.0083,
+        "fakes_at_current_fa": 0.9993
+      }
+    }
+  },
+  "ota_refit": {
+    "w": [
+      0.1795,
+      0.2902
+    ],
+    "b": 1.1698,
+    "b_5pct": -0.881
+  },
+  "held_out": {
+    "Stock AI voices | g711u": {
+      "current_fa": 0.0127,
+      "n_bona": 474,
+      "n_spoof": 223,
+      "current": {
+        "genuine_at_amber": 0.0127,
+        "fakes_at_amber": 0.8341,
+        "fakes_at_amber_ci": [
+          0.7797,
+          0.8772
+        ],
+        "eer": 0.0402,
+        "fakes_at_current_fa": 0.8386
+      },
+      "ota_refit": {
+        "genuine_at_amber": 0.0485,
+        "fakes_at_amber": 0.9865,
+        "fakes_at_amber_ci": [
+          0.9612,
+          0.9954
+        ],
+        "eer": 0.0359,
+        "fakes_at_current_fa": 0.8655
+      },
+      "ota_5pct": {
+        "genuine_at_amber": 0.0042,
+        "fakes_at_amber": 0.8251,
+        "fakes_at_amber_ci": [
+          0.7699,
+          0.8693
+        ],
+        "eer": 0.0359,
+        "fakes_at_current_fa": 0.8655
+      },
+      "head": {
+        "genuine_at_amber": 0.0359,
+        "fakes_at_amber": 0.8565,
+        "fakes_at_amber_ci": [
+          0.8044,
+          0.8965
+        ],
+        "eer": 0.0587,
+        "fakes_at_current_fa": 0.6547
+      }
+    },
+    "Stock AI voices | ota+g711u": {
+      "current_fa": 0.0295,
+      "n_bona": 474,
+      "n_spoof": 223,
+      "current": {
+        "genuine_at_amber": 0.0295,
+        "fakes_at_amber": 0.0628,
+        "fakes_at_amber_ci": [
+          0.0378,
+          0.1026
+        ],
+        "eer": 0.4,
+        "fakes_at_current_fa": 0.0852
+      },
+      "ota_refit": {
+        "genuine_at_amber": 0.2173,
+        "fakes_at_amber": 0.3901,
+        "fakes_at_amber_ci": [
+          0.3285,
+          0.4555
+        ],
+        "eer": 0.3989,
+        "fakes_at_current_fa": 0.0807
+      },
+      "ota_5pct": {
+        "genuine_at_amber": 0.0127,
+        "fakes_at_amber": 0.0404,
+        "fakes_at_amber_ci": [
+          0.0214,
+          0.0749
+        ],
+        "eer": 0.3989,
+        "fakes_at_current_fa": 0.0807
+      },
+      "head": {
+        "genuine_at_amber": 0.1456,
+        "fakes_at_amber": 0.8251,
+        "fakes_at_amber_ci": [
+          0.7699,
+          0.8693
+        ],
+        "eer": 0.1652,
+        "fakes_at_current_fa": 0.5022
+      }
+    },
+    "Stock AI voices | ota+amrnb_12k2": {
+      "current_fa": 0.1055,
+      "n_bona": 474,
+      "n_spoof": 223,
+      "current": {
+        "genuine_at_amber": 0.1055,
+        "fakes_at_amber": 0.2466,
+        "fakes_at_amber_ci": [
+          0.1947,
+          0.3072
+        ],
+        "eer": 0.3446,
+        "fakes_at_current_fa": 0.2556
+      },
+      "ota_refit": {
+        "genuine_at_amber": 0.462,
+        "fakes_at_amber": 0.7489,
+        "fakes_at_amber_ci": [
+          0.6881,
+          0.8013
+        ],
+        "eer": 0.3413,
+        "fakes_at_current_fa": 0.2511
+      },
+      "ota_5pct": {
+        "genuine_at_amber": 0.0506,
+        "fakes_at_amber": 0.1704,
+        "fakes_at_amber_ci": [
+          0.1267,
+          0.2252
+        ],
+        "eer": 0.3413,
+        "fakes_at_current_fa": 0.2511
+      },
+      "head": {
+        "genuine_at_amber": 0.1962,
+        "fakes_at_amber": 0.8879,
+        "fakes_at_amber_ci": [
+          0.8397,
+          0.9229
+        ],
+        "eer": 0.1478,
+        "fakes_at_current_fa": 0.7578
+      }
+    },
+    "Stock AI voices | ota+g711u+noise": {
+      "current_fa": 0.1519,
+      "n_bona": 474,
+      "n_spoof": 223,
+      "current": {
+        "genuine_at_amber": 0.1519,
+        "fakes_at_amber": 0.3632,
+        "fakes_at_amber_ci": [
+          0.3029,
+          0.4282
+        ],
+        "eer": 0.3892,
+        "fakes_at_current_fa": 0.3677
+      },
+      "ota_refit": {
+        "genuine_at_amber": 0.481,
+        "fakes_at_amber": 0.6726,
+        "fakes_at_amber_ci": [
+          0.6086,
+          0.7309
+        ],
+        "eer": 0.3859,
+        "fakes_at_current_fa": 0.3767
+      },
+      "ota_5pct": {
+        "genuine_at_amber": 0.1013,
+        "fakes_at_amber": 0.3049,
+        "fakes_at_amber_ci": [
+          0.2482,
+          0.3682
+        ],
+        "eer": 0.3859,
+        "fakes_at_current_fa": 0.3767
+      },
+      "head": {
+        "genuine_at_amber": 0.2363,
+        "fakes_at_amber": 0.852,
+        "fakes_at_amber_ci": [
+          0.7995,
+          0.8926
+        ],
+        "eer": 0.1837,
+        "fakes_at_current_fa": 0.7803
+      }
+    },
+    "In-the-Wild | g711u": {
+      "current_fa": 0.015,
+      "n_bona": 600,
+      "n_spoof": 600,
+      "current": {
+        "genuine_at_amber": 0.015,
+        "fakes_at_amber": 0.9233,
+        "fakes_at_amber_ci": [
+          0.8992,
+          0.942
+        ],
+        "eer": 0.0333,
+        "fakes_at_current_fa": 0.9233
+      },
+      "ota_refit": {
+        "genuine_at_amber": 0.0567,
+        "fakes_at_amber": 0.9817,
+        "fakes_at_amber_ci": [
+          0.9675,
+          0.9897
+        ],
+        "eer": 0.03,
+        "fakes_at_current_fa": 0.9333
+      },
+      "ota_5pct": {
+        "genuine_at_amber": 0.0083,
+        "fakes_at_amber": 0.9133,
+        "fakes_at_amber_ci": [
+          0.8881,
+          0.9333
+        ],
+        "eer": 0.03,
+        "fakes_at_current_fa": 0.9333
+      },
+      "head": {
+        "genuine_at_amber": 0.0417,
+        "fakes_at_amber": 0.975,
+        "fakes_at_amber_ci": [
+          0.9592,
+          0.9848
+        ],
+        "eer": 0.0317,
+        "fakes_at_current_fa": 0.8817
+      }
+    },
+    "In-the-Wild | ota+g711u": {
+      "current_fa": 0.025,
+      "n_bona": 600,
+      "n_spoof": 600,
+      "current": {
+        "genuine_at_amber": 0.025,
+        "fakes_at_amber": 0.31,
+        "fakes_at_amber_ci": [
+          0.2743,
+          0.3481
+        ],
+        "eer": 0.2367,
+        "fakes_at_current_fa": 0.335
+      },
+      "ota_refit": {
+        "genuine_at_amber": 0.225,
+        "fakes_at_amber": 0.75,
+        "fakes_at_amber_ci": [
+          0.7138,
+          0.783
+        ],
+        "eer": 0.235,
+        "fakes_at_current_fa": 0.3233
+      },
+      "ota_5pct": {
+        "genuine_at_amber": 0.01,
+        "fakes_at_amber": 0.2217,
+        "fakes_at_amber_ci": [
+          0.1903,
+          0.2566
+        ],
+        "eer": 0.235,
+        "fakes_at_current_fa": 0.3233
+      },
+      "head": {
+        "genuine_at_amber": 0.1683,
+        "fakes_at_amber": 0.9567,
+        "fakes_at_amber_ci": [
+          0.9373,
+          0.9703
+        ],
+        "eer": 0.095,
+        "fakes_at_current_fa": 0.6517
+      }
+    },
+    "ReplayDF | clean": {
+      "current_fa": 0.0762,
+      "n_bona": 800,
+      "n_spoof": 800,
+      "current": {
+        "genuine_at_amber": 0.0762,
+        "fakes_at_amber": 0.5825,
+        "fakes_at_amber_ci": [
+          0.548,
+          0.6162
+        ],
+        "eer": 0.1875,
+        "fakes_at_current_fa": 0.5837
+      },
+      "ota_refit": {
+        "genuine_at_amber": 0.2313,
+        "fakes_at_amber": 0.8475,
+        "fakes_at_amber_ci": [
+          0.8209,
+          0.8707
+        ],
+        "eer": 0.1863,
+        "fakes_at_current_fa": 0.5825
+      },
+      "ota_5pct": {
+        "genuine_at_amber": 0.0638,
+        "fakes_at_amber": 0.525,
+        "fakes_at_amber_ci": [
+          0.4904,
+          0.5594
+        ],
+        "eer": 0.1863,
+        "fakes_at_current_fa": 0.5825
+      },
+      "head": {
+        "genuine_at_amber": 0.1638,
+        "fakes_at_amber": 0.7488,
+        "fakes_at_amber_ci": [
+          0.7176,
+          0.7776
+        ],
+        "eer": 0.2075,
+        "fakes_at_current_fa": 0.6175
+      }
+    },
+    "ReplayDF | g711u": {
+      "current_fa": 0.1125,
+      "n_bona": 800,
+      "n_spoof": 800,
+      "current": {
+        "genuine_at_amber": 0.1125,
+        "fakes_at_amber": 0.5175,
+        "fakes_at_amber_ci": [
+          0.4829,
+          0.552
+        ],
+        "eer": 0.2812,
+        "fakes_at_current_fa": 0.5175
+      },
+      "ota_refit": {
+        "genuine_at_amber": 0.3613,
+        "fakes_at_amber": 0.79,
+        "fakes_at_amber_ci": [
+          0.7604,
+          0.8168
+        ],
+        "eer": 0.2775,
+        "fakes_at_current_fa": 0.5363
+      },
+      "ota_5pct": {
+        "genuine_at_amber": 0.0975,
+        "fakes_at_amber": 0.48,
+        "fakes_at_amber_ci": [
+          0.4456,
+          0.5146
+        ],
+        "eer": 0.2775,
+        "fakes_at_current_fa": 0.5363
+      },
+      "head": {
+        "genuine_at_amber": 0.2512,
+        "fakes_at_amber": 0.735,
+        "fakes_at_amber_ci": [
+          0.7033,
+          0.7644
+        ],
+        "eer": 0.2575,
+        "fakes_at_current_fa": 0.505
+      }
+    }
+  }
+}

@@ -1,8 +1,17 @@
 {
   "model": "add-wav2vec-large+add-xls-r-1b",
+  "calibration": {
+    "w": [
+      0.2448,
+      0.5171
+    ],
+    "b": -0.3546
+  },
   "set": "In-the-Wild",
   "manifest": "data/manifests/itw.csv",
   "sources": null,
+  "split": null,
+  "tag": null,
   "results": [
     {
       "set": "In-the-Wild",
@@ -18,8 +27,26 @@
       "detect_amber": 0.94,
       "false_alarm_red": 0.0017,
       "detect_red": 0.8917,
+      "false_alarm_amber_ci": [
+        0.0026,
+        0.017
+      ],
+      "by_generator": [
+        {
+          "generator": "unknown",
+          "family": "unknown",
+          "n": 600,
+          "k": 564,
+          "detect_amber": 0.94,
+          "ci": [
+            0.9181,
+            0.9563
+          ],
+          "detect_red": 0.8917
+        }
+      ],
       "published_eer": 0.0746,
-      "seconds": 26.6
+      "seconds": 26.9
     },
     {
       "set": "In-the-Wild",
@@ -35,8 +62,26 @@
       "detect_amber": 0.9233,
       "false_alarm_red": 0.0017,
       "detect_red": 0.8517,
+      "false_alarm_amber_ci": [
+        0.0079,
+        0.0283
+      ],
+      "by_generator": [
+        {
+          "generator": "unknown",
+          "family": "unknown",
+          "n": 600,
+          "k": 554,
+          "detect_amber": 0.9233,
+          "ci": [
+            0.8992,
+            0.942
+          ],
+          "detect_red": 0.8517
+        }
+      ],
       "published_eer": null,
-      "seconds": 25.7
+      "seconds": 26.6
     },
     {
       "set": "In-the-Wild",
@@ -52,8 +97,26 @@
       "detect_amber": 0.9233,
       "false_alarm_red": 0.0033,
       "detect_red": 0.865,
+      "false_alarm_amber_ci": [
+        0.0079,
+        0.0283
+      ],
+      "by_generator": [
+        {
+          "generator": "unknown",
+          "family": "unknown",
+          "n": 600,
+          "k": 554,
+          "detect_amber": 0.9233,
+          "ci": [
+            0.8992,
+            0.942
+          ],
+          "detect_red": 0.865
+        }
+      ],
       "published_eer": null,
-      "seconds": 43.7
+      "seconds": 50.2
     },
     {
       "set": "In-the-Wild",
@@ -69,8 +132,26 @@
       "detect_amber": 0.9567,
       "false_alarm_red": 0.0133,
       "detect_red": 0.9133,
+      "false_alarm_amber_ci": [
+        0.0408,
+        0.0781
+      ],
+      "by_generator": [
+        {
+          "generator": "unknown",
+          "family": "unknown",
+          "n": 600,
+          "k": 574,
+          "detect_amber": 0.9567,
+          "ci": [
+            0.9373,
+            0.9703
+          ],
+          "detect_red": 0.9133
+        }
+      ],
       "published_eer": null,
-      "seconds": 48.2
+      "seconds": 52.2
     },
     {
       "set": "In-the-Wild",
@@ -86,8 +167,26 @@
       "detect_amber": 0.8583,
       "false_alarm_red": 0.0017,
       "detect_red": 0.73,
+      "false_alarm_amber_ci": [
+        0.0115,
+        0.0346
+      ],
+      "by_generator": [
+        {
+          "generator": "unknown",
+          "family": "unknown",
+          "n": 600,
+          "k": 515,
+          "detect_amber": 0.8583,
+          "ci": [
+            0.8281,
+            0.884
+          ],
+          "detect_red": 0.73
+        }
+      ],
       "published_eer": null,
-      "seconds": 27.5
+      "seconds": 28.5
     },
     {
       "set": "In-the-Wild",
@@ -103,8 +202,131 @@
       "detect_amber": 0.8617,
       "false_alarm_red": 0.0083,
       "detect_red": 0.71,
+      "false_alarm_amber_ci": [
+        0.0243,
+        0.0549
+      ],
+      "by_generator": [
+        {
+          "generator": "unknown",
+          "family": "unknown",
+          "n": 600,
+          "k": 517,
+          "detect_amber": 0.8617,
+          "ci": [
+            0.8317,
+            0.887
+          ],
+          "detect_red": 0.71
+        }
+      ],
       "published_eer": null,
-      "seconds": 43.9
+      "seconds": 49.8
+    },
+    {
+      "set": "In-the-Wild",
+      "condition": "ota+g711u",
+      "model": "add-wav2vec-large+add-xls-r-1b",
+      "calibrated": true,
+      "n_bona": 600,
+      "n_spoof": 600,
+      "eer": 0.2367,
+      "threshold": 0.0239,
+      "detect_at_1pct_far": 0.1983,
+      "false_alarm_amber": 0.025,
+      "detect_amber": 0.31,
+      "false_alarm_red": 0.0,
+      "detect_red": 0.11,
+      "false_alarm_amber_ci": [
+        0.0152,
+        0.0408
+      ],
+      "by_generator": [
+        {
+          "generator": "unknown",
+          "family": "unknown",
+          "n": 600,
+          "k": 186,
+          "detect_amber": 0.31,
+          "ci": [
+            0.2743,
+            0.3481
+          ],
+          "detect_red": 0.11
+        }
+      ],
+      "published_eer": null,
+      "seconds": 56.5
+    },
+    {
+      "set": "In-the-Wild",
+      "condition": "ota+amrnb_12k2",
+      "model": "add-wav2vec-large+add-xls-r-1b",
+      "calibrated": true,
+      "n_bona": 600,
+      "n_spoof": 600,
+      "eer": 0.2383,
+      "threshold": 0.1005,
+      "detect_at_1pct_far": 0.255,
+      "false_alarm_amber": 0.0933,
+      "detect_amber": 0.5383,
+      "false_alarm_red": 0.0067,
+      "detect_red": 0.22,
+      "false_alarm_amber_ci": [
+        0.0726,
+        0.1193
+      ],
+      "by_generator": [
+        {
+          "generator": "unknown",
+          "family": "unknown",
+          "n": 600,
+          "k": 323,
+          "detect_amber": 0.5383,
+          "ci": [
+            0.4983,
+            0.5779
+          ],
+          "detect_red": 0.22
+        }
+      ],
+      "published_eer": null,
+      "seconds": 75.6
+    },
+    {
+      "set": "In-the-Wild",
+      "condition": "ota+g711u+noise",
+      "model": "add-wav2vec-large+add-xls-r-1b",
+      "calibrated": true,
+      "n_bona": 600,
+      "n_spoof": 600,
+      "eer": 0.2917,
+      "threshold": 0.116,
+      "detect_at_1pct_far": 0.125,
+      "false_alarm_amber": 0.1433,
+      "detect_amber": 0.5383,
+      "false_alarm_red": 0.025,
+      "detect_red": 0.2283,
+      "false_alarm_amber_ci": [
+        0.1176,
+        0.1736
+      ],
+      "by_generator": [
+        {
+          "generator": "unknown",
+          "family": "unknown",
+          "n": 600,
+          "k": 323,
+          "detect_amber": 0.5383,
+          "ci": [
+            0.4983,
+            0.5779
+          ],
+          "detect_red": 0.2283
+        }
+      ],
+      "published_eer": null,
+      "seconds": 56.3
     }
   ]
 }

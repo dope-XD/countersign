@@ -4,7 +4,13 @@ python -m ml.eval.report --indiacall test [--model add-wav2vec-large+add-xls-r-1
 
 Only the benchmarks of one S1 version go in: the engine's model, which by default is the one
 benchmarked most recently. models/eval/ keeps older models' runs for docs/ML.md, but the
-metrics page must not show them as the running detector's numbers.
+metrics page must not show them as the running detector's numbers. Tagged runs
+(`benchmark --tag before`) are snapshots for comparison and stay out too.
+
+The "phone_mic" section answers the judges' test (an AI voice played from a laptop into the
+phone): simulated over-the-air channels per generator family, false alarms on genuine speech
+through the same phone, and the real recordings (ReplayDF's speaker-to-mic replays, and our
+own phone-mic recordings from data/ota once they exist).
 """
 
 from __future__ import annotations
@@ -18,8 +24,10 @@ import numpy as np
 
 from engine.config import settings
 from engine.fusion import TIERS
+from ml.augment.telephony import OTA_CHANNELS
 from ml.eval.indiacall_sim import CLI_KINDS, DATA, LEVELS, PLACEHOLDER_LAG, REGISTERED
 from ml.eval.metrics import wilson
+from ml.tts_sets import family
 
 EVAL = settings.models_dir / "eval"
 LANG = {"en": "English", "hi": "Hindi", "hinglish": "Hinglish"}
@@ -224,6 +232,74 @@ def summarise(results: list[dict]) -> dict:
     }
 
 
+FAMILY = {
+    "commercial": "Commercial TTS (Microsoft, Google, ElevenLabs, ...)",
+    "open": "Open TTS and voice clones",
+    "unknown": "Unknown generators (In-the-Wild)",
+}
+REAL = {"replaydf.csv": "replaydf", "ota_real.csv": "recorded"}
+
+
+def _ci_row(k: int, n: int, **extra) -> dict:
+    return {**extra, "n": n, "k": k, "rate": k / n if n else 0.0, "ci": list(wilson(k, n))}
+
+
+def phone_mic_section(runs: list[dict]) -> dict | None:
+    """Over-the-air numbers from benchmark runs: detection per generator family and per generator
+    on the simulated "ota+" channels (pooled over sets), genuine false alarms on those channels per
+    set, and every condition of the real-recording sets."""
+    fam: dict[tuple[str, str], list[int]] = defaultdict(lambda: [0, 0])
+    gens: dict[tuple[str, str], dict] = {}
+    genuine, real = [], []
+    for d in runs:
+        kind = next((v for k, v in REAL.items() if str(d.get("manifest", "")).replace("\\", "/").endswith(k)), None)
+        for r in d["results"]:
+            if kind:
+                real.append(
+                    {
+                        "set": d["set"],
+                        "kind": kind,
+                        "condition": r["condition"],
+                        **{k: r.get(k) for k in ("n_bona", "n_spoof", "eer", "false_alarm_amber", "false_alarm_amber_ci", "detect_amber", "detect_red")},
+                        "by_generator": r.get("by_generator", []),
+                    }
+                )
+                continue
+            if not r["condition"].startswith("ota+"):
+                continue
+            if r.get("n_bona"):
+                genuine.append(_ci_row(round(r["false_alarm_amber"] * r["n_bona"]), r["n_bona"], set=d["set"], condition=r["condition"]))
+            for g in r.get("by_generator", []):
+                f = fam[(r["condition"], g.get("family") or family(g["generator"]))]
+                f[0] += g["k"]
+                f[1] += g["n"]
+                e = gens.setdefault((r["condition"], g["generator"]), {"k": 0, "n": 0, "red": 0.0, "sets": set()})
+                e["k"] += g["k"]
+                e["n"] += g["n"]
+                e["red"] += g["detect_red"] * g["n"]
+                e["sets"].add(d["set"])
+    if not (fam or real or genuine):
+        return None
+
+    def order(key: tuple[str, str]) -> tuple:  # G.711 first: the path a phone call takes
+        return (OTA_CHANNELS.index(key[0]) if key[0] in OTA_CHANNELS else len(OTA_CHANNELS), key)
+
+    families = [_ci_row(k, n, condition=c, family=f, label=FAMILY.get(f, f)) for (c, f), (k, n) in sorted(fam.items(), key=lambda kv: order(kv[0]))]
+    generators = [
+        _ci_row(e["k"], e["n"], condition=c, generator=g, family=family(g), sets=sorted(e["sets"]), red=round(e["red"] / e["n"], 4) if e["n"] else 0.0)
+        for (c, g), e in sorted(gens.items(), key=lambda kv: order(kv[0]))
+    ]
+    worst = max((g["rate"] for g in genuine), default=None)
+    return {
+        "families": families,
+        "generators": generators,
+        "genuine": genuine,
+        "real": real,
+        "max_genuine_amber": MAX_GENUINE_STEPUP,
+        "genuine_target_met": (worst <= MAX_GENUINE_STEPUP) if worst is not None else None,
+    }
+
+
 def indiacall_section(run: str) -> dict | None:
     p = EVAL / f"indiacall_{run}.json"
     if not p.exists():
@@ -256,8 +332,10 @@ def main():
     ap.add_argument("--model", default=None, help="S1 version to report (default: the most recently benchmarked)")
     a = ap.parse_args()
     runs = [json.loads(p.read_text()) for p in sorted(EVAL.glob("bench_*.json"), key=lambda p: p.stat().st_mtime)]
+    runs = [d for d in runs if not d.get("tag")]
     model = a.model or (runs[-1].get("model") if runs else None)
-    benchmarks = [r for d in runs if d.get("model") == model for r in d["results"]]
+    runs = [d for d in runs if d.get("model") == model]
+    benchmarks = [{k: v for k, v in r.items() if k != "by_generator"} for d in runs for r in d["results"]]
     ic = indiacall_section(a.indiacall)
     fusion = settings.models_dir / "fusion.json"
     notes = [
@@ -266,6 +344,10 @@ def main():
         "Genuine calls from another number are reported apart from the registered number: the policy gives them a liveness check by design, so they are expected to reach AMBER and are not counted against the 5% target.",
         "Detection only: attacks that spoof the registered number carry no caller-ID flag, so their tier comes from the voice signals alone.",
         "Speakers whose voices were cloned were never in S1 training data.",
+        'Phone mic, played through a speaker: "ota" channels are simulated (ml/augment/telephony.py over_the_air): a small loudspeaker '
+        "15 cm to 1 m from the phone in a synthetic room, room noise, the phone's noise suppressor and AGC, then the codec. Genuine clips "
+        "in those channels are spoken into the same phone from 3 to 80 cm, without the loudspeaker. ReplayDF rows are real re-recordings "
+        "in which genuine speech was replayed through the loudspeaker too, so their false alarms are a worst case.",
     ]
     if ic and ic.get("errors"):
         notes.append(f"{ic['errors']} simulated calls failed to run and are excluded.")
@@ -273,6 +355,7 @@ def main():
         "generated_at": dt.datetime.now().isoformat(timespec="seconds"),
         "model": {"s1": model or "unknown", "fusion": json.loads(fusion.read_text()).get("source", "fitted") if fusion.exists() else "default weights"},
         "benchmarks": benchmarks,
+        "phone_mic": phone_mic_section(runs),
         "indiacall": ic,
         "notes": notes,
     }

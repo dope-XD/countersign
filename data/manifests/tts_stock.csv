@@ -1,0 +1,698 @@
+path,label,speaker,language,generator,source,split
+data/clips/tts_stock/gtts/en-co.in_0.flac,spoof,en-co.in,en,gtts,tts_stock,eval
+data/clips/tts_stock/gtts/en-co.in_1.flac,spoof,en-co.in,en,gtts,tts_stock,eval
+data/clips/tts_stock/gtts/en-co.in_2.flac,spoof,en-co.in,en,gtts,tts_stock,eval
+data/clips/tts_stock/gtts/en-co.in_3.flac,spoof,en-co.in,en,gtts,tts_stock,eval
+data/clips/tts_stock/gtts/en-co.in_4.flac,spoof,en-co.in,en,gtts,tts_stock,eval
+data/clips/tts_stock/gtts/en-co.in_5.flac,spoof,en-co.in,en,gtts,tts_stock,eval
+data/clips/tts_stock/gtts/en-co.in_6.flac,spoof,en-co.in,en,gtts,tts_stock,eval
+data/clips/tts_stock/gtts/en-co.in_7.flac,spoof,en-co.in,en,gtts,tts_stock,eval
+data/clips/tts_stock/gtts/en-co.in_8.flac,spoof,en-co.in,en,gtts,tts_stock,eval
+data/clips/tts_stock/gtts/en-co.in_9.flac,spoof,en-co.in,en,gtts,tts_stock,eval
+data/clips/tts_stock/gtts/en-co.in_10.flac,spoof,en-co.in,en,gtts,tts_stock,eval
+data/clips/tts_stock/gtts/en-co.in_11.flac,spoof,en-co.in,en,gtts,tts_stock,eval
+data/clips/tts_stock/gtts/en-com_0.flac,spoof,en-com,en,gtts,tts_stock,eval
+data/clips/tts_stock/gtts/en-com_1.flac,spoof,en-com,en,gtts,tts_stock,eval
+data/clips/tts_stock/gtts/en-com_2.flac,spoof,en-com,en,gtts,tts_stock,eval
+data/clips/tts_stock/gtts/en-com_3.flac,spoof,en-com,en,gtts,tts_stock,eval
+data/clips/tts_stock/gtts/en-com_4.flac,spoof,en-com,en,gtts,tts_stock,eval
+data/clips/tts_stock/gtts/en-com_5.flac,spoof,en-com,en,gtts,tts_stock,eval
+data/clips/tts_stock/gtts/en-com_6.flac,spoof,en-com,en,gtts,tts_stock,eval
+data/clips/tts_stock/gtts/en-com_7.flac,spoof,en-com,en,gtts,tts_stock,eval
+data/clips/tts_stock/gtts/en-com_8.flac,spoof,en-com,en,gtts,tts_stock,eval
+data/clips/tts_stock/gtts/en-com_9.flac,spoof,en-com,en,gtts,tts_stock,eval
+data/clips/tts_stock/gtts/en-com_10.flac,spoof,en-com,en,gtts,tts_stock,eval
+data/clips/tts_stock/gtts/en-com_11.flac,spoof,en-com,en,gtts,tts_stock,eval
+data/clips/tts_stock/gtts/en-co.uk_0.flac,spoof,en-co.uk,en,gtts,tts_stock,eval
+data/clips/tts_stock/gtts/en-co.uk_1.flac,spoof,en-co.uk,en,gtts,tts_stock,eval
+data/clips/tts_stock/gtts/en-co.uk_2.flac,spoof,en-co.uk,en,gtts,tts_stock,eval
+data/clips/tts_stock/gtts/en-co.uk_3.flac,spoof,en-co.uk,en,gtts,tts_stock,eval
+data/clips/tts_stock/gtts/en-co.uk_4.flac,spoof,en-co.uk,en,gtts,tts_stock,eval
+data/clips/tts_stock/gtts/en-co.uk_5.flac,spoof,en-co.uk,en,gtts,tts_stock,eval
+data/clips/tts_stock/gtts/en-co.uk_6.flac,spoof,en-co.uk,en,gtts,tts_stock,eval
+data/clips/tts_stock/gtts/en-co.uk_7.flac,spoof,en-co.uk,en,gtts,tts_stock,eval
+data/clips/tts_stock/gtts/en-co.uk_8.flac,spoof,en-co.uk,en,gtts,tts_stock,eval
+data/clips/tts_stock/gtts/en-co.uk_9.flac,spoof,en-co.uk,en,gtts,tts_stock,eval
+data/clips/tts_stock/gtts/en-co.uk_10.flac,spoof,en-co.uk,en,gtts,tts_stock,eval
+data/clips/tts_stock/gtts/en-co.uk_11.flac,spoof,en-co.uk,en,gtts,tts_stock,eval
+data/clips/tts_stock/gtts/hi-co.in_0.flac,spoof,hi-co.in,hi,gtts,tts_stock,eval
+data/clips/tts_stock/gtts/hi-co.in_1.flac,spoof,hi-co.in,hi,gtts,tts_stock,eval
+data/clips/tts_stock/gtts/hi-co.in_2.flac,spoof,hi-co.in,hi,gtts,tts_stock,eval
+data/clips/tts_stock/gtts/hi-co.in_3.flac,spoof,hi-co.in,hi,gtts,tts_stock,eval
+data/clips/tts_stock/gtts/hi-co.in_4.flac,spoof,hi-co.in,hi,gtts,tts_stock,eval
+data/clips/tts_stock/gtts/hi-co.in_5.flac,spoof,hi-co.in,hi,gtts,tts_stock,eval
+data/clips/tts_stock/gtts/hi-co.in_6.flac,spoof,hi-co.in,hi,gtts,tts_stock,eval
+data/clips/tts_stock/gtts/hi-co.in_7.flac,spoof,hi-co.in,hi,gtts,tts_stock,eval
+data/clips/tts_stock/gtts/hi-co.in_8.flac,spoof,hi-co.in,hi,gtts,tts_stock,eval
+data/clips/tts_stock/gtts/hi-co.in_9.flac,spoof,hi-co.in,hi,gtts,tts_stock,eval
+data/clips/tts_stock/piper/hi_IN-pratham-medium_0.flac,spoof,hi_IN-pratham-medium,hi,piper-vits,tts_stock,eval
+data/clips/tts_stock/piper/hi_IN-pratham-medium_1.flac,spoof,hi_IN-pratham-medium,hi,piper-vits,tts_stock,eval
+data/clips/tts_stock/piper/hi_IN-pratham-medium_2.flac,spoof,hi_IN-pratham-medium,hi,piper-vits,tts_stock,eval
+data/clips/tts_stock/piper/hi_IN-pratham-medium_3.flac,spoof,hi_IN-pratham-medium,hi,piper-vits,tts_stock,eval
+data/clips/tts_stock/piper/hi_IN-pratham-medium_4.flac,spoof,hi_IN-pratham-medium,hi,piper-vits,tts_stock,eval
+data/clips/tts_stock/piper/hi_IN-pratham-medium_5.flac,spoof,hi_IN-pratham-medium,hi,piper-vits,tts_stock,eval
+data/clips/tts_stock/piper/hi_IN-pratham-medium_6.flac,spoof,hi_IN-pratham-medium,hi,piper-vits,tts_stock,eval
+data/clips/tts_stock/piper/hi_IN-pratham-medium_7.flac,spoof,hi_IN-pratham-medium,hi,piper-vits,tts_stock,eval
+data/clips/tts_stock/piper/hi_IN-pratham-medium_8.flac,spoof,hi_IN-pratham-medium,hi,piper-vits,tts_stock,eval
+data/clips/tts_stock/piper/hi_IN-pratham-medium_9.flac,spoof,hi_IN-pratham-medium,hi,piper-vits,tts_stock,eval
+data/clips/tts_stock/piper/hi_IN-priyamvada-medium_0.flac,spoof,hi_IN-priyamvada-medium,hi,piper-vits,tts_stock,eval
+data/clips/tts_stock/piper/hi_IN-priyamvada-medium_1.flac,spoof,hi_IN-priyamvada-medium,hi,piper-vits,tts_stock,eval
+data/clips/tts_stock/piper/hi_IN-priyamvada-medium_2.flac,spoof,hi_IN-priyamvada-medium,hi,piper-vits,tts_stock,eval
+data/clips/tts_stock/piper/hi_IN-priyamvada-medium_3.flac,spoof,hi_IN-priyamvada-medium,hi,piper-vits,tts_stock,eval
+data/clips/tts_stock/piper/hi_IN-priyamvada-medium_4.flac,spoof,hi_IN-priyamvada-medium,hi,piper-vits,tts_stock,eval
+data/clips/tts_stock/piper/hi_IN-priyamvada-medium_5.flac,spoof,hi_IN-priyamvada-medium,hi,piper-vits,tts_stock,eval
+data/clips/tts_stock/piper/hi_IN-priyamvada-medium_6.flac,spoof,hi_IN-priyamvada-medium,hi,piper-vits,tts_stock,eval
+data/clips/tts_stock/piper/hi_IN-priyamvada-medium_7.flac,spoof,hi_IN-priyamvada-medium,hi,piper-vits,tts_stock,eval
+data/clips/tts_stock/piper/hi_IN-priyamvada-medium_8.flac,spoof,hi_IN-priyamvada-medium,hi,piper-vits,tts_stock,eval
+data/clips/tts_stock/piper/hi_IN-priyamvada-medium_9.flac,spoof,hi_IN-priyamvada-medium,hi,piper-vits,tts_stock,eval
+data/clips/tts_stock/piper/hi_IN-rohan-medium_0.flac,spoof,hi_IN-rohan-medium,hi,piper-vits,tts_stock,eval
+data/clips/tts_stock/piper/hi_IN-rohan-medium_1.flac,spoof,hi_IN-rohan-medium,hi,piper-vits,tts_stock,eval
+data/clips/tts_stock/piper/hi_IN-rohan-medium_2.flac,spoof,hi_IN-rohan-medium,hi,piper-vits,tts_stock,eval
+data/clips/tts_stock/piper/hi_IN-rohan-medium_3.flac,spoof,hi_IN-rohan-medium,hi,piper-vits,tts_stock,eval
+data/clips/tts_stock/piper/hi_IN-rohan-medium_4.flac,spoof,hi_IN-rohan-medium,hi,piper-vits,tts_stock,eval
+data/clips/tts_stock/piper/hi_IN-rohan-medium_5.flac,spoof,hi_IN-rohan-medium,hi,piper-vits,tts_stock,eval
+data/clips/tts_stock/piper/hi_IN-rohan-medium_6.flac,spoof,hi_IN-rohan-medium,hi,piper-vits,tts_stock,eval
+data/clips/tts_stock/piper/hi_IN-rohan-medium_7.flac,spoof,hi_IN-rohan-medium,hi,piper-vits,tts_stock,eval
+data/clips/tts_stock/piper/hi_IN-rohan-medium_8.flac,spoof,hi_IN-rohan-medium,hi,piper-vits,tts_stock,eval
+data/clips/tts_stock/piper/hi_IN-rohan-medium_9.flac,spoof,hi_IN-rohan-medium,hi,piper-vits,tts_stock,eval
+data/clips/tts_stock/piper/en_US-l2arctic-medium_0.flac,spoof,en_US-l2arctic-medium,en,piper-vits,tts_stock,eval
+data/clips/tts_stock/piper/en_US-l2arctic-medium_1.flac,spoof,en_US-l2arctic-medium,en,piper-vits,tts_stock,eval
+data/clips/tts_stock/piper/en_US-l2arctic-medium_2.flac,spoof,en_US-l2arctic-medium,en,piper-vits,tts_stock,eval
+data/clips/tts_stock/piper/en_US-l2arctic-medium_3.flac,spoof,en_US-l2arctic-medium,en,piper-vits,tts_stock,eval
+data/clips/tts_stock/piper/en_US-l2arctic-medium_4.flac,spoof,en_US-l2arctic-medium,en,piper-vits,tts_stock,eval
+data/clips/tts_stock/piper/en_US-l2arctic-medium_5.flac,spoof,en_US-l2arctic-medium,en,piper-vits,tts_stock,eval
+data/clips/tts_stock/piper/en_US-l2arctic-medium_6.flac,spoof,en_US-l2arctic-medium,en,piper-vits,tts_stock,eval
+data/clips/tts_stock/piper/en_US-l2arctic-medium_7.flac,spoof,en_US-l2arctic-medium,en,piper-vits,tts_stock,eval
+data/clips/tts_stock/piper/en_US-l2arctic-medium_8.flac,spoof,en_US-l2arctic-medium,en,piper-vits,tts_stock,eval
+data/clips/tts_stock/piper/en_US-l2arctic-medium_9.flac,spoof,en_US-l2arctic-medium,en,piper-vits,tts_stock,eval
+data/clips/tts_stock/piper/en_US-l2arctic-medium_10.flac,spoof,en_US-l2arctic-medium,en,piper-vits,tts_stock,eval
+data/clips/tts_stock/piper/en_US-l2arctic-medium_11.flac,spoof,en_US-l2arctic-medium,en,piper-vits,tts_stock,eval
+data/clips/tts_stock/piper/en_US-kusal-medium_0.flac,spoof,en_US-kusal-medium,en,piper-vits,tts_stock,eval
+data/clips/tts_stock/piper/en_US-kusal-medium_1.flac,spoof,en_US-kusal-medium,en,piper-vits,tts_stock,eval
+data/clips/tts_stock/piper/en_US-kusal-medium_2.flac,spoof,en_US-kusal-medium,en,piper-vits,tts_stock,eval
+data/clips/tts_stock/piper/en_US-kusal-medium_3.flac,spoof,en_US-kusal-medium,en,piper-vits,tts_stock,eval
+data/clips/tts_stock/piper/en_US-kusal-medium_4.flac,spoof,en_US-kusal-medium,en,piper-vits,tts_stock,eval
+data/clips/tts_stock/piper/en_US-kusal-medium_5.flac,spoof,en_US-kusal-medium,en,piper-vits,tts_stock,eval
+data/clips/tts_stock/piper/en_US-kusal-medium_6.flac,spoof,en_US-kusal-medium,en,piper-vits,tts_stock,eval
+data/clips/tts_stock/piper/en_US-kusal-medium_7.flac,spoof,en_US-kusal-medium,en,piper-vits,tts_stock,eval
+data/clips/tts_stock/piper/en_US-kusal-medium_8.flac,spoof,en_US-kusal-medium,en,piper-vits,tts_stock,eval
+data/clips/tts_stock/piper/en_US-kusal-medium_9.flac,spoof,en_US-kusal-medium,en,piper-vits,tts_stock,eval
+data/clips/tts_stock/piper/en_US-kusal-medium_10.flac,spoof,en_US-kusal-medium,en,piper-vits,tts_stock,eval
+data/clips/tts_stock/piper/en_US-kusal-medium_11.flac,spoof,en_US-kusal-medium,en,piper-vits,tts_stock,eval
+data/clips/tts_stock/piper/en_GB-alan-medium_0.flac,spoof,en_GB-alan-medium,en,piper-vits,tts_stock,eval
+data/clips/tts_stock/piper/en_GB-alan-medium_1.flac,spoof,en_GB-alan-medium,en,piper-vits,tts_stock,eval
+data/clips/tts_stock/piper/en_GB-alan-medium_2.flac,spoof,en_GB-alan-medium,en,piper-vits,tts_stock,eval
+data/clips/tts_stock/piper/en_GB-alan-medium_3.flac,spoof,en_GB-alan-medium,en,piper-vits,tts_stock,eval
+data/clips/tts_stock/piper/en_GB-alan-medium_4.flac,spoof,en_GB-alan-medium,en,piper-vits,tts_stock,eval
+data/clips/tts_stock/piper/en_GB-alan-medium_5.flac,spoof,en_GB-alan-medium,en,piper-vits,tts_stock,eval
+data/clips/tts_stock/piper/en_GB-alan-medium_6.flac,spoof,en_GB-alan-medium,en,piper-vits,tts_stock,eval
+data/clips/tts_stock/piper/en_GB-alan-medium_7.flac,spoof,en_GB-alan-medium,en,piper-vits,tts_stock,eval
+data/clips/tts_stock/piper/en_GB-alan-medium_8.flac,spoof,en_GB-alan-medium,en,piper-vits,tts_stock,eval
+data/clips/tts_stock/piper/en_GB-alan-medium_9.flac,spoof,en_GB-alan-medium,en,piper-vits,tts_stock,eval
+data/clips/tts_stock/piper/en_GB-alan-medium_10.flac,spoof,en_GB-alan-medium,en,piper-vits,tts_stock,eval
+data/clips/tts_stock/piper/en_GB-alan-medium_11.flac,spoof,en_GB-alan-medium,en,piper-vits,tts_stock,eval
+data/clips/tts_stock/piper/en_US-lessac-high_0.flac,spoof,en_US-lessac-high,en,piper-vits,tts_stock,eval
+data/clips/tts_stock/piper/en_US-lessac-high_1.flac,spoof,en_US-lessac-high,en,piper-vits,tts_stock,eval
+data/clips/tts_stock/piper/en_US-lessac-high_2.flac,spoof,en_US-lessac-high,en,piper-vits,tts_stock,eval
+data/clips/tts_stock/piper/en_US-lessac-high_3.flac,spoof,en_US-lessac-high,en,piper-vits,tts_stock,eval
+data/clips/tts_stock/piper/en_US-lessac-high_4.flac,spoof,en_US-lessac-high,en,piper-vits,tts_stock,eval
+data/clips/tts_stock/piper/en_US-lessac-high_5.flac,spoof,en_US-lessac-high,en,piper-vits,tts_stock,eval
+data/clips/tts_stock/piper/en_US-lessac-high_6.flac,spoof,en_US-lessac-high,en,piper-vits,tts_stock,eval
+data/clips/tts_stock/piper/en_US-lessac-high_7.flac,spoof,en_US-lessac-high,en,piper-vits,tts_stock,eval
+data/clips/tts_stock/piper/en_US-lessac-high_8.flac,spoof,en_US-lessac-high,en,piper-vits,tts_stock,eval
+data/clips/tts_stock/piper/en_US-lessac-high_9.flac,spoof,en_US-lessac-high,en,piper-vits,tts_stock,eval
+data/clips/tts_stock/piper/en_US-lessac-high_10.flac,spoof,en_US-lessac-high,en,piper-vits,tts_stock,eval
+data/clips/tts_stock/piper/en_US-lessac-high_11.flac,spoof,en_US-lessac-high,en,piper-vits,tts_stock,eval
+data/clips/tts_stock/piper/en_US-ryan-high_0.flac,spoof,en_US-ryan-high,en,piper-vits,tts_stock,eval
+data/clips/tts_stock/piper/en_US-ryan-high_1.flac,spoof,en_US-ryan-high,en,piper-vits,tts_stock,eval
+data/clips/tts_stock/piper/en_US-ryan-high_2.flac,spoof,en_US-ryan-high,en,piper-vits,tts_stock,eval
+data/clips/tts_stock/piper/en_US-ryan-high_3.flac,spoof,en_US-ryan-high,en,piper-vits,tts_stock,eval
+data/clips/tts_stock/piper/en_US-ryan-high_4.flac,spoof,en_US-ryan-high,en,piper-vits,tts_stock,eval
+data/clips/tts_stock/piper/en_US-ryan-high_5.flac,spoof,en_US-ryan-high,en,piper-vits,tts_stock,eval
+data/clips/tts_stock/piper/en_US-ryan-high_6.flac,spoof,en_US-ryan-high,en,piper-vits,tts_stock,eval
+data/clips/tts_stock/piper/en_US-ryan-high_7.flac,spoof,en_US-ryan-high,en,piper-vits,tts_stock,eval
+data/clips/tts_stock/piper/en_US-ryan-high_8.flac,spoof,en_US-ryan-high,en,piper-vits,tts_stock,eval
+data/clips/tts_stock/piper/en_US-ryan-high_9.flac,spoof,en_US-ryan-high,en,piper-vits,tts_stock,eval
+data/clips/tts_stock/piper/en_US-ryan-high_10.flac,spoof,en_US-ryan-high,en,piper-vits,tts_stock,eval
+data/clips/tts_stock/piper/en_US-ryan-high_11.flac,spoof,en_US-ryan-high,en,piper-vits,tts_stock,eval
+data/clips/tts_stock/edge-tts/en-IN-NeerjaNeural_0.flac,spoof,en-IN-NeerjaNeural,en,edge-tts,tts_stock,eval
+data/clips/tts_stock/edge-tts/en-IN-NeerjaNeural_1.flac,spoof,en-IN-NeerjaNeural,en,edge-tts,tts_stock,eval
+data/clips/tts_stock/edge-tts/en-IN-NeerjaNeural_2.flac,spoof,en-IN-NeerjaNeural,en,edge-tts,tts_stock,eval
+data/clips/tts_stock/edge-tts/en-IN-NeerjaNeural_3.flac,spoof,en-IN-NeerjaNeural,en,edge-tts,tts_stock,eval
+data/clips/tts_stock/edge-tts/en-IN-NeerjaNeural_4.flac,spoof,en-IN-NeerjaNeural,en,edge-tts,tts_stock,eval
+data/clips/tts_stock/edge-tts/en-IN-NeerjaNeural_5.flac,spoof,en-IN-NeerjaNeural,en,edge-tts,tts_stock,eval
+data/clips/tts_stock/edge-tts/en-IN-NeerjaNeural_6.flac,spoof,en-IN-NeerjaNeural,en,edge-tts,tts_stock,eval
+data/clips/tts_stock/edge-tts/en-IN-NeerjaNeural_7.flac,spoof,en-IN-NeerjaNeural,en,edge-tts,tts_stock,eval
+data/clips/tts_stock/edge-tts/en-IN-NeerjaNeural_8.flac,spoof,en-IN-NeerjaNeural,en,edge-tts,tts_stock,eval
+data/clips/tts_stock/edge-tts/en-IN-NeerjaNeural_9.flac,spoof,en-IN-NeerjaNeural,en,edge-tts,tts_stock,eval
+data/clips/tts_stock/edge-tts/en-IN-NeerjaNeural_10.flac,spoof,en-IN-NeerjaNeural,en,edge-tts,tts_stock,eval
+data/clips/tts_stock/edge-tts/en-IN-NeerjaNeural_11.flac,spoof,en-IN-NeerjaNeural,en,edge-tts,tts_stock,eval
+data/clips/tts_stock/edge-tts/en-IN-NeerjaExpressiveNeural_0.flac,spoof,en-IN-NeerjaExpressiveNeural,en,edge-tts,tts_stock,eval
+data/clips/tts_stock/edge-tts/en-IN-NeerjaExpressiveNeural_1.flac,spoof,en-IN-NeerjaExpressiveNeural,en,edge-tts,tts_stock,eval
+data/clips/tts_stock/edge-tts/en-IN-NeerjaExpressiveNeural_2.flac,spoof,en-IN-NeerjaExpressiveNeural,en,edge-tts,tts_stock,eval
+data/clips/tts_stock/edge-tts/en-IN-NeerjaExpressiveNeural_3.flac,spoof,en-IN-NeerjaExpressiveNeural,en,edge-tts,tts_stock,eval
+data/clips/tts_stock/edge-tts/en-IN-NeerjaExpressiveNeural_4.flac,spoof,en-IN-NeerjaExpressiveNeural,en,edge-tts,tts_stock,eval
+data/clips/tts_stock/edge-tts/en-IN-NeerjaExpressiveNeural_5.flac,spoof,en-IN-NeerjaExpressiveNeural,en,edge-tts,tts_stock,eval
+data/clips/tts_stock/edge-tts/en-IN-NeerjaExpressiveNeural_6.flac,spoof,en-IN-NeerjaExpressiveNeural,en,edge-tts,tts_stock,eval
+data/clips/tts_stock/edge-tts/en-IN-NeerjaExpressiveNeural_7.flac,spoof,en-IN-NeerjaExpressiveNeural,en,edge-tts,tts_stock,eval
+data/clips/tts_stock/edge-tts/en-IN-NeerjaExpressiveNeural_8.flac,spoof,en-IN-NeerjaExpressiveNeural,en,edge-tts,tts_stock,eval
+data/clips/tts_stock/edge-tts/en-IN-NeerjaExpressiveNeural_9.flac,spoof,en-IN-NeerjaExpressiveNeural,en,edge-tts,tts_stock,eval
+data/clips/tts_stock/edge-tts/en-IN-NeerjaExpressiveNeural_10.flac,spoof,en-IN-NeerjaExpressiveNeural,en,edge-tts,tts_stock,eval
+data/clips/tts_stock/edge-tts/en-IN-NeerjaExpressiveNeural_11.flac,spoof,en-IN-NeerjaExpressiveNeural,en,edge-tts,tts_stock,eval
+data/clips/tts_stock/edge-tts/en-IN-PrabhatNeural_0.flac,spoof,en-IN-PrabhatNeural,en,edge-tts,tts_stock,eval
+data/clips/tts_stock/edge-tts/en-IN-PrabhatNeural_1.flac,spoof,en-IN-PrabhatNeural,en,edge-tts,tts_stock,eval
+data/clips/tts_stock/edge-tts/en-IN-PrabhatNeural_2.flac,spoof,en-IN-PrabhatNeural,en,edge-tts,tts_stock,eval
+data/clips/tts_stock/edge-tts/en-IN-PrabhatNeural_3.flac,spoof,en-IN-PrabhatNeural,en,edge-tts,tts_stock,eval
+data/clips/tts_stock/edge-tts/en-IN-PrabhatNeural_4.flac,spoof,en-IN-PrabhatNeural,en,edge-tts,tts_stock,eval
+data/clips/tts_stock/edge-tts/en-IN-PrabhatNeural_5.flac,spoof,en-IN-PrabhatNeural,en,edge-tts,tts_stock,eval
+data/clips/tts_stock/edge-tts/en-IN-PrabhatNeural_6.flac,spoof,en-IN-PrabhatNeural,en,edge-tts,tts_stock,eval
+data/clips/tts_stock/edge-tts/en-IN-PrabhatNeural_7.flac,spoof,en-IN-PrabhatNeural,en,edge-tts,tts_stock,eval
+data/clips/tts_stock/edge-tts/en-IN-PrabhatNeural_8.flac,spoof,en-IN-PrabhatNeural,en,edge-tts,tts_stock,eval
+data/clips/tts_stock/edge-tts/en-IN-PrabhatNeural_9.flac,spoof,en-IN-PrabhatNeural,en,edge-tts,tts_stock,eval
+data/clips/tts_stock/edge-tts/en-IN-PrabhatNeural_10.flac,spoof,en-IN-PrabhatNeural,en,edge-tts,tts_stock,eval
+data/clips/tts_stock/edge-tts/en-IN-PrabhatNeural_11.flac,spoof,en-IN-PrabhatNeural,en,edge-tts,tts_stock,eval
+data/clips/tts_stock/edge-tts/hi-IN-SwaraNeural_0.flac,spoof,hi-IN-SwaraNeural,hi,edge-tts,tts_stock,eval
+data/clips/tts_stock/edge-tts/hi-IN-SwaraNeural_1.flac,spoof,hi-IN-SwaraNeural,hi,edge-tts,tts_stock,eval
+data/clips/tts_stock/edge-tts/hi-IN-SwaraNeural_2.flac,spoof,hi-IN-SwaraNeural,hi,edge-tts,tts_stock,eval
+data/clips/tts_stock/edge-tts/hi-IN-SwaraNeural_3.flac,spoof,hi-IN-SwaraNeural,hi,edge-tts,tts_stock,eval
+data/clips/tts_stock/edge-tts/hi-IN-SwaraNeural_4.flac,spoof,hi-IN-SwaraNeural,hi,edge-tts,tts_stock,eval
+data/clips/tts_stock/edge-tts/hi-IN-SwaraNeural_5.flac,spoof,hi-IN-SwaraNeural,hi,edge-tts,tts_stock,eval
+data/clips/tts_stock/edge-tts/hi-IN-SwaraNeural_6.flac,spoof,hi-IN-SwaraNeural,hi,edge-tts,tts_stock,eval
+data/clips/tts_stock/edge-tts/hi-IN-SwaraNeural_7.flac,spoof,hi-IN-SwaraNeural,hi,edge-tts,tts_stock,eval
+data/clips/tts_stock/edge-tts/hi-IN-SwaraNeural_8.flac,spoof,hi-IN-SwaraNeural,hi,edge-tts,tts_stock,eval
+data/clips/tts_stock/edge-tts/hi-IN-SwaraNeural_9.flac,spoof,hi-IN-SwaraNeural,hi,edge-tts,tts_stock,eval
+data/clips/tts_stock/edge-tts/hi-IN-MadhurNeural_0.flac,spoof,hi-IN-MadhurNeural,hi,edge-tts,tts_stock,eval
+data/clips/tts_stock/edge-tts/hi-IN-MadhurNeural_1.flac,spoof,hi-IN-MadhurNeural,hi,edge-tts,tts_stock,eval
+data/clips/tts_stock/edge-tts/hi-IN-MadhurNeural_2.flac,spoof,hi-IN-MadhurNeural,hi,edge-tts,tts_stock,eval
+data/clips/tts_stock/edge-tts/hi-IN-MadhurNeural_3.flac,spoof,hi-IN-MadhurNeural,hi,edge-tts,tts_stock,eval
+data/clips/tts_stock/edge-tts/hi-IN-MadhurNeural_4.flac,spoof,hi-IN-MadhurNeural,hi,edge-tts,tts_stock,eval
+data/clips/tts_stock/edge-tts/hi-IN-MadhurNeural_5.flac,spoof,hi-IN-MadhurNeural,hi,edge-tts,tts_stock,eval
+data/clips/tts_stock/edge-tts/hi-IN-MadhurNeural_6.flac,spoof,hi-IN-MadhurNeural,hi,edge-tts,tts_stock,eval
+data/clips/tts_stock/edge-tts/hi-IN-MadhurNeural_7.flac,spoof,hi-IN-MadhurNeural,hi,edge-tts,tts_stock,eval
+data/clips/tts_stock/edge-tts/hi-IN-MadhurNeural_8.flac,spoof,hi-IN-MadhurNeural,hi,edge-tts,tts_stock,eval
+data/clips/tts_stock/edge-tts/hi-IN-MadhurNeural_9.flac,spoof,hi-IN-MadhurNeural,hi,edge-tts,tts_stock,eval
+data/clips/tts_stock/edge-tts/en-US-AvaMultilingualNeural_0.flac,spoof,en-US-AvaMultilingualNeural,en,edge-tts,tts_stock,eval
+data/clips/tts_stock/edge-tts/en-US-AvaMultilingualNeural_1.flac,spoof,en-US-AvaMultilingualNeural,en,edge-tts,tts_stock,eval
+data/clips/tts_stock/edge-tts/en-US-AvaMultilingualNeural_2.flac,spoof,en-US-AvaMultilingualNeural,en,edge-tts,tts_stock,eval
+data/clips/tts_stock/edge-tts/en-US-AvaMultilingualNeural_3.flac,spoof,en-US-AvaMultilingualNeural,en,edge-tts,tts_stock,eval
+data/clips/tts_stock/edge-tts/en-US-AvaMultilingualNeural_4.flac,spoof,en-US-AvaMultilingualNeural,en,edge-tts,tts_stock,eval
+data/clips/tts_stock/edge-tts/en-US-AvaMultilingualNeural_5.flac,spoof,en-US-AvaMultilingualNeural,en,edge-tts,tts_stock,eval
+data/clips/tts_stock/edge-tts/en-US-AvaMultilingualNeural_6.flac,spoof,en-US-AvaMultilingualNeural,en,edge-tts,tts_stock,eval
+data/clips/tts_stock/edge-tts/en-US-AvaMultilingualNeural_7.flac,spoof,en-US-AvaMultilingualNeural,en,edge-tts,tts_stock,eval
+data/clips/tts_stock/edge-tts/en-US-AvaMultilingualNeural_8.flac,spoof,en-US-AvaMultilingualNeural,en,edge-tts,tts_stock,eval
+data/clips/tts_stock/edge-tts/en-US-AvaMultilingualNeural_9.flac,spoof,en-US-AvaMultilingualNeural,en,edge-tts,tts_stock,eval
+data/clips/tts_stock/edge-tts/en-US-AvaMultilingualNeural_10.flac,spoof,en-US-AvaMultilingualNeural,en,edge-tts,tts_stock,eval
+data/clips/tts_stock/edge-tts/en-US-AvaMultilingualNeural_11.flac,spoof,en-US-AvaMultilingualNeural,en,edge-tts,tts_stock,eval
+data/clips/tts_stock/edge-tts/en-US-AndrewMultilingualNeural_0.flac,spoof,en-US-AndrewMultilingualNeural,en,edge-tts,tts_stock,eval
+data/clips/tts_stock/edge-tts/en-US-AndrewMultilingualNeural_1.flac,spoof,en-US-AndrewMultilingualNeural,en,edge-tts,tts_stock,eval
+data/clips/tts_stock/edge-tts/en-US-AndrewMultilingualNeural_2.flac,spoof,en-US-AndrewMultilingualNeural,en,edge-tts,tts_stock,eval
+data/clips/tts_stock/edge-tts/en-US-AndrewMultilingualNeural_3.flac,spoof,en-US-AndrewMultilingualNeural,en,edge-tts,tts_stock,eval
+data/clips/tts_stock/edge-tts/en-US-AndrewMultilingualNeural_4.flac,spoof,en-US-AndrewMultilingualNeural,en,edge-tts,tts_stock,eval
+data/clips/tts_stock/edge-tts/en-US-AndrewMultilingualNeural_5.flac,spoof,en-US-AndrewMultilingualNeural,en,edge-tts,tts_stock,eval
+data/clips/tts_stock/edge-tts/en-US-AndrewMultilingualNeural_6.flac,spoof,en-US-AndrewMultilingualNeural,en,edge-tts,tts_stock,eval
+data/clips/tts_stock/edge-tts/en-US-AndrewMultilingualNeural_7.flac,spoof,en-US-AndrewMultilingualNeural,en,edge-tts,tts_stock,eval
+data/clips/tts_stock/edge-tts/en-US-AndrewMultilingualNeural_8.flac,spoof,en-US-AndrewMultilingualNeural,en,edge-tts,tts_stock,eval
+data/clips/tts_stock/edge-tts/en-US-AndrewMultilingualNeural_9.flac,spoof,en-US-AndrewMultilingualNeural,en,edge-tts,tts_stock,eval
+data/clips/tts_stock/edge-tts/en-US-AndrewMultilingualNeural_10.flac,spoof,en-US-AndrewMultilingualNeural,en,edge-tts,tts_stock,eval
+data/clips/tts_stock/edge-tts/en-US-AndrewMultilingualNeural_11.flac,spoof,en-US-AndrewMultilingualNeural,en,edge-tts,tts_stock,eval
+data/clips/tts_stock/edge-tts/en-US-EmmaMultilingualNeural_0.flac,spoof,en-US-EmmaMultilingualNeural,en,edge-tts,tts_stock,eval
+data/clips/tts_stock/edge-tts/en-US-EmmaMultilingualNeural_2.flac,spoof,en-US-EmmaMultilingualNeural,en,edge-tts,tts_stock,eval
+data/clips/tts_stock/edge-tts/en-US-EmmaMultilingualNeural_4.flac,spoof,en-US-EmmaMultilingualNeural,en,edge-tts,tts_stock,eval
+data/clips/tts_stock/edge-tts/en-US-EmmaMultilingualNeural_5.flac,spoof,en-US-EmmaMultilingualNeural,en,edge-tts,tts_stock,eval
+data/clips/tts_stock/edge-tts/en-US-EmmaMultilingualNeural_6.flac,spoof,en-US-EmmaMultilingualNeural,en,edge-tts,tts_stock,eval
+data/clips/tts_stock/edge-tts/en-US-EmmaMultilingualNeural_7.flac,spoof,en-US-EmmaMultilingualNeural,en,edge-tts,tts_stock,eval
+data/clips/tts_stock/edge-tts/en-US-EmmaMultilingualNeural_8.flac,spoof,en-US-EmmaMultilingualNeural,en,edge-tts,tts_stock,eval
+data/clips/fleurs_hi/fleurs_hi1124.flac,bonafide,fleurs_hi993,hi,-,fleurs_hi,eval
+data/clips/fleurs_hi/fleurs_hi1205.flac,bonafide,fleurs_hi208,hi,-,fleurs_hi,eval
+data/clips/fleurs_hi/fleurs_hi148.flac,bonafide,fleurs_hi1025,hi,-,fleurs_hi,eval
+data/clips/fleurs_hi/fleurs_hi826.flac,bonafide,fleurs_hi1420,hi,-,fleurs_hi,eval
+data/clips/fleurs_hi/fleurs_hi1428.flac,bonafide,fleurs_hi396,hi,-,fleurs_hi,eval
+data/clips/fleurs_hi/fleurs_hi1386.flac,bonafide,fleurs_hi189,hi,-,fleurs_hi,eval
+data/clips/fleurs_hi/fleurs_hi1163.flac,bonafide,fleurs_hi536,hi,-,fleurs_hi,eval
+data/clips/fleurs_hi/fleurs_hi909.flac,bonafide,fleurs_hi760,hi,-,fleurs_hi,eval
+data/clips/fleurs_hi/fleurs_hi1351.flac,bonafide,fleurs_hi1103,hi,-,fleurs_hi,eval
+data/clips/fleurs_hi/fleurs_hi1057.flac,bonafide,fleurs_hi113,hi,-,fleurs_hi,eval
+data/clips/fleurs_hi/fleurs_hi1643.flac,bonafide,fleurs_hi1510,hi,-,fleurs_hi,eval
+data/clips/fleurs_hi/fleurs_hi659.flac,bonafide,fleurs_hi341,hi,-,fleurs_hi,eval
+data/clips/fleurs_hi/fleurs_hi1423.flac,bonafide,fleurs_hi442,hi,-,fleurs_hi,eval
+data/clips/fleurs_hi/fleurs_hi425.flac,bonafide,fleurs_hi1458,hi,-,fleurs_hi,eval
+data/clips/fleurs_hi/fleurs_hi886.flac,bonafide,fleurs_hi1498,hi,-,fleurs_hi,eval
+data/clips/fleurs_hi/fleurs_hi1725.flac,bonafide,fleurs_hi1655,hi,-,fleurs_hi,eval
+data/clips/fleurs_hi/fleurs_hi262.flac,bonafide,fleurs_hi59,hi,-,fleurs_hi,eval
+data/clips/fleurs_hi/fleurs_hi785.flac,bonafide,fleurs_hi8,hi,-,fleurs_hi,eval
+data/clips/fleurs_hi/fleurs_hi1528.flac,bonafide,fleurs_hi1579,hi,-,fleurs_hi,eval
+data/clips/fleurs_hi/fleurs_hi1668.flac,bonafide,fleurs_hi1584,hi,-,fleurs_hi,eval
+data/clips/fleurs_hi/fleurs_hi443.flac,bonafide,fleurs_hi588,hi,-,fleurs_hi,eval
+data/clips/fleurs_hi/fleurs_hi920.flac,bonafide,fleurs_hi732,hi,-,fleurs_hi,eval
+data/clips/fleurs_hi/fleurs_hi270.flac,bonafide,fleurs_hi658,hi,-,fleurs_hi,eval
+data/clips/fleurs_hi/fleurs_hi230.flac,bonafide,fleurs_hi814,hi,-,fleurs_hi,eval
+data/clips/fleurs_hi/fleurs_hi964.flac,bonafide,fleurs_hi531,hi,-,fleurs_hi,eval
+data/clips/fleurs_hi/fleurs_hi1321.flac,bonafide,fleurs_hi1212,hi,-,fleurs_hi,eval
+data/clips/fleurs_hi/fleurs_hi1557.flac,bonafide,fleurs_hi1638,hi,-,fleurs_hi,eval
+data/clips/fleurs_hi/fleurs_hi1656.flac,bonafide,fleurs_hi1656,hi,-,fleurs_hi,eval
+data/clips/fleurs_hi/fleurs_hi1048.flac,bonafide,fleurs_hi40,hi,-,fleurs_hi,eval
+data/clips/fleurs_hi/fleurs_hi1263.flac,bonafide,fleurs_hi291,hi,-,fleurs_hi,eval
+data/clips/fleurs_hi/fleurs_hi946.flac,bonafide,fleurs_hi928,hi,-,fleurs_hi,eval
+data/clips/fleurs_hi/fleurs_hi623.flac,bonafide,fleurs_hi1115,hi,-,fleurs_hi,eval
+data/clips/fleurs_hi/fleurs_hi1539.flac,bonafide,fleurs_hi1639,hi,-,fleurs_hi,eval
+data/clips/fleurs_hi/fleurs_hi467.flac,bonafide,fleurs_hi683,hi,-,fleurs_hi,eval
+data/clips/fleurs_hi/fleurs_hi1270.flac,bonafide,fleurs_hi476,hi,-,fleurs_hi,eval
+data/clips/fleurs_hi/fleurs_hi1517.flac,bonafide,fleurs_hi1510,hi,-,fleurs_hi,eval
+data/clips/fleurs_hi/fleurs_hi1128.flac,bonafide,fleurs_hi14,hi,-,fleurs_hi,eval
+data/clips/fleurs_hi/fleurs_hi201.flac,bonafide,fleurs_hi1113,hi,-,fleurs_hi,eval
+data/clips/fleurs_hi/fleurs_hi37.flac,bonafide,fleurs_hi1363,hi,-,fleurs_hi,eval
+data/clips/fleurs_hi/fleurs_hi257.flac,bonafide,fleurs_hi396,hi,-,fleurs_hi,eval
+data/clips/fleurs_hi/fleurs_hi1147.flac,bonafide,fleurs_hi578,hi,-,fleurs_hi,eval
+data/clips/fleurs_hi/fleurs_hi6.flac,bonafide,fleurs_hi1419,hi,-,fleurs_hi,eval
+data/clips/fleurs_hi/fleurs_hi1394.flac,bonafide,fleurs_hi1319,hi,-,fleurs_hi,eval
+data/clips/fleurs_hi/fleurs_hi970.flac,bonafide,fleurs_hi50,hi,-,fleurs_hi,eval
+data/clips/fleurs_hi/fleurs_hi748.flac,bonafide,fleurs_hi1466,hi,-,fleurs_hi,eval
+data/clips/fleurs_hi/fleurs_hi958.flac,bonafide,fleurs_hi379,hi,-,fleurs_hi,eval
+data/clips/fleurs_hi/fleurs_hi211.flac,bonafide,fleurs_hi1254,hi,-,fleurs_hi,eval
+data/clips/fleurs_hi/fleurs_hi1683.flac,bonafide,fleurs_hi1579,hi,-,fleurs_hi,eval
+data/clips/fleurs_hi/fleurs_hi1289.flac,bonafide,fleurs_hi453,hi,-,fleurs_hi,eval
+data/clips/fleurs_hi/fleurs_hi1706.flac,bonafide,fleurs_hi1552,hi,-,fleurs_hi,eval
+data/clips/fleurs_hi/fleurs_hi328.flac,bonafide,fleurs_hi603,hi,-,fleurs_hi,eval
+data/clips/fleurs_hi/fleurs_hi348.flac,bonafide,fleurs_hi895,hi,-,fleurs_hi,eval
+data/clips/fleurs_hi/fleurs_hi1534.flac,bonafide,fleurs_hi1552,hi,-,fleurs_hi,eval
+data/clips/fleurs_hi/fleurs_hi1652.flac,bonafide,fleurs_hi1581,hi,-,fleurs_hi,eval
+data/clips/fleurs_hi/fleurs_hi1337.flac,bonafide,fleurs_hi627,hi,-,fleurs_hi,eval
+data/clips/fleurs_hi/fleurs_hi868.flac,bonafide,fleurs_hi99,hi,-,fleurs_hi,eval
+data/clips/fleurs_hi/fleurs_hi694.flac,bonafide,fleurs_hi1362,hi,-,fleurs_hi,eval
+data/clips/fleurs_hi/fleurs_hi152.flac,bonafide,fleurs_hi578,hi,-,fleurs_hi,eval
+data/clips/fleurs_hi/fleurs_hi1282.flac,bonafide,fleurs_hi707,hi,-,fleurs_hi,eval
+data/clips/fleurs_hi/fleurs_hi472.flac,bonafide,fleurs_hi170,hi,-,fleurs_hi,eval
+data/clips/fleurs_hi/fleurs_hi1268.flac,bonafide,fleurs_hi1354,hi,-,fleurs_hi,eval
+data/clips/fleurs_hi/fleurs_hi803.flac,bonafide,fleurs_hi170,hi,-,fleurs_hi,eval
+data/clips/fleurs_hi/fleurs_hi1726.flac,bonafide,fleurs_hi1633,hi,-,fleurs_hi,eval
+data/clips/fleurs_hi/fleurs_hi160.flac,bonafide,fleurs_hi1068,hi,-,fleurs_hi,eval
+data/clips/fleurs_hi/fleurs_hi460.flac,bonafide,fleurs_hi402,hi,-,fleurs_hi,eval
+data/clips/fleurs_hi/fleurs_hi878.flac,bonafide,fleurs_hi1103,hi,-,fleurs_hi,eval
+data/clips/fleurs_hi/fleurs_hi1666.flac,bonafide,fleurs_hi1639,hi,-,fleurs_hi,eval
+data/clips/fleurs_hi/fleurs_hi1592.flac,bonafide,fleurs_hi1622,hi,-,fleurs_hi,eval
+data/clips/fleurs_hi/fleurs_hi1679.flac,bonafide,fleurs_hi1538,hi,-,fleurs_hi,eval
+data/clips/fleurs_hi/fleurs_hi1218.flac,bonafide,fleurs_hi1254,hi,-,fleurs_hi,eval
+data/clips/fleurs_hi/fleurs_hi484.flac,bonafide,fleurs_hi1115,hi,-,fleurs_hi,eval
+data/clips/fleurs_hi/fleurs_hi1306.flac,bonafide,fleurs_hi1238,hi,-,fleurs_hi,eval
+data/clips/fleurs_hi/fleurs_hi293.flac,bonafide,fleurs_hi415,hi,-,fleurs_hi,eval
+data/clips/fleurs_hi/fleurs_hi652.flac,bonafide,fleurs_hi220,hi,-,fleurs_hi,eval
+data/clips/fleurs_hi/fleurs_hi1171.flac,bonafide,fleurs_hi688,hi,-,fleurs_hi,eval
+data/clips/fleurs_hi/fleurs_hi899.flac,bonafide,fleurs_hi1307,hi,-,fleurs_hi,eval
+data/clips/fleurs_hi/fleurs_hi430.flac,bonafide,fleurs_hi429,hi,-,fleurs_hi,eval
+data/clips/fleurs_hi/fleurs_hi672.flac,bonafide,fleurs_hi1220,hi,-,fleurs_hi,eval
+data/clips/fleurs_hi/fleurs_hi1285.flac,bonafide,fleurs_hi225,hi,-,fleurs_hi,eval
+data/clips/fleurs_hi/fleurs_hi900.flac,bonafide,fleurs_hi46,hi,-,fleurs_hi,eval
+data/clips/fleurs_hi/fleurs_hi548.flac,bonafide,fleurs_hi46,hi,-,fleurs_hi,eval
+data/clips/fleurs_hi/fleurs_hi1271.flac,bonafide,fleurs_hi698,hi,-,fleurs_hi,eval
+data/clips/fleurs_hi/fleurs_hi887.flac,bonafide,fleurs_hi1250,hi,-,fleurs_hi,eval
+data/clips/fleurs_hi/fleurs_hi1538.flac,bonafide,fleurs_hi1633,hi,-,fleurs_hi,eval
+data/clips/fleurs_hi/fleurs_hi1288.flac,bonafide,fleurs_hi334,hi,-,fleurs_hi,eval
+data/clips/fleurs_hi/fleurs_hi1523.flac,bonafide,fleurs_hi1639,hi,-,fleurs_hi,eval
+data/clips/fleurs_hi/fleurs_hi1434.flac,bonafide,fleurs_hi615,hi,-,fleurs_hi,eval
+data/clips/fleurs_hi/fleurs_hi1030.flac,bonafide,fleurs_hi928,hi,-,fleurs_hi,eval
+data/clips/fleurs_hi/fleurs_hi59.flac,bonafide,fleurs_hi940,hi,-,fleurs_hi,eval
+data/clips/fleurs_hi/fleurs_hi910.flac,bonafide,fleurs_hi1088,hi,-,fleurs_hi,eval
+data/clips/fleurs_hi/fleurs_hi413.flac,bonafide,fleurs_hi296,hi,-,fleurs_hi,eval
+data/clips/fleurs_hi/fleurs_hi736.flac,bonafide,fleurs_hi1270,hi,-,fleurs_hi,eval
+data/clips/fleurs_hi/fleurs_hi105.flac,bonafide,fleurs_hi765,hi,-,fleurs_hi,eval
+data/clips/fleurs_hi/fleurs_hi1079.flac,bonafide,fleurs_hi1241,hi,-,fleurs_hi,eval
+data/clips/fleurs_hi/fleurs_hi1396.flac,bonafide,fleurs_hi1058,hi,-,fleurs_hi,eval
+data/clips/fleurs_hi/fleurs_hi231.flac,bonafide,fleurs_hi221,hi,-,fleurs_hi,eval
+data/clips/fleurs_hi/fleurs_hi835.flac,bonafide,fleurs_hi683,hi,-,fleurs_hi,eval
+data/clips/fleurs_hi/fleurs_hi1277.flac,bonafide,fleurs_hi65,hi,-,fleurs_hi,eval
+data/clips/fleurs_hi/fleurs_hi1320.flac,bonafide,fleurs_hi8,hi,-,fleurs_hi,eval
+data/clips/fleurs_hi/fleurs_hi593.flac,bonafide,fleurs_hi853,hi,-,fleurs_hi,eval
+data/clips/fleurs_hi/fleurs_hi842.flac,bonafide,fleurs_hi931,hi,-,fleurs_hi,eval
+data/clips/fleurs_hi/fleurs_hi1697.flac,bonafide,fleurs_hi1656,hi,-,fleurs_hi,eval
+data/clips/fleurs_hi/fleurs_hi1529.flac,bonafide,fleurs_hi1584,hi,-,fleurs_hi,eval
+data/clips/fleurs_hi/fleurs_hi1199.flac,bonafide,fleurs_hi137,hi,-,fleurs_hi,eval
+data/clips/fleurs_hi/fleurs_hi297.flac,bonafide,fleurs_hi1142,hi,-,fleurs_hi,eval
+data/clips/fleurs_hi/fleurs_hi632.flac,bonafide,fleurs_hi1068,hi,-,fleurs_hi,eval
+data/clips/fleurs_hi/fleurs_hi740.flac,bonafide,fleurs_hi436,hi,-,fleurs_hi,eval
+data/clips/fleurs_hi/fleurs_hi1393.flac,bonafide,fleurs_hi46,hi,-,fleurs_hi,eval
+data/clips/fleurs_hi/fleurs_hi769.flac,bonafide,fleurs_hi402,hi,-,fleurs_hi,eval
+data/clips/fleurs_hi/fleurs_hi528.flac,bonafide,fleurs_hi634,hi,-,fleurs_hi,eval
+data/clips/fleurs_hi/fleurs_hi1075.flac,bonafide,fleurs_hi931,hi,-,fleurs_hi,eval
+data/clips/fleurs_hi/fleurs_hi232.flac,bonafide,fleurs_hi83,hi,-,fleurs_hi,eval
+data/clips/fleurs_hi/fleurs_hi471.flac,bonafide,fleurs_hi291,hi,-,fleurs_hi,eval
+data/clips/fleurs_hi/fleurs_hi90.flac,bonafide,fleurs_hi65,hi,-,fleurs_hi,eval
+data/clips/fleurs_hi/fleurs_hi369.flac,bonafide,fleurs_hi191,hi,-,fleurs_hi,eval
+data/clips/fleurs_hi/fleurs_hi1032.flac,bonafide,fleurs_hi365,hi,-,fleurs_hi,eval
+data/clips/fleurs_hi/fleurs_hi1066.flac,bonafide,fleurs_hi1270,hi,-,fleurs_hi,eval
+data/clips/fleurs_hi/fleurs_hi241.flac,bonafide,fleurs_hi777,hi,-,fleurs_hi,eval
+data/clips/fleurs_hi/fleurs_hi645.flac,bonafide,fleurs_hi1176,hi,-,fleurs_hi,eval
+data/clips/fleurs_hi/fleurs_hi154.flac,bonafide,fleurs_hi417,hi,-,fleurs_hi,eval
+data/clips/fleurs_hi/fleurs_hi1190.flac,bonafide,fleurs_hi1464,hi,-,fleurs_hi,eval
+data/clips/fleurs_hi/fleurs_hi10.flac,bonafide,fleurs_hi194,hi,-,fleurs_hi,eval
+data/clips/fleurs_hi/fleurs_hi529.flac,bonafide,fleurs_hi104,hi,-,fleurs_hi,eval
+data/clips/fleurs_hi/fleurs_hi215.flac,bonafide,fleurs_hi1362,hi,-,fleurs_hi,eval
+data/clips/fleurs_hi/fleurs_hi954.flac,bonafide,fleurs_hi680,hi,-,fleurs_hi,eval
+data/clips/fleurs_hi/fleurs_hi1682.flac,bonafide,fleurs_hi1629,hi,-,fleurs_hi,eval
+data/clips/fleurs_hi/fleurs_hi192.flac,bonafide,fleurs_hi583,hi,-,fleurs_hi,eval
+data/clips/fleurs_hi/fleurs_hi1002.flac,bonafide,fleurs_hi390,hi,-,fleurs_hi,eval
+data/clips/fleurs_hi/fleurs_hi1537.flac,bonafide,fleurs_hi1655,hi,-,fleurs_hi,eval
+data/clips/fleurs_hi/fleurs_hi1083.flac,bonafide,fleurs_hi83,hi,-,fleurs_hi,eval
+data/clips/fleurs_hi/fleurs_hi1361.flac,bonafide,fleurs_hi220,hi,-,fleurs_hi,eval
+data/clips/fleurs_hi/fleurs_hi1527.flac,bonafide,fleurs_hi1510,hi,-,fleurs_hi,eval
+data/clips/fleurs_hi/fleurs_hi84.flac,bonafide,fleurs_hi191,hi,-,fleurs_hi,eval
+data/clips/fleurs_hi/fleurs_hi128.flac,bonafide,fleurs_hi1289,hi,-,fleurs_hi,eval
+data/clips/fleurs_hi/fleurs_hi531.flac,bonafide,fleurs_hi1419,hi,-,fleurs_hi,eval
+data/clips/fleurs_hi/fleurs_hi26.flac,bonafide,fleurs_hi146,hi,-,fleurs_hi,eval
+data/clips/fleurs_hi/fleurs_hi1120.flac,bonafide,fleurs_hi1307,hi,-,fleurs_hi,eval
+data/clips/fleurs_hi/fleurs_hi422.flac,bonafide,fleurs_hi1099,hi,-,fleurs_hi,eval
+data/clips/fleurs_hi/fleurs_hi1140.flac,bonafide,fleurs_hi43,hi,-,fleurs_hi,eval
+data/clips/fleurs_hi/fleurs_hi1544.flac,bonafide,fleurs_hi1656,hi,-,fleurs_hi,eval
+data/clips/fleurs_hi/fleurs_hi1068.flac,bonafide,fleurs_hi137,hi,-,fleurs_hi,eval
+data/clips/fleurs_hi/fleurs_hi1727.flac,bonafide,fleurs_hi1629,hi,-,fleurs_hi,eval
+data/clips/fleurs_hi/fleurs_hi1406.flac,bonafide,fleurs_hi734,hi,-,fleurs_hi,eval
+data/clips/fleurs_hi/fleurs_hi379.flac,bonafide,fleurs_hi760,hi,-,fleurs_hi,eval
+data/clips/fleurs_hi/fleurs_hi1220.flac,bonafide,fleurs_hi649,hi,-,fleurs_hi,eval
+data/clips/fleurs_hi/fleurs_hi1615.flac,bonafide,fleurs_hi1622,hi,-,fleurs_hi,eval
+data/clips/fleurs_hi/fleurs_hi1146.flac,bonafide,fleurs_hi83,hi,-,fleurs_hi,eval
+data/clips/fleurs_hi/fleurs_hi730.flac,bonafide,fleurs_hi14,hi,-,fleurs_hi,eval
+data/clips/fleurs_hi/fleurs_hi701.flac,bonafide,fleurs_hi1024,hi,-,fleurs_hi,eval
+data/clips/fleurs_hi/fleurs_hi1733.flac,bonafide,fleurs_hi1622,hi,-,fleurs_hi,eval
+data/clips/fleurs_hi/fleurs_hi1457.flac,bonafide,fleurs_hi584,hi,-,fleurs_hi,eval
+data/clips/fleurs_hi/fleurs_hi473.flac,bonafide,fleurs_hi405,hi,-,fleurs_hi,eval
+data/clips/fleurs_hi/fleurs_hi67.flac,bonafide,fleurs_hi341,hi,-,fleurs_hi,eval
+data/clips/fleurs_hi/fleurs_hi506.flac,bonafide,fleurs_hi146,hi,-,fleurs_hi,eval
+data/clips/fleurs_hi/fleurs_hi857.flac,bonafide,fleurs_hi225,hi,-,fleurs_hi,eval
+data/clips/fleurs_hi/fleurs_hi249.flac,bonafide,fleurs_hi395,hi,-,fleurs_hi,eval
+data/clips/fleurs_hi/fleurs_hi1614.flac,bonafide,fleurs_hi1538,hi,-,fleurs_hi,eval
+data/clips/fleurs_hi/fleurs_hi603.flac,bonafide,fleurs_hi104,hi,-,fleurs_hi,eval
+data/clips/fleurs_hi/fleurs_hi1253.flac,bonafide,fleurs_hi113,hi,-,fleurs_hi,eval
+data/clips/fleurs_hi/fleurs_hi880.flac,bonafide,fleurs_hi390,hi,-,fleurs_hi,eval
+data/clips/fleurs_hi/fleurs_hi893.flac,bonafide,fleurs_hi933,hi,-,fleurs_hi,eval
+data/clips/fleurs_hi/fleurs_hi133.flac,bonafide,fleurs_hi334,hi,-,fleurs_hi,eval
+data/clips/fleurs_hi/fleurs_hi1019.flac,bonafide,fleurs_hi208,hi,-,fleurs_hi,eval
+data/clips/fleurs_hi/fleurs_hi1560.flac,bonafide,fleurs_hi1629,hi,-,fleurs_hi,eval
+data/clips/fleurs_hi/fleurs_hi1357.flac,bonafide,fleurs_hi440,hi,-,fleurs_hi,eval
+data/clips/fleurs_hi/fleurs_hi1131.flac,bonafide,fleurs_hi734,hi,-,fleurs_hi,eval
+data/clips/fleurs_hi/fleurs_hi510.flac,bonafide,fleurs_hi965,hi,-,fleurs_hi,eval
+data/clips/fleurs_hi/fleurs_hi539.flac,bonafide,fleurs_hi296,hi,-,fleurs_hi,eval
+data/clips/fleurs_hi/fleurs_hi739.flac,bonafide,fleurs_hi1058,hi,-,fleurs_hi,eval
+data/clips/fleurs_hi/fleurs_hi1664.flac,bonafide,fleurs_hi1579,hi,-,fleurs_hi,eval
+data/clips/fleurs_hi/fleurs_hi1634.flac,bonafide,fleurs_hi1552,hi,-,fleurs_hi,eval
+data/clips/fleurs_hi/fleurs_hi952.flac,bonafide,fleurs_hi417,hi,-,fleurs_hi,eval
+data/clips/fleurs_hi/fleurs_hi345.flac,bonafide,fleurs_hi1176,hi,-,fleurs_hi,eval
+data/clips/fleurs_hi/fleurs_hi708.flac,bonafide,fleurs_hi649,hi,-,fleurs_hi,eval
+data/clips/itw/ITW_5113.flac,bonafide,Barack Obama,en,,itw,eval
+data/clips/itw/ITW_6720.flac,bonafide,Barack Obama,en,,itw,eval
+data/clips/itw/ITW_9333.flac,bonafide,Bill Burr,en,,itw,eval
+data/clips/itw/ITW_12234.flac,bonafide,Dwight Eisenhower,en,,itw,eval
+data/clips/itw/ITW_14893.flac,bonafide,Ayn Rand,en,,itw,eval
+data/clips/itw/ITW_4301.flac,bonafide,Alec Guinness,en,,itw,eval
+data/clips/itw/ITW_5251.flac,bonafide,Bernie Sanders,en,,itw,eval
+data/clips/itw/ITW_1478.flac,bonafide,Alan Watts,en,,itw,eval
+data/clips/itw/ITW_4012.flac,bonafide,Ayn Rand,en,,itw,eval
+data/clips/itw/ITW_4096.flac,bonafide,Alec Guinness,en,,itw,eval
+data/clips/itw/ITW_8867.flac,bonafide,Barack Obama,en,,itw,eval
+data/clips/itw/ITW_13798.flac,bonafide,Ayn Rand,en,,itw,eval
+data/clips/itw/ITW_6481.flac,bonafide,Ayn Rand,en,,itw,eval
+data/clips/itw/ITW_3094.flac,bonafide,Ronald Reagan,en,,itw,eval
+data/clips/itw/ITW_15526.flac,bonafide,Alexandria Ocasio-Cortez,en,,itw,eval
+data/clips/itw/ITW_11464.flac,bonafide,Barack Obama,en,,itw,eval
+data/clips/itw/ITW_4485.flac,bonafide,Ayn Rand,en,,itw,eval
+data/clips/itw/ITW_330.flac,bonafide,Bernie Sanders,en,,itw,eval
+data/clips/itw/ITW_12253.flac,bonafide,Alec Guinness,en,,itw,eval
+data/clips/itw/ITW_10600.flac,bonafide,Barack Obama,en,,itw,eval
+data/clips/itw/ITW_14889.flac,bonafide,Mark Zuckerberg,en,,itw,eval
+data/clips/itw/ITW_13190.flac,bonafide,Barack Obama,en,,itw,eval
+data/clips/itw/ITW_7982.flac,bonafide,Bernie Sanders,en,,itw,eval
+data/clips/itw/ITW_9275.flac,bonafide,Barack Obama,en,,itw,eval
+data/clips/itw/ITW_10067.flac,bonafide,Bernie Sanders,en,,itw,eval
+data/clips/itw/ITW_6482.flac,bonafide,Barack Obama,en,,itw,eval
+data/clips/itw/ITW_3905.flac,bonafide,Barack Obama,en,,itw,eval
+data/clips/itw/ITW_14680.flac,bonafide,Barack Obama,en,,itw,eval
+data/clips/itw/ITW_321.flac,bonafide,Christopher Hitchens,en,,itw,eval
+data/clips/itw/ITW_11903.flac,bonafide,Bernie Sanders,en,,itw,eval
+data/clips/itw/ITW_2017.flac,bonafide,Bernie Sanders,en,,itw,eval
+data/clips/itw/ITW_8619.flac,bonafide,Dwight Eisenhower,en,,itw,eval
+data/clips/itw/ITW_1220.flac,bonafide,Bill Clinton,en,,itw,eval
+data/clips/itw/ITW_14201.flac,bonafide,Alec Guinness,en,,itw,eval
+data/clips/itw/ITW_7228.flac,bonafide,Alec Guinness,en,,itw,eval
+data/clips/itw/ITW_3552.flac,bonafide,Nelson Mandela,en,,itw,eval
+data/clips/itw/ITW_6158.flac,bonafide,Alec Guinness,en,,itw,eval
+data/clips/itw/ITW_12509.flac,bonafide,Alec Guinness,en,,itw,eval
+data/clips/itw/ITW_9099.flac,bonafide,Donald Trump,en,,itw,eval
+data/clips/itw/ITW_7433.flac,bonafide,Christopher Hitchens,en,,itw,eval
+data/clips/itw/ITW_9348.flac,bonafide,Alec Guinness,en,,itw,eval
+data/clips/itw/ITW_15389.flac,bonafide,Barack Obama,en,,itw,eval
+data/clips/itw/ITW_3483.flac,bonafide,Barack Obama,en,,itw,eval
+data/clips/itw/ITW_7964.flac,bonafide,Alec Guinness,en,,itw,eval
+data/clips/itw/ITW_10057.flac,bonafide,Donald Trump,en,,itw,eval
+data/clips/itw/ITW_10730.flac,bonafide,Barack Obama,en,,itw,eval
+data/clips/itw/ITW_2057.flac,bonafide,Donald Trump,en,,itw,eval
+data/clips/itw/ITW_54.flac,bonafide,Martin Luther King,en,,itw,eval
+data/clips/itw/ITW_15481.flac,bonafide,Donald Trump,en,,itw,eval
+data/clips/itw/ITW_4940.flac,bonafide,Donald Trump,en,,itw,eval
+data/clips/itw/ITW_8577.flac,bonafide,Alec Guinness,en,,itw,eval
+data/clips/itw/ITW_4042.flac,bonafide,Bernie Sanders,en,,itw,eval
+data/clips/itw/ITW_6149.flac,bonafide,Milton Friedman,en,,itw,eval
+data/clips/itw/ITW_5741.flac,bonafide,Christopher Hitchens,en,,itw,eval
+data/clips/itw/ITW_11634.flac,bonafide,Donald Trump,en,,itw,eval
+data/clips/itw/ITW_9799.flac,bonafide,Queen Elizabeth II,en,,itw,eval
+data/clips/itw/ITW_14846.flac,bonafide,Jeff Goldblum,en,,itw,eval
+data/clips/itw/ITW_757.flac,bonafide,Ronald Reagan,en,,itw,eval
+data/clips/itw/ITW_10462.flac,bonafide,Martin Luther King,en,,itw,eval
+data/clips/itw/ITW_14827.flac,bonafide,Donald Trump,en,,itw,eval
+data/clips/itw/ITW_10787.flac,bonafide,Ayn Rand,en,,itw,eval
+data/clips/itw/ITW_1238.flac,bonafide,Donald Trump,en,,itw,eval
+data/clips/itw/ITW_4207.flac,bonafide,Donald Trump,en,,itw,eval
+data/clips/itw/ITW_11540.flac,bonafide,FDR,en,,itw,eval
+data/clips/itw/ITW_1662.flac,bonafide,Ayn Rand,en,,itw,eval
+data/clips/itw/ITW_6693.flac,bonafide,Lyndon Johnson,en,,itw,eval
+data/clips/itw/ITW_3999.flac,bonafide,Barack Obama,en,,itw,eval
+data/clips/itw/ITW_11552.flac,bonafide,Ayn Rand,en,,itw,eval
+data/clips/itw/ITW_13723.flac,bonafide,Bernie Sanders,en,,itw,eval
+data/clips/itw/ITW_12662.flac,bonafide,Bernie Sanders,en,,itw,eval
+data/clips/itw/ITW_14696.flac,bonafide,Donald Trump,en,,itw,eval
+data/clips/itw/ITW_15708.flac,bonafide,Donald Trump,en,,itw,eval
+data/clips/itw/ITW_4.flac,bonafide,Christopher Hitchens,en,,itw,eval
+data/clips/itw/ITW_995.flac,bonafide,Jeff Goldblum,en,,itw,eval
+data/clips/itw/ITW_12847.flac,bonafide,Winston Churchill,en,,itw,eval
+data/clips/itw/ITW_8406.flac,bonafide,Donald Trump,en,,itw,eval
+data/clips/itw/ITW_8032.flac,bonafide,Ronald Reagan,en,,itw,eval
+data/clips/itw/ITW_12148.flac,bonafide,Donald Trump,en,,itw,eval
+data/clips/itw/ITW_1320.flac,bonafide,Queen Elizabeth II,en,,itw,eval
+data/clips/itw/ITW_10739.flac,bonafide,Mark Zuckerberg,en,,itw,eval
+data/clips/itw/ITW_4828.flac,bonafide,Barack Obama,en,,itw,eval
+data/clips/itw/ITW_14319.flac,bonafide,Alec Guinness,en,,itw,eval
+data/clips/itw/ITW_2142.flac,bonafide,Alexandria Ocasio-Cortez,en,,itw,eval
+data/clips/itw/ITW_3427.flac,bonafide,Bernie Sanders,en,,itw,eval
+data/clips/itw/ITW_371.flac,bonafide,Louis Farrakhan,en,,itw,eval
+data/clips/itw/ITW_10458.flac,bonafide,Martin Luther King,en,,itw,eval
+data/clips/itw/ITW_10774.flac,bonafide,Arnold Schwarzenegger,en,,itw,eval
+data/clips/itw/ITW_8087.flac,bonafide,Donald Trump,en,,itw,eval
+data/clips/itw/ITW_89.flac,bonafide,Barack Obama,en,,itw,eval
+data/clips/itw/ITW_5441.flac,bonafide,George Carlin,en,,itw,eval
+data/clips/itw/ITW_356.flac,bonafide,Ronald Reagan,en,,itw,eval
+data/clips/itw/ITW_82.flac,bonafide,Alec Guinness,en,,itw,eval
+data/clips/itw/ITW_13763.flac,bonafide,Bernie Sanders,en,,itw,eval
+data/clips/itw/ITW_2543.flac,bonafide,Ayn Rand,en,,itw,eval
+data/clips/itw/ITW_4901.flac,bonafide,Ayn Rand,en,,itw,eval
+data/clips/itw/ITW_3128.flac,bonafide,JFK,en,,itw,eval
+data/clips/itw/ITW_15859.flac,bonafide,Louis Farrakhan,en,,itw,eval
+data/clips/itw/ITW_5089.flac,bonafide,Barack Obama,en,,itw,eval
+data/clips/itw/ITW_7782.flac,bonafide,Bernie Sanders,en,,itw,eval
+data/clips/itw/ITW_7199.flac,bonafide,Donald Trump,en,,itw,eval
+data/clips/itw/ITW_4661.flac,bonafide,Alec Guinness,en,,itw,eval
+data/clips/itw/ITW_2601.flac,bonafide,Barack Obama,en,,itw,eval
+data/clips/itw/ITW_12376.flac,bonafide,Winston Churchill,en,,itw,eval
+data/clips/itw/ITW_10279.flac,bonafide,Donald Trump,en,,itw,eval
+data/clips/itw/ITW_2080.flac,bonafide,Lyndon Johnson,en,,itw,eval
+data/clips/itw/ITW_497.flac,bonafide,Alec Guinness,en,,itw,eval
+data/clips/itw/ITW_7034.flac,bonafide,Bernie Sanders,en,,itw,eval
+data/clips/itw/ITW_11739.flac,bonafide,JFK,en,,itw,eval
+data/clips/itw/ITW_3065.flac,bonafide,Donald Trump,en,,itw,eval
+data/clips/itw/ITW_6628.flac,bonafide,Winston Churchill,en,,itw,eval
+data/clips/itw/ITW_3504.flac,bonafide,JFK,en,,itw,eval
+data/clips/itw/ITW_13540.flac,bonafide,Christopher Hitchens,en,,itw,eval
+data/clips/itw/ITW_8961.flac,bonafide,Barack Obama,en,,itw,eval
+data/clips/itw/ITW_3041.flac,bonafide,Nick Offerman,en,,itw,eval
+data/clips/itw/ITW_3925.flac,bonafide,Donald Trump,en,,itw,eval
+data/clips/itw/ITW_7161.flac,bonafide,Bill Clinton,en,,itw,eval
+data/clips/itw/ITW_428.flac,bonafide,Barack Obama,en,,itw,eval
+data/clips/itw/ITW_1111.flac,bonafide,Bill Clinton,en,,itw,eval
+data/clips/itw/ITW_1052.flac,bonafide,Malcolm X,en,,itw,eval
+data/clips/itw/ITW_5313.flac,bonafide,Barack Obama,en,,itw,eval
+data/clips/itw/ITW_6710.flac,bonafide,Alec Guinness,en,,itw,eval
+data/clips/itw/ITW_14622.flac,bonafide,Alec Guinness,en,,itw,eval
+data/clips/itw/ITW_8067.flac,bonafide,Barack Obama,en,,itw,eval
+data/clips/itw/ITW_9520.flac,bonafide,Bernie Sanders,en,,itw,eval
+data/clips/itw/ITW_1104.flac,bonafide,Alec Guinness,en,,itw,eval
+data/clips/itw/ITW_15826.flac,bonafide,Barack Obama,en,,itw,eval
+data/clips/itw/ITW_11908.flac,bonafide,Alec Guinness,en,,itw,eval
+data/clips/itw/ITW_11297.flac,bonafide,Donald Trump,en,,itw,eval
+data/clips/itw/ITW_9627.flac,bonafide,John Cleese,en,,itw,eval
+data/clips/itw/ITW_14038.flac,bonafide,Ayn Rand,en,,itw,eval
+data/clips/itw/ITW_4554.flac,bonafide,Malcolm X,en,,itw,eval
+data/clips/itw/ITW_5356.flac,bonafide,Alec Guinness,en,,itw,eval
+data/clips/itw/ITW_9709.flac,bonafide,Donald Trump,en,,itw,eval
+data/clips/itw/ITW_15303.flac,bonafide,Winston Churchill,en,,itw,eval
+data/clips/itw/ITW_7516.flac,bonafide,Alec Guinness,en,,itw,eval
+data/clips/itw/ITW_192.flac,bonafide,Winston Churchill,en,,itw,eval
+data/clips/itw/ITW_3608.flac,bonafide,Ayn Rand,en,,itw,eval
+data/clips/itw/ITW_3847.flac,bonafide,Dwight Eisenhower,en,,itw,eval
+data/clips/itw/ITW_6973.flac,bonafide,Dwight Eisenhower,en,,itw,eval
+data/clips/itw/ITW_8569.flac,bonafide,Barack Obama,en,,itw,eval
+data/clips/itw/ITW_8670.flac,bonafide,Donald Trump,en,,itw,eval
+data/clips/itw/ITW_9533.flac,bonafide,JFK,en,,itw,eval
+data/clips/itw/ITW_2465.flac,bonafide,FDR,en,,itw,eval
+data/clips/itw/ITW_8687.flac,bonafide,Christopher Hitchens,en,,itw,eval
+data/clips/itw/ITW_862.flac,bonafide,Donald Trump,en,,itw,eval
+data/clips/itw/ITW_1060.flac,bonafide,Mark Zuckerberg,en,,itw,eval
+data/clips/itw/ITW_6945.flac,bonafide,Christopher Hitchens,en,,itw,eval
+data/clips/itw/ITW_4139.flac,bonafide,Winston Churchill,en,,itw,eval
+data/clips/itw/ITW_3814.flac,bonafide,Donald Trump,en,,itw,eval
+data/clips/itw/ITW_15227.flac,bonafide,Ayn Rand,en,,itw,eval
+data/clips/itw/ITW_7491.flac,bonafide,Barack Obama,en,,itw,eval
+data/clips/itw/ITW_9383.flac,bonafide,Donald Trump,en,,itw,eval
+data/clips/itw/ITW_10246.flac,bonafide,Orson Welles,en,,itw,eval
+data/clips/itw/ITW_3408.flac,bonafide,Gilbert Gottfried,en,,itw,eval
+data/clips/itw/ITW_7541.flac,bonafide,Ayn Rand,en,,itw,eval
+data/clips/itw/ITW_3037.flac,bonafide,Donald Trump,en,,itw,eval
+data/clips/itw/ITW_12445.flac,bonafide,Ronald Reagan,en,,itw,eval
+data/clips/itw/ITW_6151.flac,bonafide,Alexandria Ocasio-Cortez,en,,itw,eval
+data/clips/itw/ITW_1289.flac,bonafide,Alec Guinness,en,,itw,eval
+data/clips/itw/ITW_7891.flac,bonafide,Barack Obama,en,,itw,eval
+data/clips/itw/ITW_4592.flac,bonafide,Ronald Reagan,en,,itw,eval
+data/clips/itw/ITW_13590.flac,bonafide,Barack Obama,en,,itw,eval
+data/clips/itw/ITW_1829.flac,bonafide,Bernie Sanders,en,,itw,eval
+data/clips/itw/ITW_7783.flac,bonafide,Christopher Hitchens,en,,itw,eval
+data/clips/itw/ITW_10476.flac,bonafide,The Notorious B.I.G.,en,,itw,eval
+data/clips/itw/ITW_8451.flac,bonafide,Ronald Reagan,en,,itw,eval
+data/clips/itw/ITW_7712.flac,bonafide,Donald Trump,en,,itw,eval
+data/clips/itw/ITW_10734.flac,bonafide,Barack Obama,en,,itw,eval
+data/clips/itw/ITW_2872.flac,bonafide,Barack Obama,en,,itw,eval
+data/clips/itw/ITW_2595.flac,bonafide,Martin Luther King,en,,itw,eval
+data/clips/itw/ITW_14681.flac,bonafide,Ayn Rand,en,,itw,eval
+data/clips/itw/ITW_12495.flac,bonafide,Alec Guinness,en,,itw,eval
+data/clips/itw/ITW_12311.flac,bonafide,JFK,en,,itw,eval
+data/clips/itw/ITW_8647.flac,bonafide,Dwight Eisenhower,en,,itw,eval
+data/clips/itw/ITW_8881.flac,bonafide,Alec Guinness,en,,itw,eval
+data/clips/itw/ITW_3279.flac,bonafide,Winston Churchill,en,,itw,eval
+data/clips/itw/ITW_12469.flac,bonafide,Milton Friedman,en,,itw,eval
+data/clips/itw/ITW_3068.flac,bonafide,Martin Luther King,en,,itw,eval
+data/clips/itw/ITW_12934.flac,bonafide,JFK,en,,itw,eval
+data/clips/itw/ITW_11058.flac,bonafide,Barack Obama,en,,itw,eval
+data/clips/itw/ITW_956.flac,bonafide,Donald Trump,en,,itw,eval
+data/clips/itw/ITW_7775.flac,bonafide,Bernie Sanders,en,,itw,eval
+data/clips/itw/ITW_8603.flac,bonafide,Donald Trump,en,,itw,eval
+data/clips/itw/ITW_3943.flac,bonafide,Alexandria Ocasio-Cortez,en,,itw,eval
+data/clips/itw/ITW_4219.flac,bonafide,George W. Bush,en,,itw,eval
+data/clips/itw/ITW_14786.flac,bonafide,Alan Watts,en,,itw,eval
+data/clips/itw/ITW_2242.flac,bonafide,Donald Trump,en,,itw,eval
+data/clips/itw/ITW_1720.flac,bonafide,Winston Churchill,en,,itw,eval
+data/clips/itw/ITW_2160.flac,bonafide,Donald Trump,en,,itw,eval
+data/clips/itw/ITW_5080.flac,bonafide,Donald Trump,en,,itw,eval
+data/clips/itw/ITW_5704.flac,bonafide,Donald Trump,en,,itw,eval
+data/clips/itw/ITW_1573.flac,bonafide,Malcolm X,en,,itw,eval
+data/clips/itw/ITW_9964.flac,bonafide,Christopher Hitchens,en,,itw,eval
+data/clips/itw/ITW_173.flac,bonafide,Christopher Hitchens,en,,itw,eval
+data/clips/itw/ITW_2553.flac,bonafide,Arnold Schwarzenegger,en,,itw,eval
+data/clips/itw/ITW_10228.flac,bonafide,Mark Zuckerberg,en,,itw,eval
+data/clips/itw/ITW_14571.flac,bonafide,Bernie Sanders,en,,itw,eval
+data/clips/itw/ITW_13490.flac,bonafide,Christopher Hitchens,en,,itw,eval
+data/clips/itw/ITW_7495.flac,bonafide,Christopher Hitchens,en,,itw,eval
+data/clips/itw/ITW_11639.flac,bonafide,Bill Clinton,en,,itw,eval
+data/clips/itw/ITW_12714.flac,bonafide,Queen Elizabeth II,en,,itw,eval
+data/clips/itw/ITW_15253.flac,bonafide,Barack Obama,en,,itw,eval
+data/clips/itw/ITW_5591.flac,bonafide,Ayn Rand,en,,itw,eval
+data/clips/itw/ITW_10943.flac,bonafide,Barack Obama,en,,itw,eval
+data/clips/itw/ITW_2145.flac,bonafide,Boris Johnson,en,,itw,eval
+data/clips/itw/ITW_9546.flac,bonafide,Alan Watts,en,,itw,eval
+data/clips/itw/ITW_5659.flac,bonafide,Bernie Sanders,en,,itw,eval
+data/clips/itw/ITW_6728.flac,bonafide,Bernie Sanders,en,,itw,eval
+data/clips/itw/ITW_15274.flac,bonafide,FDR,en,,itw,eval
+data/clips/itw/ITW_11165.flac,bonafide,Queen Elizabeth II,en,,itw,eval
+data/clips/itw/ITW_4936.flac,bonafide,Winston Churchill,en,,itw,eval
+data/clips/itw/ITW_638.flac,bonafide,Donald Trump,en,,itw,eval
+data/clips/itw/ITW_13701.flac,bonafide,Alec Guinness,en,,itw,eval
+data/clips/itw/ITW_11704.flac,bonafide,Bill Clinton,en,,itw,eval
+data/clips/itw/ITW_5202.flac,bonafide,Barack Obama,en,,itw,eval
+data/clips/itw/ITW_12915.flac,bonafide,Alec Guinness,en,,itw,eval
+data/clips/itw/ITW_10344.flac,bonafide,Donald Trump,en,,itw,eval
+data/clips/itw/ITW_5339.flac,bonafide,Barack Obama,en,,itw,eval
+data/clips/itw/ITW_5554.flac,bonafide,Ronald Reagan,en,,itw,eval
+data/clips/itw/ITW_3750.flac,bonafide,FDR,en,,itw,eval
+data/clips/itw/ITW_2730.flac,bonafide,Milton Friedman,en,,itw,eval
+data/clips/itw/ITW_5079.flac,bonafide,Barack Obama,en,,itw,eval
+data/clips/itw/ITW_11907.flac,bonafide,Bernie Sanders,en,,itw,eval
+data/clips/itw/ITW_9773.flac,bonafide,George W. Bush,en,,itw,eval
+data/clips/itw/ITW_9414.flac,bonafide,Donald Trump,en,,itw,eval
+data/clips/itw/ITW_14287.flac,bonafide,Malcolm X,en,,itw,eval
+data/clips/itw/ITW_3848.flac,bonafide,Donald Trump,en,,itw,eval
+data/clips/itw/ITW_2736.flac,bonafide,Ronald Reagan,en,,itw,eval
+data/clips/itw/ITW_15517.flac,bonafide,Donald Trump,en,,itw,eval
+data/clips/itw/ITW_12682.flac,bonafide,Richard Nixon,en,,itw,eval
+data/clips/itw/ITW_3778.flac,bonafide,Barack Obama,en,,itw,eval
+data/clips/itw/ITW_14767.flac,bonafide,Alec Guinness,en,,itw,eval
+data/clips/itw/ITW_10520.flac,bonafide,Robert Kardashian,en,,itw,eval
+data/clips/itw/ITW_10960.flac,bonafide,Christopher Hitchens,en,,itw,eval
+data/clips/itw/ITW_13544.flac,bonafide,Louis Farrakhan,en,,itw,eval
+data/clips/itw/ITW_12881.flac,bonafide,Barack Obama,en,,itw,eval
+data/clips/itw/ITW_8322.flac,bonafide,Donald Trump,en,,itw,eval
+data/clips/itw/ITW_12942.flac,bonafide,Gilbert Gottfried,en,,itw,eval
+data/clips/itw/ITW_12944.flac,bonafide,Donald Trump,en,,itw,eval
+data/clips/itw/ITW_5207.flac,bonafide,Ayn Rand,en,,itw,eval
+data/clips/itw/ITW_14160.flac,bonafide,Ayn Rand,en,,itw,eval
+data/clips/itw/ITW_5630.flac,bonafide,Arnold Schwarzenegger,en,,itw,eval
+data/clips/itw/ITW_227.flac,bonafide,Barack Obama,en,,itw,eval
+data/clips/itw/ITW_8806.flac,bonafide,Bill Clinton,en,,itw,eval
+data/clips/itw/ITW_8190.flac,bonafide,Nick Offerman,en,,itw,eval
+data/clips/itw/ITW_8310.flac,bonafide,Ayn Rand,en,,itw,eval
+data/clips/itw/ITW_851.flac,bonafide,Winston Churchill,en,,itw,eval
+data/clips/itw/ITW_13654.flac,bonafide,Barack Obama,en,,itw,eval
+data/clips/itw/ITW_6631.flac,bonafide,Barack Obama,en,,itw,eval
+data/clips/itw/ITW_15666.flac,bonafide,Ayn Rand,en,,itw,eval
+data/clips/itw/ITW_3954.flac,bonafide,Barack Obama,en,,itw,eval
+data/clips/itw/ITW_9809.flac,bonafide,Barack Obama,en,,itw,eval
+data/clips/itw/ITW_15212.flac,bonafide,Donald Trump,en,,itw,eval
+data/clips/itw/ITW_7575.flac,bonafide,Bernie Sanders,en,,itw,eval
+data/clips/itw/ITW_1727.flac,bonafide,Bill Clinton,en,,itw,eval
+data/clips/itw/ITW_13388.flac,bonafide,Gilbert Gottfried,en,,itw,eval
+data/clips/itw/ITW_1026.flac,bonafide,JFK,en,,itw,eval
+data/clips/itw/ITW_5772.flac,bonafide,Bernie Sanders,en,,itw,eval
+data/clips/itw/ITW_7732.flac,bonafide,Barack Obama,en,,itw,eval
+data/clips/itw/ITW_379.flac,bonafide,Christopher Hitchens,en,,itw,eval
+data/clips/itw/ITW_8506.flac,bonafide,Ayn Rand,en,,itw,eval
+data/clips/itw/ITW_4063.flac,bonafide,Bill Clinton,en,,itw,eval
+data/clips/itw/ITW_3782.flac,bonafide,Barack Obama,en,,itw,eval
+data/clips/itw/ITW_11974.flac,bonafide,Bernie Sanders,en,,itw,eval
+data/clips/itw/ITW_9609.flac,bonafide,Barack Obama,en,,itw,eval
+data/clips/itw/ITW_13124.flac,bonafide,Louis Farrakhan,en,,itw,eval
+data/clips/itw/ITW_9900.flac,bonafide,Alec Guinness,en,,itw,eval
+data/clips/itw/ITW_13815.flac,bonafide,Ayn Rand,en,,itw,eval
+data/clips/itw/ITW_13042.flac,bonafide,Alec Guinness,en,,itw,eval
+data/clips/itw/ITW_786.flac,bonafide,Alec Guinness,en,,itw,eval
+data/clips/itw/ITW_15010.flac,bonafide,Bernie Sanders,en,,itw,eval
+data/clips/itw/ITW_2387.flac,bonafide,Alexandria Ocasio-Cortez,en,,itw,eval
+data/clips/itw/ITW_13454.flac,bonafide,Ayn Rand,en,,itw,eval
+data/clips/itw/ITW_15603.flac,bonafide,Ayn Rand,en,,itw,eval
+data/clips/itw/ITW_1970.flac,bonafide,Ayn Rand,en,,itw,eval
+data/clips/itw/ITW_11047.flac,bonafide,Alec Guinness,en,,itw,eval
+data/clips/itw/ITW_5319.flac,bonafide,Mark Zuckerberg,en,,itw,eval
+data/clips/itw/ITW_7492.flac,bonafide,FDR,en,,itw,eval
+data/clips/itw/ITW_13977.flac,bonafide,Queen Elizabeth II,en,,itw,eval
+data/clips/itw/ITW_15557.flac,bonafide,Ronald Reagan,en,,itw,eval
+data/clips/itw/ITW_10781.flac,bonafide,Bill Burr,en,,itw,eval
+data/clips/itw/ITW_12518.flac,bonafide,Winston Churchill,en,,itw,eval
+data/clips/itw/ITW_15296.flac,bonafide,Ayn Rand,en,,itw,eval
+data/clips/itw/ITW_6023.flac,bonafide,Milton Friedman,en,,itw,eval
+data/clips/itw/ITW_471.flac,bonafide,Milton Friedman,en,,itw,eval
+data/clips/itw/ITW_4646.flac,bonafide,Nelson Mandela,en,,itw,eval
+data/clips/itw/ITW_13153.flac,bonafide,Bill Clinton,en,,itw,eval
+data/clips/itw/ITW_14904.flac,bonafide,Bill Burr,en,,itw,eval
+data/clips/itw/ITW_6576.flac,bonafide,Donald Trump,en,,itw,eval
+data/clips/itw/ITW_8538.flac,bonafide,Martin Luther King,en,,itw,eval
+data/clips/itw/ITW_1713.flac,bonafide,Donald Trump,en,,itw,eval
+data/clips/itw/ITW_12820.flac,bonafide,Bernie Sanders,en,,itw,eval
+data/clips/itw/ITW_6763.flac,bonafide,Barack Obama,en,,itw,eval
+data/clips/itw/ITW_7788.flac,bonafide,Alec Guinness,en,,itw,eval
+data/clips/itw/ITW_10575.flac,bonafide,George W. Bush,en,,itw,eval
+data/clips/itw/ITW_9938.flac,bonafide,Bob Ross,en,,itw,eval
+data/clips/itw/ITW_9933.flac,bonafide,Barack Obama,en,,itw,eval
+data/clips/itw/ITW_1605.flac,bonafide,Winston Churchill,en,,itw,eval
+data/clips/itw/ITW_4131.flac,bonafide,Bernie Sanders,en,,itw,eval
+data/clips/itw/ITW_3347.flac,bonafide,Donald Trump,en,,itw,eval

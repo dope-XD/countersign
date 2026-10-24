@@ -1,0 +1,312 @@
+{
+  "model": "add-wav2vec-large+add-xls-r-1b",
+  "calibration": {
+    "w": [
+      0.2448,
+      0.5171
+    ],
+    "b": -0.3546
+  },
+  "set": "Stock AI voices",
+  "manifest": "data/manifests/tts_stock.csv",
+  "sources": null,
+  "split": null,
+  "tag": null,
+  "results": [
+    {
+      "set": "Stock AI voices",
+      "condition": "clean",
+      "model": "add-wav2vec-large+add-xls-r-1b",
+      "calibrated": true,
+      "n_bona": 474,
+      "n_spoof": 223,
+      "eer": 0.0315,
+      "threshold": 0.0611,
+      "detect_at_1pct_far": 0.9103,
+      "false_alarm_amber": 0.0084,
+      "detect_amber": 0.8969,
+      "false_alarm_red": 0.0,
+      "detect_red": 0.8027,
+      "false_alarm_amber_ci": [
+        0.0033,
+        0.0215
+      ],
+      "by_generator": [
+        {
+          "generator": "edge-tts",
+          "family": "commercial",
+          "n": 87,
+          "k": 76,
+          "detect_amber": 0.8736,
+          "ci": [
+            0.7876,
+            0.9279
+          ],
+          "detect_red": 0.7011
+        },
+        {
+          "generator": "gtts",
+          "family": "commercial",
+          "n": 46,
+          "k": 46,
+          "detect_amber": 1.0,
+          "ci": [
+            0.9229,
+            1.0
+          ],
+          "detect_red": 1.0
+        },
+        {
+          "generator": "piper-vits",
+          "family": "open",
+          "n": 90,
+          "k": 78,
+          "detect_amber": 0.8667,
+          "ci": [
+            0.7813,
+            0.9221
+          ],
+          "detect_red": 0.8
+        }
+      ],
+      "published_eer": null,
+      "seconds": 16.2
+    },
+    {
+      "set": "Stock AI voices",
+      "condition": "g711u",
+      "model": "add-wav2vec-large+add-xls-r-1b",
+      "calibrated": true,
+      "n_bona": 474,
+      "n_spoof": 223,
+      "eer": 0.0402,
+      "threshold": 0.0552,
+      "detect_at_1pct_far": 0.8341,
+      "false_alarm_amber": 0.0127,
+      "detect_amber": 0.8341,
+      "false_alarm_red": 0.0,
+      "detect_red": 0.7623,
+      "false_alarm_amber_ci": [
+        0.0058,
+        0.0273
+      ],
+      "by_generator": [
+        {
+          "generator": "edge-tts",
+          "family": "commercial",
+          "n": 87,
+          "k": 68,
+          "detect_amber": 0.7816,
+          "ci": [
+            0.6839,
+            0.8555
+          ],
+          "detect_red": 0.6437
+        },
+        {
+          "generator": "gtts",
+          "family": "commercial",
+          "n": 46,
+          "k": 46,
+          "detect_amber": 1.0,
+          "ci": [
+            0.9229,
+            1.0
+          ],
+          "detect_red": 0.9783
+        },
+        {
+          "generator": "piper-vits",
+          "family": "open",
+          "n": 90,
+          "k": 72,
+          "detect_amber": 0.8,
+          "ci": [
+            0.7059,
+            0.8696
+          ],
+          "detect_red": 0.7667
+        }
+      ],
+      "published_eer": null,
+      "seconds": 15.7
+    },
+    {
+      "set": "Stock AI voices",
+      "condition": "ota+g711u",
+      "model": "add-wav2vec-large+add-xls-r-1b",
+      "calibrated": true,
+      "n_bona": 474,
+      "n_spoof": 223,
+      "eer": 0.4,
+      "threshold": 0.0077,
+      "detect_at_1pct_far": 0.0269,
+      "false_alarm_amber": 0.0295,
+      "detect_amber": 0.0628,
+      "false_alarm_red": 0.0,
+      "detect_red": 0.0135,
+      "false_alarm_amber_ci": [
+        0.0177,
+        0.049
+      ],
+      "by_generator": [
+        {
+          "generator": "edge-tts",
+          "family": "commercial",
+          "n": 87,
+          "k": 7,
+          "detect_amber": 0.0805,
+          "ci": [
+            0.0395,
+            0.1569
+          ],
+          "detect_red": 0.0115
+        },
+        {
+          "generator": "gtts",
+          "family": "commercial",
+          "n": 46,
+          "k": 2,
+          "detect_amber": 0.0435,
+          "ci": [
+            0.012,
+            0.1453
+          ],
+          "detect_red": 0.0
+        },
+        {
+          "generator": "piper-vits",
+          "family": "open",
+          "n": 90,
+          "k": 5,
+          "detect_amber": 0.0556,
+          "ci": [
+            0.024,
+            0.1235
+          ],
+          "detect_red": 0.0222
+        }
+      ],
+      "published_eer": null,
+      "seconds": 45.0
+    },
+    {
+      "set": "Stock AI voices",
+      "condition": "ota+amrnb_12k2",
+      "model": "add-wav2vec-large+add-xls-r-1b",
+      "calibrated": true,
+      "n_bona": 474,
+      "n_spoof": 223,
+      "eer": 0.3446,
+      "threshold": 0.0534,
+      "detect_at_1pct_far": 0.0628,
+      "false_alarm_amber": 0.1055,
+      "detect_amber": 0.2466,
+      "false_alarm_red": 0.0084,
+      "detect_red": 0.0448,
+      "false_alarm_amber_ci": [
+        0.0809,
+        0.1364
+      ],
+      "by_generator": [
+        {
+          "generator": "edge-tts",
+          "family": "commercial",
+          "n": 87,
+          "k": 22,
+          "detect_amber": 0.2529,
+          "ci": [
+            0.1733,
+            0.3533
+          ],
+          "detect_red": 0.023
+        },
+        {
+          "generator": "gtts",
+          "family": "commercial",
+          "n": 46,
+          "k": 12,
+          "detect_amber": 0.2609,
+          "ci": [
+            0.156,
+            0.4026
+          ],
+          "detect_red": 0.0217
+        },
+        {
+          "generator": "piper-vits",
+          "family": "open",
+          "n": 90,
+          "k": 21,
+          "detect_amber": 0.2333,
+          "ci": [
+            0.158,
+            0.3305
+          ],
+          "detect_red": 0.0778
+        }
+      ],
+      "published_eer": null,
+      "seconds": 63.3
+    },
+    {
+      "set": "Stock AI voices",
+      "condition": "ota+g711u+noise",
+      "model": "add-wav2vec-large+add-xls-r-1b",
+      "calibrated": true,
+      "n_bona": 474,
+      "n_spoof": 223,
+      "eer": 0.3892,
+      "threshold": 0.0559,
+      "detect_at_1pct_far": 0.0717,
+      "false_alarm_amber": 0.1519,
+      "detect_amber": 0.3632,
+      "false_alarm_red": 0.0338,
+      "detect_red": 0.1525,
+      "false_alarm_amber_ci": [
+        0.1224,
+        0.187
+      ],
+      "by_generator": [
+        {
+          "generator": "edge-tts",
+          "family": "commercial",
+          "n": 87,
+          "k": 32,
+          "detect_amber": 0.3678,
+          "ci": [
+            0.2741,
+            0.4727
+          ],
+          "detect_red": 0.1839
+        },
+        {
+          "generator": "gtts",
+          "family": "commercial",
+          "n": 46,
+          "k": 18,
+          "detect_amber": 0.3913,
+          "ci": [
+            0.2639,
+            0.5354
+          ],
+          "detect_red": 0.0652
+        },
+        {
+          "generator": "piper-vits",
+          "family": "open",
+          "n": 90,
+          "k": 31,
+          "detect_amber": 0.3444,
+          "ci": [
+            0.2545,
+            0.4472
+          ],
+          "detect_red": 0.1667
+        }
+      ],
+      "published_eer": null,
+      "seconds": 43.6
+    }
+  ]
+}
