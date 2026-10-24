@@ -9,6 +9,8 @@ staff PIN.
 
 from __future__ import annotations
 
+import json
+import os
 import random
 import re
 import secrets
@@ -27,6 +29,26 @@ from engine.mocks.world import DAY, Customer, world
 from engine.stepup import devicekeys
 
 router = APIRouter(prefix="/api/m")
+
+# the model pack the phones download (ml/pack_models.py prints these); a GitHub release asset by default
+PACK = {
+    "name": os.environ.get("COUNTERSIGN_PACK_NAME", "countersign-pack-v1"),
+    "size_mb": int(os.environ.get("COUNTERSIGN_PACK_MB", "0") or 0),
+    "sha256": os.environ.get("COUNTERSIGN_PACK_SHA256", ""),
+    "url": os.environ.get("COUNTERSIGN_PACK_URL", "https://github.com/dope-XD/countersign/releases/download/models-v1/countersign-pack-v1.zip"),
+    "parts": ["asr", "vad", "voice"],
+}
+_pack_file = settings.models_dir / "pack.json"
+if _pack_file.exists():
+    PACK |= {k: v for k, v in json.loads(_pack_file.read_text(encoding="utf-8")).items() if k in PACK and v}
+
+
+@router.get("/models")
+async def models() -> list[dict]:
+    """The model pack to download (CONTRACT.md): served by the engine and by the relay alike."""
+    return [PACK]
+
+
 files = APIRouter()
 
 MAX_FAMILY = 12  # family and work circle together
