@@ -2,7 +2,7 @@
 
 The engine (A) implements this; `RealRepository` (C) calls it; screens (B) see it only through `data/Models.kt` and `data/Repository.kt`. Only A edits this file, through a `contract-change` issue (`PROTOCOL.md`).
 
-- **Dev server:** `https://countersign-demo.ngrok-free.app`, A's laptop. It's down when A posts so on Standup. Locally: `http://<A's LAN IP>:8000`.
+- **Dev server:** `https://pseudoskeletal-yung-implausibly.ngrok-free.dev` (the ngrok account's free fixed domain), A's laptop. It's down when A posts so on Standup. Locally: `http://<A's LAN IP>:8000`.
 - **Auth:** every `/api/m/*` call except `signup` and `claim` sends `X-Device-Token: <token>` (from sign-up) and `ngrok-skip-browser-warning: 1`.
 - **Errors:** non-2xx with `{"detail": "One sentence a user can read."}`. Show it as is.
 - **Times:** server times are Unix seconds (float). `Models.kt` turns them into epoch milliseconds.
