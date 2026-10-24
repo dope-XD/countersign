@@ -1,0 +1,12 @@
+// The relay's keep-alive (deploy/keepalive/README.md). Free plan: 144 runs a day.
+{
+  "name": "countersign-keepalive",
+  "main": "worker.js",
+  "compatibility_date": "2026-10-01",
+  "triggers": {
+    "crons": ["*/10 * * * *"]
+  },
+  "observability": {
+    "enabled": true
+  }
+}
