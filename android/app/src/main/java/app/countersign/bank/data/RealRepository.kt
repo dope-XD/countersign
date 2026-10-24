@@ -264,7 +264,8 @@ class RealRepository(private val app: Application) : Repository {
         val granted = buildSet {
             if (has(Manifest.permission.READ_PHONE_STATE)) add(Permission.PHONE)
             if (role(RoleManager.ROLE_CALL_SCREENING)) add(Permission.CALL_SCREENING)
-            if (role(RoleManager.ROLE_CALL_REDIRECTION)) add(Permission.CALL_REDIRECTION)
+            @Suppress("DEPRECATION")
+            if (has(Manifest.permission.PROCESS_OUTGOING_CALLS)) add(Permission.OUTGOING_CALLS)
             if (app.getSystemService(NotificationManager::class.java).areNotificationsEnabled()) add(Permission.NOTIFICATIONS)
             if (Settings.canDrawOverlays(app)) add(Permission.OVERLAY)
             if (ops.unsafeCheckOpNoThrow(AppOpsManager.OPSTR_GET_USAGE_STATS, android.os.Process.myUid(), app.packageName) == AppOpsManager.MODE_ALLOWED) {
@@ -299,7 +300,10 @@ class RealRepository(private val app: Application) : Repository {
         when (permission) {
             Permission.PHONE -> ask(Manifest.permission.READ_PHONE_STATE)
             Permission.CALL_SCREENING -> askRole(RoleManager.ROLE_CALL_SCREENING)
-            Permission.CALL_REDIRECTION -> askRole(RoleManager.ROLE_CALL_REDIRECTION)
+            // never asked for any more: a redirection app can cancel calls on a slow phone (#32)
+            Permission.CALL_REDIRECTION -> {}
+            @Suppress("DEPRECATION")
+            Permission.OUTGOING_CALLS -> ask(Manifest.permission.PROCESS_OUTGOING_CALLS)
             Permission.NOTIFICATIONS ->
                 if (Build.VERSION.SDK_INT >= 33 && !has(Manifest.permission.POST_NOTIFICATIONS)) {
                     ask(Manifest.permission.POST_NOTIFICATIONS)
@@ -311,7 +315,7 @@ class RealRepository(private val app: Application) : Repository {
             Permission.FULL_SCREEN -> if (Build.VERSION.SDK_INT >= 34) open(Settings.ACTION_MANAGE_APP_USE_FULL_SCREEN_INTENT)
             Permission.BATTERY -> open(Settings.ACTION_REQUEST_IGNORE_BATTERY_OPTIMIZATIONS)
             // added by the call-listener contract change; agent C implements these
-            Permission.OUTGOING_CALLS, Permission.MICROPHONE, Permission.ACCESSIBILITY, Permission.SMS -> {}
+            Permission.MICROPHONE, Permission.ACCESSIBILITY, Permission.SMS -> {}
         }
     }
 

@@ -4,7 +4,7 @@ import android.os.SystemClock
 import app.countersign.bank.data.Member
 
 /**
- * The numbers of the calls on this phone, as CallScreener and CallRedirector see them, matched
+ * The numbers of the calls on this phone, as CallScreener and OutgoingCalls see them, matched
  * against the family list by their last 10 digits. Only here, in memory: a raw number never
  * leaves the phone, only the member id it matched.
  */
