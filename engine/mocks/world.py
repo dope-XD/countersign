@@ -36,6 +36,9 @@ class Customer:
     family: dict[str, dict] = field(default_factory=dict)
     check_channel: str = "notify"  # how family checks reach this customer: "ring" | "notify"
     share_call_status: bool = False  # tell family "on a call: yes/no", only while they are checking with me
+    listen_calls: bool = True  # the call listener warns about scam calls (docs/agents/CONTRACT.md, "Call listener")
+    stronger_check: bool = True  # the listener may also send call audio to our server for a stronger check
+    sms_fallback: bool = True  # text family from this phone's SIM when their app is offline
     card_last4: str = ""
 
     @property

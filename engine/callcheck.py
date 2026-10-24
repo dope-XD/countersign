@@ -63,6 +63,7 @@ _events: dict[str, deque[Event]] = {}  # customer -> their phone's call events, 
 _checks: dict[str, dict] = {}
 _scam: dict[str, dict] = {}  # asker -> the check that made this call a scam
 _last_event: dict[str, float] = {}
+_alerts: dict[tuple[str, str], str] = {}  # (customer, call id) -> scam-alert id: the family is alarmed once per call
 
 
 # ------------------------------------------------------------------ bodies
@@ -78,6 +79,44 @@ class CallEvent(BaseModel):
     def _no_numbers(cls, v: str | None) -> str | None:
         if v is not None and (re.fullmatch(r"[+\d\s()-]{6,}", v) or not re.fullmatch(r"[A-Za-z0-9_]+", v)):
             raise ValueError("peer must be a family member's id; phone numbers never leave the phone")
+        return v
+
+
+SCAM_TYPES = (
+    "digital_arrest", "bank_kyc", "otp_upi", "remote_access", "family_emergency", "courier_customs",
+    "trai_sim", "job_task", "investment", "reward", "impersonation", "unknown",
+)  # fmt: skip
+SOURCES = ("cues", "phone_ai", "server", "context", "caller_check", "user")
+
+
+class ScamAlert(BaseModel):
+    """The phone's call listener decided this call is a scam. Ids only: no words, no audio."""
+
+    call_id: str = Field(min_length=1, max_length=64)
+    level: str = Field(pattern="^scam$")
+    type: str = "unknown"
+    cues: list[str] = Field(default_factory=list, max_length=30)
+    sources: list[str] = Field(default_factory=list, max_length=6)
+
+    @field_validator("type")
+    @classmethod
+    def _type(cls, v: str) -> str:
+        if v not in SCAM_TYPES:
+            raise ValueError("unknown scam type")
+        return v
+
+    @field_validator("cues")
+    @classmethod
+    def _cues(cls, v: list[str]) -> list[str]:
+        if any(not re.fullmatch(r"[a-z_]{1,40}", c) for c in v):
+            raise ValueError("cues are category ids, never words from the call")
+        return v
+
+    @field_validator("sources")
+    @classmethod
+    def _sources(cls, v: list[str]) -> list[str]:
+        if any(s not in SOURCES for s in v):
+            raise ValueError("unknown source")
         return v
 
 
@@ -201,18 +240,26 @@ def _on_final(c: dict) -> None:
 
 
 def _set_scam(c: dict, reason: str) -> None:
-    _scam[c["asker"]] = {"check_id": c["id"], "member": c["member"], "label": c["label"], "reason": reason, "call_id": c["call_id"]}
-    case = cases.open_case(
-        channel="app",
-        customer_id=c["asker"],
-        request_id=c["id"],
-        tier="RED",
-        reasons=["IMPERSONATION_CALL", reason.upper()],
-        scores={"spoof_suspected": c["verdict"] == "not_them" and c["number_matched"]},
+    case = _mark_scam(
+        c["asker"],
+        c["id"],
+        c["member"],
+        c["label"],
+        reason,
+        c["call_id"],
+        ["IMPERSONATION_CALL", reason.upper()],
+        {"spoof_suspected": c["verdict"] == "not_them" and c["number_matched"]},
         event=f"call_check_{reason}",
     )
     c["case_id"] = case["id"]
-    hub.publish(f"app:{c['asker']}", {"type": "scam", "scam": scam_for(c["asker"])})
+
+
+def _mark_scam(asker: str, ref: str, member: str, label: str, reason: str, call_id: str, case_reasons: list[str], scores: dict, event: str) -> dict:
+    """Turn on scam context for this phone (the pay guard), open or extend the fraud-desk case, tell the phone."""
+    _scam[asker] = {"check_id": ref, "member": member, "label": label, "reason": reason, "call_id": call_id}
+    case = cases.open_case(channel="app", customer_id=asker, request_id=ref, tier="RED", reasons=case_reasons, scores=scores, event=event)
+    hub.publish(f"app:{asker}", {"type": "scam", "scam": scam_for(asker)})
+    return case
 
 
 def scam_for(customer_id: str) -> dict | None:
@@ -280,6 +327,7 @@ def reset() -> None:
     _checks.clear()
     _scam.clear()
     _last_event.clear()
+    _alerts.clear()
 
 
 # ------------------------------------------------------------------ routes
@@ -371,3 +419,41 @@ async def dismiss_scam(request: Request) -> dict:
         db.audit(me.id, "scam_warning_dismissed", s["check_id"])
         hub.publish(f"app:{me.id}", {"type": "scam", "scam": None})
     return {"scam": None}
+
+
+@router.post("/scam-alert")
+async def scam_alert(body: ScamAlert, request: Request) -> dict:
+    """The listener's verdict reached "scam" (or the user pressed "Alert family"): pay guard on, a fraud-desk case,
+    and every family member's phone rings. Members whose app is offline come back in `text_these`, so the phone can
+    text them from its own SIM."""
+    me = _me(request)
+    key = (me.id, body.call_id)
+    first = key not in _alerts
+    aid = _alerts.setdefault(key, new_id("lsn"))
+    if me.id not in _scam:  # a caller-check scam on this call already has the pay guard on: keep its reason
+        _mark_scam(
+            me.id,
+            aid,
+            "",
+            "",
+            f"listener:{body.type}",
+            body.call_id,
+            ["SCAM_CALL", body.type.upper()],
+            {"cues": body.cues, "sources": body.sources},
+            event="listener_scam",
+        )
+    alarmed, text_these = [], []
+    if first:
+        db.audit(me.id, "scam_call_alert", aid, type=body.type, cues=body.cues, sources=body.sources)
+        now = time.time()
+        for fid in me.family:
+            member = world.customer(fid)
+            if member is None:
+                continue
+            hub.publish(
+                f"app:{fid}",
+                {"type": "family_alarm", "from": me.id, "label": member.label_for(me.id), "scam_type": body.type, "level": "scam", "at": now},
+            )
+            (alarmed if now - seen(fid) <= ONLINE_S else text_these).append(fid)
+        db.audit(me.id, "family_alarmed", aid, online=alarmed, offline=text_these)
+    return {"scam": scam_for(me.id), "alarmed": alarmed, "text_these": text_these}

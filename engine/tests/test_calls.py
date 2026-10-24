@@ -235,3 +235,73 @@ def test_events_expire(fam, monkeypatch):
     monkeypatch.setattr(callcheck, "EVENT_TTL", 60.0)
     callcheck.prune()
     assert not callcheck._events[son.id]
+
+
+# ------------------------------------------------------------------ the call listener's scam alert
+def alert(phone, call_id="m1", **kw):
+    body = {
+        "call_id": call_id,
+        "level": "scam",
+        "type": "digital_arrest",
+        "cues": ["authority", "threat", "secrecy", "money_ask"],
+        "sources": ["cues", "server"],
+    } | kw
+    return phone.post("/api/m/scam-alert", body)
+
+
+def test_scam_alert_turns_on_the_pay_guard_and_opens_a_case(fam):
+    mom, _ = fam
+    r = alert(mom)
+    assert r.status_code == 200, r.text
+    assert r.json()["scam"]["reason"] == "listener:digital_arrest"
+    assert mom.get("/api/m/home").json()["scam"]["reason"] == "listener:digital_arrest"
+    case = db.query("SELECT * FROM cases WHERE customer_id=? AND status='open'", [mom.id])[0]
+    assert case["reasons"][:2] == ["SCAM_CALL", "DIGITAL_ARREST"] and case["tier"] == "RED"
+
+
+def test_scam_alert_rings_the_family_once_per_call(fam):
+    mom, son = fam
+    son.get("/api/m/home")  # his app is online
+    q = hub.subscribe(f"app:{son.id}")
+    first = alert(mom).json()
+    assert first["alarmed"] == [son.id] and first["text_these"] == []
+    again = alert(mom).json()
+    assert again["alarmed"] == [] and again["text_these"] == []
+    msgs = []
+    while not q.empty():
+        msgs.append(q.get_nowait())
+    hub.unsubscribe(q)
+    alarms = [m for m in msgs if '"family_alarm"' in m]
+    assert len(alarms) == 1 and '"label": "Mom"' in alarms[0] and '"scam_type": "digital_arrest"' in alarms[0]
+    assert alert(mom, call_id="m2").json()["alarmed"] == [son.id]  # a new call alarms again
+
+
+def test_offline_family_come_back_to_be_texted(fam):
+    mom, son = fam
+    world.app_sessions.pop(son.id, None)
+    callcheck._last_event.pop(son.id, None)
+    r = alert(mom).json()
+    assert r["alarmed"] == [] and r["text_these"] == [son.id]
+
+
+def test_scam_alert_takes_ids_never_words(fam):
+    mom, _ = fam
+    assert alert(mom, cues=["he said send the money"]).status_code == 422
+    assert alert(mom, level="warn").status_code == 422
+    assert alert(mom, type="something_else").status_code == 422
+    assert alert(mom, sources=["the internet"]).status_code == 422
+
+
+def test_a_caller_check_scam_keeps_its_reason(fam, quick):
+    mom, son = fam
+    son.get("/api/m/home")
+    ev(mom, "m1", "ringing", peer=son.id)
+    check(mom, son)  # not_them
+    assert alert(mom).json()["scam"]["reason"] == "not_them"
+
+
+def test_listener_settings_round_trip(fam):
+    mom, _ = fam
+    me = mom.post("/api/m/prefs", {"listen_calls": False, "sms_fallback": False}).json()
+    assert me["listen_calls"] is False and me["sms_fallback"] is False and me["stronger_check"] is True
+    assert mom.get("/api/m/home").json()["me"]["listen_calls"] is False

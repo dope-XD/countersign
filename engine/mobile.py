@@ -74,6 +74,9 @@ class Prefs(BaseModel):
     lang: str | None = Field(default=None, pattern="^(en|hi)$")
     check_channel: str | None = Field(default=None, pattern="^(ring|notify)$")
     share_call_status: bool | None = None
+    listen_calls: bool | None = None
+    stronger_check: bool | None = None
+    sms_fallback: bool | None = None
 
 
 class Join(BaseModel):
@@ -165,6 +168,9 @@ def _me_json(cust: Customer) -> dict:
         "lang": _lang(cust),
         "check_channel": cust.check_channel,
         "share_call_status": cust.share_call_status,
+        "listen_calls": cust.listen_calls,
+        "stronger_check": cust.stronger_check,
+        "sms_fallback": cust.sms_fallback,
     }
 
 
@@ -224,8 +230,9 @@ async def prefs(body: Prefs, request: Request) -> dict:
         cust.language = f"{body.lang}-IN"
     if body.check_channel is not None:
         cust.check_channel = body.check_channel
-    if body.share_call_status is not None:
-        cust.share_call_status = body.share_call_status
+    for k in ("share_call_status", "listen_calls", "stronger_check", "sms_fallback"):
+        if getattr(body, k) is not None:
+            setattr(cust, k, getattr(body, k))
     world.save(cust)
     db.audit(cust.id, "prefs_changed", cust.id, lang=_lang(cust), channel=cust.check_channel, share=cust.share_call_status)
     return _me_json(cust)
