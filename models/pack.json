@@ -1,0 +1,11 @@
+{
+  "name": "countersign-pack-v1",
+  "size_mb": 379,
+  "sha256": "b8a911b603e6dbaa4a3ceca0f7a2724e40bfba806794f99165ea64c0a6afe053",
+  "url": "https://github.com/dope-XD/countersign/releases/download/models-v1/countersign-pack-v1.zip",
+  "parts": [
+    "asr",
+    "vad",
+    "voice"
+  ]
+}

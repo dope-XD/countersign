@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- Debug builds only: the #37 spike. Release builds never contain it. -->
+<!-- Debug builds only: the #37 spike, and plain http to a relay on the laptop (http://10.0.2.2:8000 from the emulator). Release builds never contain either. -->
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
 
-    <application>
+    <application android:usesCleartextTraffic="true">
         <service
             android:name=".spike.ListenSpike"
             android:exported="false"

@@ -232,11 +232,15 @@ def markdown(m: dict) -> str:
     L += ["", "### Gates (set before the test run)", ""]
     for k, v in g.items():
         L.append(f"- {k}: {v}")
-    for sec, title in (("audio", "Audio end to end (speech-to-text → listener)"), ("voice", "Voice-clone model")):
-        if m.get(sec):
-            L += ["", f"### {title}", "", m[sec].get("markdown", "_see models/metrics.json_")]
-        else:
-            L += ["", f"### {title}", "", f"_Not run on this machine yet (`python -m ml.eval.{'asr_bakeoff' if sec == 'audio' else 'voice_clone'}`)._"]
+    runs = {"audio": "ml.eval.asr_bakeoff", "voice": "ml.voice_clone && python -m ml.voice_calibrate", "kit": "ml.eval.kit data/kit"}
+    titles = {
+        "audio": "Audio end to end (on-phone speech-to-text → listener), the speech-to-text bake-off",
+        "voice": "Voice-clone model (on the phone; held-out sets, scored with the shipped int8 model)",
+        "kit": "Spot-check kit (data/kit: 30 public held-out items; the same files on the phone's Check a recording)",
+    }
+    for sec in ("audio", "voice", "kit"):
+        L += ["", f"### {titles[sec]}", ""]
+        L += [m[sec].get("markdown", "_see models/metrics.json_")] if m.get(sec) else [f"_Not run on this machine yet (`python -m {runs[sec]}`)._"]
     if t["misses"]:
         L += [
             "",
@@ -258,7 +262,13 @@ def check_gates(m: dict) -> dict:
     rw = k("recall_warn", "k") / max(1, k("recall_warn", "n"))
     fw = k("fp_warn", "k") / max(1, k("fp_warn", "n"))
     fs = k("fp_scam", "k") / max(1, k("fp_scam", "n"))
-    return {
+    audio = (m.get("audio") or {}).get("models", {}).get("omnilingual_300m", {}).get("channels", {})
+    line = {}
+    for ch in ("clean", "g711u", "ota+g711u"):
+        r = (audio.get(ch) or {}).get("scams_at_warn")
+        if r and r["n"]:
+            line[f"audio, {ch}: scams at warn ≥ 80%"] = f"{100 * r['rate']:.0f}% → {'met' if r['rate'] >= 0.8 else 'MISSED'}"
+    return line | {
         "scams at warn ≥ 90% (Indian held-out sets pooled)": f"{100 * rw:.1f}% → {'met' if rw >= GATES['recall_warn'] else 'MISSED'}",
         "harmless at warn ≤ 8%": f"{100 * fw:.1f}% → {'met' if fw <= GATES['fp_warn'] else 'MISSED'}",
         "harmless at scam ≤ 1%": f"{100 * fs:.1f}% → {'met' if fs <= GATES['fp_scam'] else 'MISSED'}",
@@ -297,9 +307,13 @@ def main() -> int:
         print("leave one dataset out …", file=sys.stderr)
         with tempfile.TemporaryDirectory():
             m["lodo"] = leave_one_out(rows)
-    for sec, name in (("audio", "asr_bakeoff.json"), ("voice", "voice_clone.json")):
+    for sec, name in (("audio", "asr_bakeoff.json"), ("voice", "voice_clone.json"), ("kit", "kit.json")):
         if (EVAL / name).exists():
             m[sec] = json.loads((EVAL / name).read_text(encoding="utf-8"))
+    for d in (m.get("voice") or {}).get("sets", {}).values():  # per-clip scores stay in voice_clone.json
+        d.pop("scores_real", None)
+        d.pop("scores_ai", None)
+    m.get("audio", {}).pop("examples", None)
     m["gates"] = check_gates(m)
     m["seconds"] = round(time.time() - t0, 1)
     old = json.loads(METRICS.read_text(encoding="utf-8")) if METRICS.exists() else {}

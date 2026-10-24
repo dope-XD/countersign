@@ -86,6 +86,7 @@ fun fuse(
     val warnCtx = context intersect f.warnContextAlone
     if (warnCues || warnClf || warnCtx.isNotEmpty()) {
         level = "warn"
+        if ("synthetic_voice" in context) sources += "voice"
         if (warnClf) sources += "phone_ai"
         if ("caller_check_failed" in warnCtx) sources += "caller_check"
         if ("synthetic_voice" in warnCtx) sources += "voice"

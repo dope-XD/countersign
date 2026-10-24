@@ -43,6 +43,8 @@ import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
@@ -79,6 +81,7 @@ import app.countersign.bank.ui.components.BigButton
 import app.countersign.bank.ui.components.ButtonKind
 import app.countersign.bank.ui.components.MemberFace
 import app.countersign.bank.ui.components.familyColours
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
 /**
@@ -95,7 +98,25 @@ fun HomeScreen(repo: Repository, onAddFamily: () -> Unit, onMember: (String) -> 
     val scope = rememberCoroutineScope()
     val h = home
     if (h == null) {
-        Box(Modifier.fillMaxSize().background(Paper), contentAlignment = Alignment.Center) { CircularProgressIndicator(color = Brand) }
+        // first load: keep asking; after a few seconds say so, with Retry (a free relay can take a minute to wake)
+        var error by remember { mutableStateOf<String?>(null) }
+        var attempt by remember { mutableIntStateOf(0) }
+        LaunchedEffect(attempt) {
+            error = null
+            delay(4_000)
+            error = runCatching { repo.refresh() }.exceptionOrNull()?.message
+        }
+        Column(
+            Modifier.fillMaxSize().background(Paper).padding(24.dp),
+            verticalArrangement = Arrangement.spacedBy(16.dp, Alignment.CenterVertically),
+            horizontalAlignment = Alignment.CenterHorizontally,
+        ) {
+            CircularProgressIndicator(color = Brand)
+            error?.let {
+                Text(it, color = Ink, style = MaterialTheme.typography.bodyLarge, textAlign = TextAlign.Center)
+                BigButton(stringResource(R.string.action_retry), { attempt++ }, kind = ButtonKind.Quiet)
+            }
+        }
         return
     }
     HomeContent(

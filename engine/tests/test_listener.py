@@ -88,11 +88,13 @@ def test_trusted_caller_needs_more_evidence():
     assert fuse(cues, {"caller_verified"}).level == "watch"
 
 
-def test_synthetic_voice_warns_but_never_makes_scam_alone():
-    cues = score_text("hello madam how are you")
-    v = fuse(cues, context={"synthetic_voice"})
-    assert v.level == "warn" and v.sources == ["voice"]
-    assert fuse(cues, context={"synthetic_voice"}, judge=Judge(0.99)).level != "scam"
+def test_an_ai_voice_is_one_piece_of_evidence_never_scam():
+    plain = score_text("hello madam how are you")
+    assert fuse(plain, context={"synthetic_voice"}).level == "watch"  # alone: a quiet note, no card
+    police = score_text("this is the police")
+    v = fuse(police, context={"synthetic_voice"})
+    assert v.level == "warn" and "voice" in v.sources  # with one scam cue: amber
+    assert fuse(plain, context={"synthetic_voice"}, judge=Judge(0.99)).level != "scam"
 
 
 def test_levels_never_go_down():

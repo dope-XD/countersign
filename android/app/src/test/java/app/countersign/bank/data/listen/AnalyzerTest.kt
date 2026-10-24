@@ -46,8 +46,9 @@ class AnalyzerTest {
     }
 
     @Test
-    fun anAiVoiceAloneWarnsButNeverMakesScam() {
-        val a = analyzer.text("hello ji how are you, I am calling about the function next week, are you coming", voiceClone = 0.95f)
+    fun anAiVoiceIsOneKindOfEvidenceAndNeverMakesScam() {
+        assertEquals(RiskLevel.WATCH, analyzer.text("hello ji how are you, I am calling about the function next week", voiceClone = 0.95f).level)
+        val a = analyzer.text("this is the police calling about your case", voiceClone = 0.95f, minWords = 100) // the classifier abstains: only the voice and the cue
         assertEquals(RiskLevel.WARN, a.level)
         assertTrue("synthetic_voice" in a.cues)
         assertNotEquals(RiskLevel.SCAM, analyzer.text("hello ji how are you", voiceClone = 0.99f).level)

@@ -69,6 +69,8 @@ def fuse(
     warn_ctx = set(context) & set(w["context_alone"])
     if warn_cues or warn_clf or warn_ctx:
         level = "warn"
+        if "synthetic_voice" in context:
+            sources.add("voice")
         if warn_clf:
             sources.add("phone_ai")
         if "caller_check_failed" in warn_ctx:

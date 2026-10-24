@@ -6,8 +6,10 @@ plugins {
     id("org.jetbrains.kotlin.plugin.compose")
 }
 
-// The server the app talks to by default (the dev server in docs/agents/CONTRACT.md); the sign-up screen can change it.
-val defaultServer = (findProperty("countersign.server") as String?) ?: "https://pseudoskeletal-yung-implausibly.ngrok-free.dev"
+// The relay the app talks to by default (engine/relay.py on Render, docs/DEPLOY.md); the sign-up screen can change it.
+val defaultServer = (findProperty("countersign.server") as String?) ?: "https://countersign-relay.onrender.com"
+// -Pcountersign.phonesOnly=true: arm64 only (the release APK for real phones; half the size)
+val phonesOnly = (findProperty("countersign.phonesOnly") as String?)?.toBoolean() ?: false
 // -Pcountersign.fake=true: scripted data (FakeRepository) instead of the server.
 
 // On-phone speech-to-text and VAD: sherpa-onnx's Android AAR with onnxruntime linked in statically (so it can't clash
@@ -41,7 +43,7 @@ android {
         buildConfigField("boolean", "FAKE", "$fake")
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         // phones (arm64) and the emulator (x86_64); keeps the APK small
-        ndk { abiFilters += listOf("arm64-v8a", "x86_64") }
+        ndk { abiFilters += if (phonesOnly) listOf("arm64-v8a") else listOf("arm64-v8a", "x86_64") }
     }
 
     // One demo signing key in the repo, so every teammate's build installs over the others'.
@@ -60,7 +62,7 @@ android {
             // shrunk for judges downloading it over mobile data (about 5 MB instead of 50)
             isMinifyEnabled = true
             isShrinkResources = true
-            proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"))
+            proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
             signingConfig = signingConfigs.getByName("demo")
         }
     }
@@ -89,6 +91,8 @@ dependencies {
     implementation("androidx.compose.material:material-icons-core:1.7.8")
     implementation("androidx.activity:activity-compose:1.13.0")
     implementation("androidx.biometric:biometric:1.1.0")
+    // biometric brings an old fragment library whose FragmentActivity rejects the Activity Result API (the file picker)
+    implementation("androidx.fragment:fragment-ktx:1.8.8")
     implementation("com.squareup.okhttp3:okhttp:4.12.0")
     implementation("com.google.zxing:core:3.5.4") // draws the family invite QR code
     implementation("com.google.android.gms:play-services-code-scanner:16.1.0") // scans it, without a camera permission

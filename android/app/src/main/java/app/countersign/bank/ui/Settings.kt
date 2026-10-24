@@ -202,7 +202,7 @@ internal fun ModelRow(model: ModelState, onDownload: () -> Unit) {
         ModelStatus.MISSING, ModelStatus.FAILED -> Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
             Text(stringResource(R.string.models_why), color = Ink, style = MaterialTheme.typography.bodyMedium)
             if (model.status == ModelStatus.FAILED) Text(stringResource(R.string.models_failed), color = Red, style = MaterialTheme.typography.bodyMedium)
-            BigButton(stringResource(R.string.models_download, model.sizeMb.takeIf { it > 0 } ?: 180), onDownload)
+            BigButton(stringResource(R.string.models_download, model.sizeMb.takeIf { it > 0 } ?: 380), onDownload)
         }
     }
 }
