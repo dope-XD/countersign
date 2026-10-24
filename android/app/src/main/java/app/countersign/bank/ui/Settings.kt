@@ -7,6 +7,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -46,6 +47,9 @@ import app.countersign.bank.data.CheckChannel
 import app.countersign.bank.data.FakeRepository
 import app.countersign.bank.data.Lang
 import app.countersign.bank.data.Me
+import androidx.compose.material3.LinearProgressIndicator
+import app.countersign.bank.data.ModelStatus
+import app.countersign.bank.data.ModelState
 import app.countersign.bank.data.Permission
 import app.countersign.bank.data.Permissions
 import app.countersign.bank.data.Repository
@@ -65,11 +69,16 @@ private val saving = MainScope()
 fun SettingsScreen(repo: Repository, onBack: () -> Unit) {
     val home by repo.home.collectAsState()
     val permissions by repo.permissions.collectAsState()
+    val model by repo.modelState.collectAsState()
     val context = LocalContext.current
     val me = home?.me ?: return
     SettingsContent(
         me = me,
         permissions = permissions,
+        model = model,
+        onListen = { on -> saving.launch { runCatching { repo.setListening(listenCalls = on) } } },
+        onSms = { on -> saving.launch { runCatching { repo.setListening(smsFallback = on) } } },
+        onDownload = { saving.launch { runCatching { repo.downloadModels() } } },
         onLang = { lang -> saving.launch { runCatching { repo.setPrefs(lang = lang) } } },
         onChannel = { c -> saving.launch { runCatching { repo.setPrefs(channel = c) } } },
         onShare = { on -> saving.launch { runCatching { repo.setPrefs(shareCallStatus = on) } } },
@@ -83,6 +92,10 @@ fun SettingsScreen(repo: Repository, onBack: () -> Unit) {
 internal fun SettingsContent(
     me: Me,
     permissions: Permissions,
+    model: ModelState = ModelState(ModelStatus.READY, 1f, 0),
+    onListen: (Boolean) -> Unit = {},
+    onSms: (Boolean) -> Unit = {},
+    onDownload: () -> Unit = {},
     onLang: (Lang) -> Unit,
     onChannel: (CheckChannel) -> Unit,
     onShare: (Boolean) -> Unit,
@@ -114,6 +127,13 @@ internal fun SettingsContent(
             // the row is the toggle, so the switch itself takes no clicks
             Switch(me.shareCallStatus, null, colors = SwitchDefaults.colors(checkedTrackColor = Green))
         }
+    }
+
+    // the call listener (#47): on/off, texting family, and the one model pack it runs on
+    Group(stringResource(R.string.settings_listen)) {
+        Toggle(stringResource(R.string.settings_listen_why), me.listenCalls, onListen)
+        Toggle(stringResource(R.string.settings_sms_why), me.smsFallback, onSms)
+        ModelRow(model, onDownload)
     }
 
     Group(stringResource(R.string.settings_permissions)) {
@@ -154,6 +174,39 @@ internal fun SettingsContent(
     }
 }
 
+/** A whole-row switch: the row is the toggle, so the switch itself takes no clicks. */
+@Composable
+private fun Toggle(text: String, on: Boolean, onChange: (Boolean) -> Unit) {
+    Row(
+        Modifier.fillMaxWidth().heightIn(min = 56.dp).toggleable(on, role = Role.Switch, onValueChange = onChange),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(16.dp),
+    ) {
+        Text(text, Modifier.weight(1f), color = Ink, style = MaterialTheme.typography.bodyMedium)
+        Switch(on, null, colors = SwitchDefaults.colors(checkedTrackColor = Green))
+    }
+}
+
+/** The scam check's model pack: ready ✓, downloading with progress, or a Download button (one time, about 180 MB). */
+@Composable
+internal fun ModelRow(model: ModelState, onDownload: () -> Unit) {
+    when (model.status) {
+        ModelStatus.READY, ModelStatus.NOT_NEEDED -> Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+            Icon(Icons.Filled.CheckCircle, contentDescription = null, tint = Green, modifier = Modifier.size(28.dp))
+            Text(stringResource(R.string.models_ready), color = Green, style = MaterialTheme.typography.bodyLarge)
+        }
+        ModelStatus.DOWNLOADING -> Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+            Text(stringResource(R.string.models_downloading, (model.progress * 100).toInt()), color = Ink, style = MaterialTheme.typography.bodyLarge)
+            LinearProgressIndicator({ model.progress }, Modifier.fillMaxWidth().height(8.dp), color = Brand)
+        }
+        ModelStatus.MISSING, ModelStatus.FAILED -> Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+            Text(stringResource(R.string.models_why), color = Ink, style = MaterialTheme.typography.bodyMedium)
+            if (model.status == ModelStatus.FAILED) Text(stringResource(R.string.models_failed), color = Red, style = MaterialTheme.typography.bodyMedium)
+            BigButton(stringResource(R.string.models_download, model.sizeMb.takeIf { it > 0 } ?: 180), onDownload)
+        }
+    }
+}
+
 /** A white card with a heading: one setting. */
 @Composable
 private fun Group(title: String, content: @Composable ColumnScope.() -> Unit) {
@@ -188,5 +241,9 @@ private fun me() = FakeRepository(Scenario.IDLE).home.value!!.me
 @Preview(name = "English, large font", locale = "en", widthDp = 360, heightDp = 1400, fontScale = 1.5f)
 @Composable
 private fun SettingsPreview() = CsTheme {
-    SettingsContent(me(), Permissions(Permission.entries.toSet() - Permission.OVERLAY - Permission.BATTERY), {}, {}, {}, {}, {}, {})
+    SettingsContent(
+        me(), Permissions(Permission.entries.toSet() - Permission.OVERLAY - Permission.BATTERY),
+        model = ModelState(ModelStatus.MISSING, 0f, 180),
+        onLang = {}, onChannel = {}, onShare = {}, onAllow = {}, onSignOut = {}, onBack = {},
+    )
 }

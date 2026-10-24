@@ -1,3 +1,6 @@
+import java.net.URI
+import java.security.MessageDigest
+
 plugins {
     id("com.android.application")
     id("org.jetbrains.kotlin.plugin.compose")
@@ -6,6 +9,22 @@ plugins {
 // The server the app talks to by default (the dev server in docs/agents/CONTRACT.md); the sign-up screen can change it.
 val defaultServer = (findProperty("countersign.server") as String?) ?: "https://pseudoskeletal-yung-implausibly.ngrok-free.dev"
 // -Pcountersign.fake=true: scripted data (FakeRepository) instead of the server.
+
+// On-phone speech-to-text and VAD: sherpa-onnx's Android AAR with onnxruntime linked in statically (so it can't clash
+// with onnxruntime-android, which runs the voice-clone model). Fetched once from its GitHub release and checked.
+val sherpaVersion = "1.13.8"
+val sherpaSha256 = "b22c3fc1b6a45666d28892bb2f7694beeb77a8362d7ebd77c1a5431ec9435471"
+val sherpaAar = file("libs/sherpa-onnx-static-link-onnxruntime-$sherpaVersion.aar")
+if (!sherpaAar.exists()) {
+    sherpaAar.parentFile.mkdirs()
+    val url = "https://github.com/k2-fsa/sherpa-onnx/releases/download/v$sherpaVersion/${sherpaAar.name}"
+    logger.lifecycle("Downloading $url")
+    val tmp = File(sherpaAar.path + ".part")
+    URI(url).toURL().openStream().use { input -> tmp.outputStream().use { input.copyTo(it) } }
+    val sha = MessageDigest.getInstance("SHA-256").digest(tmp.readBytes()).joinToString("") { "%02x".format(it) }
+    check(sha == sherpaSha256) { "sherpa-onnx AAR checksum mismatch: $sha" }
+    tmp.renameTo(sherpaAar)
+}
 val fake = (findProperty("countersign.fake") as String?)?.toBoolean() ?: false
 
 android {
@@ -21,6 +40,8 @@ android {
         buildConfigField("String", "DEFAULT_SERVER", "\"$defaultServer\"")
         buildConfigField("boolean", "FAKE", "$fake")
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+        // phones (arm64) and the emulator (x86_64); keeps the APK small
+        ndk { abiFilters += listOf("arm64-v8a", "x86_64") }
     }
 
     // One demo signing key in the repo, so every teammate's build installs over the others'.
@@ -50,6 +71,8 @@ android {
         buildConfig = true
         compose = true
     }
+    // only the ABIs we ship (both onnxruntime copies carry a 32-bit x86 library, which would clash)
+    packaging { jniLibs { excludes += listOf("lib/x86/**", "lib/armeabi-v7a/**") } }
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_17
         targetCompatibility = JavaVersion.VERSION_17
@@ -69,6 +92,8 @@ dependencies {
     implementation("com.squareup.okhttp3:okhttp:4.12.0")
     implementation("com.google.zxing:core:3.5.4") // draws the family invite QR code
     implementation("com.google.android.gms:play-services-code-scanner:16.1.0") // scans it, without a camera permission
+    implementation(files(sherpaAar)) // speech-to-text + VAD, on the phone
+    implementation("com.microsoft.onnxruntime:onnxruntime-android:1.22.0") // the voice-clone model, on the phone
 
     testImplementation("junit:junit:4.13.2")
     testImplementation("org.json:json:20240303") // real org.json for JVM tests (ScamScorerTest); Android supplies it on the phone

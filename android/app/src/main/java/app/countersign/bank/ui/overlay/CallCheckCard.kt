@@ -62,6 +62,10 @@ import app.countersign.bank.data.Member
 import app.countersign.bank.data.Outcome
 import app.countersign.bank.data.RingState
 import app.countersign.bank.data.RiskLevel
+import androidx.compose.ui.text.style.TextDecoration
+import androidx.compose.material3.TextButton
+import app.countersign.bank.ui.components.whyLine
+import app.countersign.bank.data.FalseAlarmReason
 import app.countersign.bank.data.ScamType
 import app.countersign.bank.data.Scenario
 import app.countersign.bank.data.Verdict
@@ -71,6 +75,7 @@ import app.countersign.bank.ui.Brand
 import app.countersign.bank.ui.CsTheme
 import app.countersign.bank.ui.Green
 import app.countersign.bank.ui.Grey
+import app.countersign.bank.ui.GreySoft
 import app.countersign.bank.ui.Ink
 import app.countersign.bank.ui.Line
 import app.countersign.bank.ui.Muted
@@ -93,6 +98,9 @@ import kotlinx.coroutines.delay
  * - The call listener: "Put on speaker so we can listen", a quiet "Listening for scams", an amber card at
  *   `warn` (the scam type, one line of advice, [onAlertFamily]) and a red one at `scam` ("Hang up", "Family
  *   alerted ✓" and a Call button: [onCall] for the checked member, else [onCallMember] with someone online).
+ *   Both cards say why they fired (the cue ids in plain words) and offer the false-alarm path: "I know this caller"
+ *   on amber, "It's not a scam" on red, each with an inline confirm, then [onNotAScam]. A cleared call shows one
+ *   green line, "Cleared. Family told it's fine."
  *
  * It never takes more than the top third of the screen (45% while warning, which still keeps clear of the bottom
  * half), so the dialer's end-call button stays free. If large fonts make it taller than that, it scrolls.
@@ -108,6 +116,7 @@ fun CallCheckCard(
     onClose: () -> Unit,
     onAlertFamily: () -> Unit = {},
     onCallMember: (String) -> Unit = {},
+    onNotAScam: (FalseAlarmReason) -> Unit = {},
 ) {
     val check = state.check
     val level = state.risk?.level
@@ -143,7 +152,7 @@ fun CallCheckCard(
             ) {
                 // an unknown caller's "Says they're family?" chip is moot once the listener warns; its card takes the close button
                 if (check != null) CheckBody(check, onRing, onCall, onClose, actions = !alarmed) else if (!alarmed) UnknownCaller(state.family, onPickMember, onClose)
-                Listener(state, onAlertFamily, onCall, onCallMember, onClose = if (check == null) onClose else null)
+                Listener(state, onAlertFamily, onCall, onCallMember, onNotAScam, onClose = if (check == null) onClose else null)
             }
         }
     }
@@ -203,9 +212,29 @@ private fun CheckBody(check: Check, onRing: () -> Unit, onCall: () -> Unit, onCl
 
 /** What the call listener adds under the caller check: the speaker chip, the listening line, or the warn / scam card. */
 @Composable
-private fun Listener(state: CallCheckUi, onAlertFamily: () -> Unit, onCall: () -> Unit, onCallMember: (String) -> Unit, onClose: (() -> Unit)?) {
+private fun Listener(
+    state: CallCheckUi,
+    onAlertFamily: () -> Unit,
+    onCall: () -> Unit,
+    onCallMember: (String) -> Unit,
+    onNotAScam: (FalseAlarmReason) -> Unit,
+    onClose: (() -> Unit)?,
+) {
     val risk = state.risk
+    // the false-alarm confirm, inline: an overlay window can't open a dialog
+    var confirming by remember(risk?.level) { mutableStateOf<FalseAlarmReason?>(null) }
+    val why = risk?.let { whyLine(it.cues) }
     when {
+        state.cleared -> Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+            Icon(Icons.Filled.Check, contentDescription = null, tint = Green, modifier = Modifier.size(24.dp))
+            Text(stringResource(R.string.cleared_line), color = Ink, style = MaterialTheme.typography.bodyMedium)
+        }
+        confirming != null && risk != null -> RiskCard(Grey, GreySoft, stringResource(R.string.not_scam_confirm_title), stringResource(R.string.not_scam_confirm_body), null) {
+            Row(Modifier.padding(end = 12.dp), horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+                BigButton(stringResource(R.string.action_yes_its_fine), { onNotAScam(confirming!!) }, Modifier.weight(1f), kind = ButtonKind.Yes)
+                BigButton(stringResource(R.string.action_back), { confirming = null }, Modifier.weight(1f), kind = ButtonKind.Quiet)
+            }
+        }
         risk?.level == RiskLevel.SCAM -> {
             // the checked member's own number, or else someone in the family who's online
             val check = state.check
@@ -213,7 +242,7 @@ private fun Listener(state: CallCheckUi, onAlertFamily: () -> Unit, onCall: () -
             val callLabel = check?.label ?: other?.label
             val call = if (check != null) onCall else other?.let { m -> { onCallMember(m.id) } }
             // no advice line here: "Hang up" is the advice, and the buttons must stay in view
-            RiskCard(Red, RedSoft, stringResource(R.string.scam_title), null, onClose) {
+            RiskCard(Red, RedSoft, stringResource(R.string.scam_title), why, onClose) {
                 Row(Modifier.padding(end = 12.dp), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(10.dp)) {
                     // the family is alarmed as soon as a call reaches scam
                     Row(Modifier.weight(1f), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(6.dp)) {
@@ -225,11 +254,13 @@ private fun Listener(state: CallCheckUi, onAlertFamily: () -> Unit, onCall: () -
                         BigButton(stringResource(R.string.action_call_member, callLabel), call, Modifier.weight(1.3f), icon = Icons.Filled.Call)
                     }
                 }
+                FalseAlarmLink(stringResource(R.string.action_not_a_scam)) { confirming = FalseAlarmReason.NOT_A_SCAM }
             }
         }
         risk?.level == RiskLevel.WARN ->
-            RiskCard(Amber, AmberSoft, stringResource(risk.type.headline()), stringResource(risk.type.advice()), onClose) {
+            RiskCard(Amber, AmberSoft, stringResource(risk.type.headline()), listOfNotNull(stringResource(risk.type.advice()), why).joinToString("\n"), onClose) {
                 BigButton(stringResource(R.string.action_alert_family), onAlertFamily, Modifier.padding(end = 12.dp), kind = ButtonKind.No)
+                FalseAlarmLink(stringResource(R.string.action_know_caller)) { confirming = FalseAlarmReason.KNOW_CALLER }
             }
         state.listen == ListenState.NEED_SPEAKER -> Row(
             Modifier.padding(end = 12.dp).border(2.dp, Line, RoundedCornerShape(24.dp)).padding(horizontal = 14.dp, vertical = 10.dp),
@@ -243,6 +274,14 @@ private fun Listener(state: CallCheckUi, onAlertFamily: () -> Unit, onCall: () -
             Box(Modifier.size(10.dp).background(Green, CircleShape))
             Text(stringResource(R.string.listen_listening), color = Muted, style = MaterialTheme.typography.bodyMedium)
         }
+    }
+}
+
+/** "I know this caller" / "It's not a scam": a plain text button, 48 dp tall, under the card's main button. */
+@Composable
+private fun FalseAlarmLink(text: String, onClick: () -> Unit) {
+    TextButton(onClick, Modifier.padding(end = 12.dp).heightIn(min = 48.dp)) {
+        Text(text, color = Ink, style = MaterialTheme.typography.bodyMedium, textDecoration = TextDecoration.Underline)
     }
 }
 
@@ -342,7 +381,7 @@ private class CallScenarios : PreviewParameterProvider<Scenario> {
 private fun uiFor(s: Scenario): CallCheckUi {
     val repo = FakeRepository(s)
     val call = repo.call.value
-    return CallCheckUi(call?.caller, call?.check, repo.home.value?.family.orEmpty(), call?.listen ?: ListenState.OFF, call?.onSpeaker ?: false, call?.risk)
+    return CallCheckUi(call?.caller, call?.check, repo.home.value?.family.orEmpty(), call?.listen ?: ListenState.OFF, call?.onSpeaker ?: false, call?.risk, call?.cleared ?: false)
 }
 
 @Preview(name = "English", locale = "en", widthDp = 360, heightDp = 800)
@@ -366,4 +405,11 @@ private fun PickingPreview() = CsTheme {
             UnknownCaller(uiFor(Scenario.CALL_UNKNOWN_NUMBER).family, {}, {}, startPicking = true)
         }
     }
+}
+
+@Preview(name = "Cleared", locale = "en", widthDp = 360, heightDp = 400)
+@Preview(name = "Cleared, Hindi", locale = "hi", widthDp = 360, heightDp = 400, fontScale = 1.5f)
+@Composable
+private fun ClearedPreview() = CsTheme {
+    CallCheckCard(uiFor(Scenario.LISTEN_FALSE_ALARM).copy(risk = null, cleared = true), {}, {}, {}, {})
 }

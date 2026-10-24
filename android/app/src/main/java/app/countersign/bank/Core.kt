@@ -22,6 +22,7 @@ class CsApp : Application() {
         Prefs.init(this)
         Notify.channels(this)
         // -Pcountersign.fake=true keeps the scripted FakeRepository, for building screens without a server
+        CallRisk.load(this)
         if (!BuildConfig.FAKE) Repo.instance = RealRepository(this)
     }
 }

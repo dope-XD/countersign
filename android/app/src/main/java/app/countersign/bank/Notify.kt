@@ -107,6 +107,37 @@ object Notify {
         c.getSystemService(NotificationManager::class.java).notify(title.hashCode(), n)
     }
 
+    private const val ALARM_ID = 7
+
+    /** "Mummy may be on a scam call": full screen and ringing, like an incoming call (FamilyAlarmActivity). */
+    fun familyAlarm(c: Context, a: app.countersign.bank.data.FamilyAlarmUi) {
+        val open = Intent(c, FamilyAlarmActivity::class.java).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP)
+        val pi = PendingIntent.getActivity(c, ALARM_ID, open, PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT)
+        val title = c.getString(R.string.alarm_title, a.label)
+        val b = Notification.Builder(c, RING)
+            .setSmallIcon(R.drawable.ic_notify)
+            .setContentTitle(title)
+            .setContentText(c.getString(R.string.alarm_notify_body))
+            .setContentIntent(pi)
+            .setAutoCancel(true)
+            .setCategory(Notification.CATEGORY_ALARM)
+        if (canRing(c)) b.setFullScreenIntent(pi, true)
+        c.getSystemService(NotificationManager::class.java).notify(ALARM_ID, b.build())
+        Ringer.start(c)
+        if (App.visible) runCatching { c.startActivity(open) }
+    }
+
+    fun familyAlarmCleared(c: Context, label: String) {
+        Ringer.stop()
+        cancelAlarm(c)
+        news(c, c.getString(R.string.alarm_cleared_title, label), c.getString(R.string.alarm_cleared_body, label))
+    }
+
+    fun cancelAlarm(c: Context) {
+        Ringer.stop()
+        c.getSystemService(NotificationManager::class.java).cancel(ALARM_ID)
+    }
+
     /** Android 14+ lets the user (or Play) switch full-screen alerts off for an app. */
     fun canRing(c: Context): Boolean =
         Build.VERSION.SDK_INT < 34 || c.getSystemService(NotificationManager::class.java).canUseFullScreenIntent()

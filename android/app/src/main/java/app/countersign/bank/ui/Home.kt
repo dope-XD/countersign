@@ -64,6 +64,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import app.countersign.bank.BuildConfig
 import app.countersign.bank.R
+import androidx.compose.material.icons.filled.Search
 import app.countersign.bank.data.Check
 import app.countersign.bank.data.FakeRepository
 import app.countersign.bank.data.Home
@@ -87,7 +88,7 @@ import kotlinx.coroutines.launch
  * In debug builds a long press on the shield moves FakeRepository to its next scenario.
  */
 @Composable
-fun HomeScreen(repo: Repository, onAddFamily: () -> Unit, onMember: (String) -> Unit, onSettings: () -> Unit, onHistory: () -> Unit) {
+fun HomeScreen(repo: Repository, onAddFamily: () -> Unit, onMember: (String) -> Unit, onSettings: () -> Unit, onHistory: () -> Unit, onCheck: () -> Unit = {}) {
     val home by repo.home.collectAsState()
     val permissions by repo.permissions.collectAsState()
     val context = LocalContext.current
@@ -109,6 +110,7 @@ fun HomeScreen(repo: Repository, onAddFamily: () -> Unit, onMember: (String) -> 
         onMember = onMember,
         onSettings = onSettings,
         onHistory = onHistory,
+        onCheck = onCheck,
     )
 }
 
@@ -127,6 +129,7 @@ internal fun HomeContent(
     onMember: (String) -> Unit,
     onSettings: () -> Unit,
     onHistory: () -> Unit,
+    onCheck: () -> Unit = {},
 ) {
     Column(
         Modifier.fillMaxSize().background(Paper).safeDrawingPadding().verticalScroll(rememberScrollState()).padding(horizontal = 20.dp, vertical = 8.dp),
@@ -141,6 +144,7 @@ internal fun HomeContent(
         home.scam?.let { ScamBanner(it, onDismissScam) }
         home.joinRequests.forEach { JoinRequestCard(it, onAccept, onDecline) }
         Shield(permissions, onFix, onNextScenario)
+        BigButton(stringResource(R.string.home_check_tile), onCheck, kind = ButtonKind.Quiet, icon = Icons.Filled.Search)
 
         Text(stringResource(R.string.home_family), Modifier.semantics { heading() }, color = Ink, style = MaterialTheme.typography.headlineSmall)
         FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalArrangement = Arrangement.spacedBy(16.dp)) {

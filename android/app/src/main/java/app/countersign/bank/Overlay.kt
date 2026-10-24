@@ -1,5 +1,8 @@
 package app.countersign.bank
 
+import app.countersign.bank.data.RiskLevel
+import app.countersign.bank.ui.CsTheme
+import app.countersign.bank.ui.overlay.CallCheckCard
 import android.content.Context
 import android.graphics.PixelFormat
 import android.provider.Settings
@@ -69,8 +72,9 @@ object Overlay {
     /** What the card is shown from: the listener's accessibility service, or the app with "Display over other apps". */
     private var cardHost: Context? = null
 
-    /** The call the user closed the card on: it stays closed until the next call. */
+    /** The call the user closed the card on: it stays closed until the next call, or until the listener's level rises. */
     private var closedCall: String? = null
+    private var closedLevel = RiskLevel.NONE
 
     /** Android hides overlay windows while the lock screen is up, so then [CallCheckNotice] says it instead (also without the overlay permission). */
     private val locked = MutableStateFlow(false)
@@ -99,6 +103,8 @@ object Overlay {
                     CallCheckNotice.cancel(app)
                 }
                 val wantHost: Context = listener ?: app
+                val level = call?.risk?.level ?: RiskLevel.NONE
+                if (call?.id == closedCall && level > closedLevel && level >= RiskLevel.WARN) closedCall = null // a warning reopens it
                 when {
                     call == null -> hide()
                     call.id == closedCall -> hide()
@@ -137,16 +143,22 @@ object Overlay {
                 val call by repo.call.collectAsState()
                 val home by repo.home.collectAsState()
                 val now = call ?: return@show
-                CallCheckCardStub(
-                    state = CallCheckUi(now.caller, now.check, home?.family.orEmpty()),
-                    onRing = { now.check?.let { act("ring") { repo.ring(it.id) } } },
-                    onCall = { (now.check?.memberId ?: now.caller?.id)?.let(repo::callMember) },
-                    onPickMember = { id -> act("check") { repo.check(id) } },
-                    onClose = {
-                        closedCall = now.id
-                        hide()
-                    },
-                )
+                CsTheme {
+                    CallCheckCard(
+                        state = CallCheckUi(now.caller, now.check, home?.family.orEmpty(), now.listen, now.onSpeaker, now.risk, now.cleared),
+                        onRing = { now.check?.let { act("ring") { repo.ring(it.id) } } },
+                        onCall = { (now.check?.memberId ?: now.caller?.id)?.let(repo::callMember) },
+                        onPickMember = { id -> act("check") { repo.check(id) } },
+                        onClose = {
+                            closedCall = now.id
+                            closedLevel = now.risk?.level ?: RiskLevel.NONE
+                            hide()
+                        },
+                        onAlertFamily = { act("alert family") { repo.alertFamily() } },
+                        onCallMember = repo::callMember,
+                        onNotAScam = { reason -> act("not a scam") { repo.notAScam(reason) } },
+                    )
+                }
             }
         }
     }
@@ -216,47 +228,6 @@ object Overlay {
             view?.let { runCatching { wm.removeView(it) } }
             view = null
             lifecycleRegistry.currentState = Lifecycle.State.DESTROYED
-        }
-    }
-}
-
-/**
- * Stand-in for B's `CallCheckCard` (#8), same signature, until it merges. Plain on purpose:
- * B owns the words and the look.
- */
-@Composable
-private fun CallCheckCardStub(state: CallCheckUi, onRing: () -> Unit, onCall: () -> Unit, onPickMember: (String) -> Unit, onClose: () -> Unit) {
-    val check = state.check
-    val who = check?.label ?: state.caller?.label
-    Card(
-        Modifier.fillMaxWidth().padding(12.dp),
-        shape = RoundedCornerShape(20.dp),
-        elevation = CardDefaults.cardElevation(8.dp),
-    ) {
-        Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-            val line = when {
-                check == null && who == null -> "Says they're family? Check"
-                check == null -> "Checking $who…"
-                else -> when (check.outcome) {
-                    Outcome.PENDING -> "Checking $who…"
-                    Outcome.SAFE -> "✓ $who's phone"
-                    Outcome.DANGER -> "✗ Not $who's phone" + if (check.spoofSuspected) " · caller ID may be faked" else ""
-                    Outcome.UNKNOWN -> if (check.verdict == Verdict.CANT_REACH) "? Couldn't check $who" else "?"
-                }
-            }
-            Text(line, style = MaterialTheme.typography.titleMedium)
-            if (check == null && who == null) {
-                Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                    state.family.forEach { m -> OutlinedButton({ onPickMember(m.id) }) { Text(m.label) } }
-                }
-            }
-            if (check != null && check.outcome in setOf(Outcome.DANGER, Outcome.UNKNOWN)) {
-                Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                    Button(onRing) { Text("Ring $who") }
-                    OutlinedButton(onCall) { Text("Call $who") }
-                }
-            }
-            TextButton(onClose) { Text("Close") }
         }
     }
 }

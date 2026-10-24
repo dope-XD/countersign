@@ -20,6 +20,10 @@
     <string name="listen_label">CS Bank call listener</string>
     <string name="listen_about">During a phone or WhatsApp call, listens on this phone for what scammers say, and warns you and your family. Nothing is recorded or kept: the sound is checked as it comes and then dropped. It also sees which app you open during the call, so it can stop you paying a scammer.</string>
 
+    <!-- Texts sent from this phone's SIM (the family's app was offline), and the one family send back. %1$s: the sender's first name. -->
+    <string name="sms_scam_alert">CS Bank: %1$s may be on a scam call right now. Please call them and tell them to cut the call. Don\'t let them send money or share an OTP.</string>
+    <string name="message_cut_call">This is %1$s. That call may be a scam. Cut it now and call me back. Don\'t send money or share an OTP.</string>
+
     <string name="cc_action_ring">Ring %1$s</string>
     <string name="cc_action_call">Call %1$s</string>
 </resources>

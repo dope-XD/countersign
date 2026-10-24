@@ -109,7 +109,7 @@ fun AppRoot(activity: MainActivity) {
         return
     }
 
-    // Home, and one level below it: "add", "settings", "member:<id>" (History arrives with #13)
+    // Home, and one level below it: "add", "settings", "check", "history", "member:<id>"
     var screen by rememberSaveable { mutableStateOf("home") }
     val home by repo.home.collectAsState()
     val scope = rememberCoroutineScope()
@@ -124,6 +124,8 @@ fun AppRoot(activity: MainActivity) {
             goHome()
         }
         screen == "settings" -> SettingsScreen(repo, goHome)
+        screen == "check" -> CheckScreen(repo, goHome)
+        screen == "history" -> HistoryScreen(repo, goHome)
         screen.startsWith("member:") -> {
             val family = home?.family.orEmpty()
             val member = family.firstOrNull { it.id == screen.removePrefix("member:") }
@@ -136,7 +138,7 @@ fun AppRoot(activity: MainActivity) {
                 }, onBack = goHome)
             }
         }
-        else -> HomeScreen(repo, onAddFamily = { screen = "add" }, onMember = { screen = "member:$it" }, onSettings = { screen = "settings" }, onHistory = {})
+        else -> HomeScreen(repo, onAddFamily = { screen = "add" }, onMember = { screen = "member:$it" }, onSettings = { screen = "settings" }, onHistory = { screen = "history" }, onCheck = { screen = "check" })
     }
 }
 
