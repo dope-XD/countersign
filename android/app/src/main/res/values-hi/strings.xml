@@ -35,4 +35,12 @@
     <string name="card_dont_send_money">इस कॉल करने वाले को पैसे न भेजें।</string>
     <string name="action_ring_member">%1$s का फ़ोन बजाएँ</string>
     <string name="action_call_member">%1$s को कॉल करें</string>
+    <string name="guard_title">रुकिए। ये कॉल करने वाले %1$s नहीं हैं।</string>
+    <string name="guard_line">पैसे न भेजें, OTP न बताएँ।</string>
+    <string name="guard_line_app">%1$s में पैसे न भेजें, OTP न बताएँ।</string>
+    <string name="action_understood">ठीक है, समझ आया</string>
+
+    <string name="ring_question">क्या %1$s की कॉल पर आप हैं?</string>
+    <string name="ring_detail">%1$s की कॉल पर कोई ख़ुद को आप बता रहा है।</string>
+    <string name="ring_yes_hint">हम आपका फ़िंगरप्रिंट माँगेंगे।</string>
 </resources>
