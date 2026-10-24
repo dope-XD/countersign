@@ -187,8 +187,14 @@ class RealRepository(private val app: Application) : Repository {
 
     /** The phone's own call, from [CallWatchService]: null when it ends. */
     fun setCall(c: LiveCall?) {
-        _call.value = c?.copy(check = c.check ?: _call.value?.takeIf { it.id == c.id }?.check)
+        val same = _call.value?.takeIf { it.id == c?.id }
+        _call.value = c?.copy(check = c.check ?: same?.check, risk = c.risk ?: same?.risk)
         refreshListen()
+    }
+
+    /** From [app.countersign.bank.CallRisk]: how much [callId] looks like a scam right now. */
+    fun setRisk(callId: String, risk: Risk?) {
+        _call.update { c -> if (c?.id == callId) c.copy(risk = risk) else c }
     }
 
     /**

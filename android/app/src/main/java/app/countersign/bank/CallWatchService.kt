@@ -64,6 +64,7 @@ class CallWatchService : Service() {
         watchCalls()
         real?.connect()
         Overlay.start(this)
+        ListenStream.start()
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int = START_STICKY
@@ -74,6 +75,7 @@ class CallWatchService : Service() {
         modeListener?.let { audio.removeOnModeChangedListener(it) }
         real?.disconnect()
         Overlay.stop(this)
+        ListenStream.stop()
         super.onDestroy()
     }
 
@@ -118,6 +120,7 @@ class CallWatchService : Service() {
     private fun start(event: String, kind: String, incoming: Boolean, peer: Member?) {
         val c = Current(UUID.randomUUID().toString(), kind, incoming, peer, answered = event == "answered")
         current = c
+        CallRisk.reset(c.id)
         real?.callEvent(c.id, event, kind, peer)
         if (incoming && peer != null) real?.autoCheck(c.id, peer)
         real?.setCall(LiveCall(c.id, incoming, c.answered, peer, null))
@@ -132,6 +135,7 @@ class CallWatchService : Service() {
 
     private fun end(c: Current) {
         current = null
+        CallRisk.reset(null)
         real?.callEvent(c.id, "ended", c.kind, c.peer)
         real?.setCall(null)
         showOnCall(false)
