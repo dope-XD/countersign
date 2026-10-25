@@ -1,130 +1,134 @@
-# The demo, script by script (5 minutes)
+# Countersign: the 5 minute demo
 
-Every line here has been rehearsed through the phone's own pipeline: spoken by a voice, sent down a phone line, turned into text by the phone's speech model, and judged. `python -m ml.eval.demo_rehearsal` checks them all again in a few minutes (text, clean audio, G.711, over the air + G.711). The scripts are real scam patterns that get reported to 1930 every day, written the way people actually talk.
+Okay, so this is the whole demo on a few pages. Print it, give the judge the grey boxes, keep the rest for us.
 
-## Who is who
+Every line here is tested. We had a voice say it, sent it down a fake phone line, let the phone's own speech model write it down, and checked what the app does with it. Run `python -m ml.eval.demo_rehearsal` and it does all that again in a few minutes. The calls are the kind people actually report to 1930 every day, and they're written the way people really talk, not like a textbook.
 
-| Who | Phone | Needs the app? |
+## Who's who
+
+| Who | Which phone | App? |
 |---|---|---|
-| **Mummy** | the vivo | yes, signed up, scam check downloaded, Rahul linked as family |
-| **Rahul** | the second Android | yes, linked to Mummy |
-| **The scammer** (a judge reads the card) | **any other phone**: a teammate's or the judge's own, iPhone is fine | no |
+| **Mummy** | the vivo | yes: signed up, scam check downloaded, Rahul added as family |
+| **Rahul** | the other Android | yes: linked to Mummy |
+| **The scammer** (the judge reads the lines) | **any other phone**: yours, a teammate's, the judge's own. iPhone also fine | no |
 
-The scammer must not call from Rahul's phone. The app would see that Rahul really is on the call, and the trick in scene 1 would not work.
+Just don't call from Rahul's phone. The app would see that Rahul really is on the call, and the whole trick in scene 1 falls flat.
 
-## Before the judges arrive (10 minutes)
+## 10 minutes before
 
-1. Run `.\tools\preflight.ps1` with both phones plugged in. Everything must be green.
-2. Both phones: volume up, Do Not Disturb **off**, screen timeout 5 minutes, battery above 50%.
-3. Mummy's phone: GPay or PhonePe installed (for the pay guard), Wi-Fi or mobile data on.
-4. Open https://countersign-relay.onrender.com/health in a browser (wakes the server). It should say `"ok": true`.
-5. Save the scammer's number in nobody's contacts. It must be an unknown number to Mummy.
-6. Copy the voice-clone clip to Mummy's phone for scene 3: `adb push data/kit/voice_ai_01.wav /sdcard/Download/`.
-7. Print this page. Give the judge only the **grey boxes**.
-
----
-
-## Scene 1: "Rahul's friend" (2.5 minutes)
-
-**The story:** a stranger calls, says he's Rahul's friend, Rahul had an accident, the hospital wants money now. It's one of the most common calls the cyber police get.
-
-The scammer's phone calls Mummy. Mummy answers.
-
-> **Judge, line 1:**
-> Hello? Haan aunty namaste, main Amit bol raha hoon, Rahul ka dost, college wala.
-
-**What you'll see:** on Mummy's screen, "Says they're family? **Check**". Mummy taps it, then taps **Rahul**.
-On Rahul's phone: "Is it you on Mummy's call?" Rahul taps **No**.
-Mummy's card: ✗ **"Not Rahul's phone"**.
-
-Mummy taps **Speaker** on the call.
-
-> **Judge, line 2:**
-> Aunty ek problem ho gayi hai, Rahul ka bike se accident ho gaya, hum log abhi hospital mein hain.
->
-> **Line 3:**
-> Nahi nahi ghabraiye mat, woh theek hai, bas sir pe chot hai, par doctor bol rahe hain abhi operation karna padega.
->
-> **Line 4:**
-> Hospital wale pachaas hazaar advance maang rahe hain, Rahul ka phone toot gaya isliye main call kar raha hoon.
->
-> **Line 5:**
-> Aap na abhi isi number pe GPay kar do, aur uncle ko abhi mat batana, woh tension le lenge.
->
-> **Line 6:**
-> Aunty jaldi please, koi OTP aaye to mujhe bata dena, main counter pe khada hoon.
-
-**What you'll see:**
-- "Listening for scams", then the **amber** card with the reason ("a family emergency", "asks for money").
-- By line 5, **red**: "This is likely a scam. Hang up."
-- At the same moment **Rahul's phone rings full screen**, even on silent: "Mummy may be on a scam call", with **Call Mummy**.
-
-Then Mummy opens **GPay**: a red screen covers it, "Stop. Don't send money or share an OTP."
-
-**What to say:** "Two things agreed before it went red: what was said on the call, and Rahul's own phone saying it's not him. A voice can be cloned. Rahul's phone can't be."
-
-**If the card doesn't move after line 3** (the phone didn't hear the caller, see "Things that can go wrong"): tap **Alert family** on the card. Rahul's alarm and the pay guard still show live. Then do the same lines through scene 3.
+1. Plug both phones in and run `.\tools\preflight.ps1`. Wait till it's all green.
+2. Both phones: volume full, Do Not Disturb off, screen timeout 5 min, battery above 50%.
+3. Mummy's phone has GPay or PhonePe (for the pay guard) and internet.
+4. Open https://countersign-relay.onrender.com/health once in a browser, it wakes the server up. Should say `"ok": true`.
+5. The scammer's number should NOT be saved in Mummy's contacts.
+6. Copy the AI voice clip for scene 3: `adb push data/kit/voice_ai_01.wav /sdcard/Download/`
+7. Don't force-stop or reinstall the app after this. On the vivo it switches the Call listener off. If you had to, run the pre-flight again.
 
 ---
 
-## Scene 2: a real delivery call stays quiet (45 seconds)
+## Scene 1: "Aunty, Rahul ka accident ho gaya" (2.5 min)
 
-Hang up. The same scammer phone calls Mummy again, on speaker.
+**What's going on:** some guy calls Mummy from a new number, says he's Rahul's friend, Rahul's had an accident, hospital wants money right now. Super common one.
 
-> **Judge, delivery agent:**
-> Haan madam, Amazon se bol raha hoon, aapka parcel aaya hai.
-> Main neeche gate pe hoon, aap aa rahe ho ya guard ko de doon?
-> Achha theek hai, ek delivery wala OTP aaya hoga aapke phone pe, woh bata do bas.
-> Haan ho gaya madam, guard ke paas rakh diya hai, thank you.
+Scammer's phone calls Mummy. Mummy picks up.
 
-**What you'll see:** nothing. No card, no alarm.
+> **Judge (line 1):**
+> Hello? Haan aunty namaste... main Amit bol raha hoon, Rahul ka dost. College wala, pehchana?
 
-**What to say:** "He asked for an OTP too. But a delivery code for a parcel she ordered isn't a scam, and the phone knows the difference. It doesn't fire on single words."
+**You'll see:** Mummy's screen shows "Says they're family? **Check**". Mummy taps it, then taps **Rahul**.
+Rahul's phone pops up: "Is it you on Mummy's call?". Rahul taps **No**.
+Mummy's card goes ✗ **"Not Rahul's phone"**.
 
-**If something does show:** tap **I know this caller**. Rahul's phone gets "False alarm: Mummy says it's fine". One tap fixes a mistake, and the family is told.
+Now Mummy puts the call **on speaker**.
+
+> **Judge (line 2):**
+> Aunty ek problem ho gayi hai... Rahul ka bike se accident ho gaya, hum log abhi hospital mein hain.
+>
+> **(line 3):**
+> Nahi nahi aunty, ghabraiye mat, woh theek hai. Bas sir pe chot lagi hai, par doctor bol rahe hain abhi operation karna padega.
+>
+> **(line 4):**
+> Hospital wale pachaas hazaar advance maang rahe hain. Rahul ka phone toot gaya na, isliye main call kar raha hoon.
+>
+> **(line 5):**
+> Aap na abhi isi number pe GPay kar do. Aur uncle ko abhi mat batana please, woh tension le lenge.
+>
+> **(line 6):**
+> Aunty jaldi karo please... koi OTP aaye toh mujhe bata dena, main counter pe hi khada hoon.
+
+**You'll see:**
+
+- The card is already **yellow** from Rahul's "No" ("not your family's phone"). On speaker it also says "Listening for scams".
+- As he keeps talking, more reasons show up ("a family emergency", "asks for money").
+- By line 5 at the latest it goes **red**: "This is likely a scam. Hang up."
+- Same moment, **Rahul's phone rings full screen**, even on silent: "Mummy may be on a scam call" with **Call Mummy**.
+
+Then Mummy opens **GPay**. A red screen comes on top: "Stop. Don't send money or share an OTP."
+
+**What we say:** "See, two different things agreed before it went red. What the caller said, and Rahul's own phone saying it's not him. You can clone a voice. You can't clone Rahul's phone."
+
+**If the card isn't moving by line 3:** the phone probably can't hear the caller (see the table at the end). Just tap **Alert family** on the card, so Rahul's alarm and the pay guard still happen live, and do these same lines in scene 3.
 
 ---
 
-## Scene 3: your own message, with no internet (1 minute)
+## Scene 2: a real delivery guy, nothing happens (45 sec)
 
-On Mummy's phone, turn **Airplane mode ON**. Open the app → **Check a recording or message**.
+Cut the call. Same phone calls Mummy again, on speaker.
 
-> **Judge:** type or paste any message you like. A real SMS from your phone, or something you make up.
+> **Judge (as the delivery guy):**
+> Haan madam, Amazon se... aapka parcel aaya hai.
+> Main neeche gate pe khada hoon. Aap aa rahe ho ya guard ko de doon?
+> Achha theek hai. Ek OTP aaya hoga delivery wala, woh bata do bas.
+> Haan ho gaya madam, guard bhaiya ke paas rakh diya. Thank you!
 
-If the judge has nothing, use one of these:
+**You'll see:** nothing. No card, no alarm, nothing.
+
+**What we say:** "He also asked for an OTP. But it's the delivery code for a parcel she ordered, that's normal. It doesn't just jump on words."
+
+**If something does pop up:** tap **I know this caller**. Rahul gets "False alarm: Mummy says it's fine". One tap, and the family knows.
+
+---
+
+## Scene 3: try your own message, no internet (1 min)
+
+Mummy's phone: turn **Airplane mode ON**. Open the app, go to **Check a recording or message**.
+
+> **Judge:** type anything you want. Some SMS you got, something your relative forwarded, or just make one up.
+
+Nothing in mind? Use this one:
 
 > Madam main CBI officer bol raha hoon. Aapke naam pe money laundering ka case hai, arrest warrant nikla hai. Video call pe rahiye, kisi ko mat batana. Apne saare paise RBI ke safe account mein transfer kariye, verification ke baad wapas mil jayenge.
 
-(red), then a harmless one:
+(goes red) and then a normal one:
 
 > Hello madam, Amazon delivery here. I am at your gate with your parcel, please come down.
 
-(stays calm).
+(stays calm)
 
-**What you'll see:** the verdict, the scam type, and why, with **no internet**. Nothing was sent anywhere.
+**You'll see:** the answer, what kind of scam, and why. Airplane mode is on the whole time, so nothing left the phone.
 
-Optional, 20 seconds: pick `voice_ai_01.wav` (in the phone's Downloads, copied before) → the voice-clone score. **What to say:** "The voice check is one clue only. It can make the card amber, never red, because cloned voices played into a phone are hard to catch. What beats a cloned Rahul is scene 1: asking Rahul's own phone."
-
----
-
-## Scene 4: close (30 seconds)
-
-"Everything you saw ran on this phone: the speech-to-text, the scam check, the decision. The family got a short alert with the scam type, not the words. If you want proof, here's the phone's log." (Optional: `adb logcat -s CallRisk ScamAlert` on the laptop shows only levels, types and ids.)
+Got 20 more seconds? Pick `voice_ai_01.wav` from Downloads. It shows how likely the voice is AI-made. **What we say:** "This is only one clue for us. It can make the card yellow, never red by itself, because a cloned voice played into a phone is honestly hard to catch. What actually beats a cloned Rahul is scene 1: just ask Rahul's phone."
 
 ---
 
-## Spare scripts (if a judge wants English or Hindi)
+## Scene 4: wrap up (30 sec)
 
-**English, the FedEx parcel that turns into a "digital arrest".** Red by line 5. Rehearsed.
+"Everything you just saw ran on this phone. The speech-to-text, the scam check, the decision. The family only got a short alert with the type of scam, not what was said." Want proof? On the laptop, `adb logcat -s CallRisk ScamAlert` shows just levels, types and ids, no words.
 
-> Hello, am I speaking with Mrs Sharma? Ma'am this is FedEx, your parcel to Taiwan has been stopped at Mumbai customs.
-> It has five passports and some MD drugs inside, so I'm connecting you to Mumbai cyber crime police.
-> Ma'am, Sub Inspector Vikram here. There's an FIR on your Aadhaar, money laundering case, there is an arrest warrant. You have to join a Skype video call right now.
-> Don't disconnect and don't tell anybody, not even your husband, this is a confidential investigation.
-> To clear your name you have to transfer your funds to the RBI verification account, it'll be refunded in 24 hours.
-> Ma'am do it now, otherwise the local police will come to your house tonight.
+---
 
-**Hindi, "your son has been caught".** Red by line 4. Rehearsed.
+## Extra scripts (if the judge wants English or Hindi)
+
+**English: the FedEx parcel that turns into "digital arrest".** Goes red by line 5. Tested.
+
+> Hello, am I speaking to Mrs Sharma? Ma'am I'm calling from FedEx, your parcel to Taiwan is held at Mumbai customs.
+> Ma'am it has five passports and some MD drugs inside. I'm connecting you to Mumbai cyber crime, please hold.
+> Hello ma'am, Sub Inspector Vikram this side. There's an FIR on your Aadhaar, money laundering case, arrest warrant is there. You have to come on Skype video call right now.
+> Don't cut the call, and don't tell anybody, not even your husband. This is a confidential investigation.
+> To clear your name you have to transfer your funds to the RBI verification account. It'll be refunded in 24 hours.
+> Ma'am please do it now, otherwise local police will come to your house tonight only.
+
+**Hindi: "aapka beta pakda gaya hai".** Goes red by line 4. Tested.
 
 > हेलो, आप राहुल की मम्मी बोल रही हैं? मैं थाने से इंस्पेक्टर यादव बोल रहा हूँ।
 > आपका बेटा एक केस में पकड़ा गया है, लड़की वाले FIR करवाने पर अड़े हैं।
@@ -134,17 +138,17 @@ Optional, 20 seconds: pick `voice_ai_01.wav` (in the phone's Downloads, copied b
 
 ---
 
-## Things that can go wrong, and what to do
+## If something goes wrong
 
-| What happens | Why | Do this |
+| What happened | Probably why | Do this |
 |---|---|---|
-| No "Listening for scams" on speaker | the Call listener (Accessibility) got turned off, or the scam check isn't downloaded | Settings → Accessibility → Countersign on. `preflight.ps1` catches both |
-| "Listening" shows but the card never goes amber | the phone's echo cancelling removed the caller's voice from the mic | Tap **Alert family** to show the alarm and pay guard live, then show the same lines in scene 3 ("Check a message"). Say plainly what happened |
-| Rahul's phone doesn't ring | the server was asleep, or Rahul's app was closed | Rahul gets an SMS instead within a minute. Open `/health` before the demo |
-| "Says they're family? Check" doesn't appear | the scammer's number is saved as a contact, or the call came from Rahul's phone | Call from an unknown number |
-| The judge speaks much slower or faster | fine | The check judges the whole call so far, not timing |
-| A judge goes off script | fine | Most real scam lines still trip it. If it stays quiet, say honestly that it waits for an ask (money, OTP, app, secrecy) before warning |
+| No "Listening for scams" on speaker | Call listener got switched off, or the scam check isn't downloaded | Settings → Accessibility → Countersign → On. The pre-flight catches both |
+| "Listening" is there but no yellow card | the phone's echo cancelling removed the caller's voice | Tap **Alert family** (alarm + pay guard still live), then show the lines in scene 3. Just say what happened, it's fine |
+| Rahul's phone doesn't ring | server was sleeping, or Rahul's app got closed | An SMS still reaches Rahul in a minute. Open `/health` before starting |
+| No "Says they're family? Check" | the number is saved in contacts, or the call came from Rahul's phone | Call from an unknown number |
+| Judge reads really slow or really fast | doesn't matter | It looks at the whole call so far, not the timing |
+| Judge goes off script | that's okay | Most real scam lines still set it off. If it stays quiet, be honest: it waits till someone asks for money, an OTP, an app, or secrecy |
 
-## Rehearse
+## Practice
 
-Three full runs before the judges, with the printed page. After each, note: did amber come by line 4, red by line 5, Rahul's ring, the pay guard. If any run misses, fix it before the next one, don't hope.
+Do three full runs before the judges come, with the printed pages. After each one check: yellow by line 4? red by line 5? Rahul's phone rang? pay guard showed? If a run goes wrong, fix it before the next one. Don't just hope it works on stage.
