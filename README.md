@@ -2,6 +2,12 @@
 
 **An app that catches scam calls while they are happening, and tells your family.**
 
+**Watch the 2 minute video first** (it shows the idea, then the real app):
+
+https://github.com/user-attachments/assets/9b032668-20ea-406b-acd6-e2d188ba4b15
+
+The part marked "Real app, recorded" is the actual app on an emulator. The video itself is made with code, in [video/](video/README.md).
+
 ## The problem
 
 Your mum gets a call. A man says he is from the police, or her bank, or he says "I'm Rahul's friend, Rahul had an accident, send money quick". He sounds real. Within an hour she has told him the OTP or sent money on UPI.

@@ -1,0 +1,25 @@
+{
+  "name": "countersign-video",
+  "private": true,
+  "scripts": {
+    "voice": "python3 tools/vo.py",
+    "music": "../.venv/bin/python music/make_music.py",
+    "studio": "remotion studio src/index.ts",
+    "render": "remotion render src/index.ts Main out/countersign_raw.mp4 --codec h264 --crf 16 --audio-codec aac --audio-bitrate 256k",
+    "master": "ffmpeg -v error -y -i out/countersign_raw.mp4 -c:v copy -af loudnorm=I=-16:TP=-1.5:LRA=11 -c:a aac -b:a 256k out/countersign.mp4",
+    "build": "npm run voice && npm run music && npm run render && npm run master"
+  },
+  "dependencies": {
+    "@remotion/cli": "4.0.535",
+    "@remotion/google-fonts": "4.0.535",
+    "@remotion/media": "4.0.535",
+    "@remotion/transitions": "4.0.535",
+    "react": "19.1.0",
+    "react-dom": "19.1.0",
+    "remotion": "4.0.535"
+  },
+  "devDependencies": {
+    "@types/react": "19.1.8",
+    "typescript": "5.8.3"
+  }
+}
