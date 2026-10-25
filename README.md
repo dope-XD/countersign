@@ -124,6 +124,8 @@ You can see every screen and every alert without any calls, using pretend data. 
 
 ## For developers
 
+How every part works, from the call ringing to the alarm on a family phone: [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md).
+
 **Build the app**
 
 ```bash
