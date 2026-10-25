@@ -1,0 +1,1732 @@
+{
+ "context": [
+  "unknown_number"
+ ],
+ "summary": {
+  "adversarial/conv_only": {
+   "n_scam": 16,
+   "warn_scam": 7,
+   "red_scam": 3,
+   "n_genuine": 14,
+   "warn_genuine": 2,
+   "red_genuine": 1
+  },
+  "adversarial/cues_only": {
+   "n_scam": 16,
+   "warn_scam": 14,
+   "red_scam": 5,
+   "n_genuine": 14,
+   "warn_genuine": 7,
+   "red_genuine": 1
+  },
+  "adversarial/hybrid": {
+   "n_scam": 16,
+   "warn_scam": 12,
+   "red_scam": 6,
+   "n_genuine": 14,
+   "warn_genuine": 3,
+   "red_genuine": 1
+  },
+  "hinglish_calls/conv_only": {
+   "n_genuine": 22,
+   "n_scam": 124,
+   "warn_scam": 124,
+   "red_scam": 32
+  },
+  "hinglish_calls/cues_only": {
+   "n_genuine": 22,
+   "n_scam": 124,
+   "warn_scam": 68,
+   "red_scam": 5
+  },
+  "hinglish_calls/hybrid": {
+   "n_genuine": 22,
+   "n_scam": 124,
+   "warn_scam": 124,
+   "red_scam": 22
+  },
+  "near_domain/conv_only": {
+   "n_genuine": 30,
+   "warn_genuine": 1,
+   "red_genuine": 1
+  },
+  "near_domain/cues_only": {
+   "n_genuine": 30,
+   "warn_genuine": 12
+  },
+  "near_domain/hybrid": {
+   "n_genuine": 30,
+   "warn_genuine": 3,
+   "red_genuine": 1
+  },
+  "team_calls/conv_only": {
+   "n_scam": 16,
+   "warn_scam": 12,
+   "red_scam": 6,
+   "n_genuine": 13,
+   "warn_genuine": 1
+  },
+  "team_calls/cues_only": {
+   "n_scam": 16,
+   "warn_scam": 16,
+   "red_scam": 11,
+   "n_genuine": 13,
+   "warn_genuine": 6
+  },
+  "team_calls/hybrid": {
+   "n_scam": 16,
+   "warn_scam": 15,
+   "red_scam": 10,
+   "n_genuine": 13,
+   "warn_genuine": 1
+  }
+ },
+ "calls": [
+  {
+   "id": "hinglish_calls/3",
+   "label": 0,
+   "conv_only": "none",
+   "cues_only": "none",
+   "hybrid": "none"
+  },
+  {
+   "id": "hinglish_calls/14",
+   "label": 0,
+   "conv_only": "none",
+   "cues_only": "none",
+   "hybrid": "none"
+  },
+  {
+   "id": "hinglish_calls/15",
+   "label": 0,
+   "conv_only": "none",
+   "cues_only": "none",
+   "hybrid": "none"
+  },
+  {
+   "id": "hinglish_calls/16",
+   "label": 0,
+   "conv_only": "none",
+   "cues_only": "none",
+   "hybrid": "none"
+  },
+  {
+   "id": "hinglish_calls/21",
+   "label": 1,
+   "conv_only": "scam",
+   "cues_only": "warn",
+   "hybrid": "scam"
+  },
+  {
+   "id": "hinglish_calls/24",
+   "label": 0,
+   "conv_only": "none",
+   "cues_only": "none",
+   "hybrid": "none"
+  },
+  {
+   "id": "hinglish_calls/26",
+   "label": 0,
+   "conv_only": "none",
+   "cues_only": "none",
+   "hybrid": "none"
+  },
+  {
+   "id": "hinglish_calls/30",
+   "label": 1,
+   "conv_only": "warn",
+   "cues_only": "watch",
+   "hybrid": "warn"
+  },
+  {
+   "id": "hinglish_calls/35",
+   "label": 1,
+   "conv_only": "scam",
+   "cues_only": "watch",
+   "hybrid": "warn"
+  },
+  {
+   "id": "hinglish_calls/37",
+   "label": 0,
+   "conv_only": "none",
+   "cues_only": "none",
+   "hybrid": "none"
+  },
+  {
+   "id": "hinglish_calls/45",
+   "label": 1,
+   "conv_only": "warn",
+   "cues_only": "none",
+   "hybrid": "warn"
+  },
+  {
+   "id": "hinglish_calls/65",
+   "label": 0,
+   "conv_only": "none",
+   "cues_only": "none",
+   "hybrid": "none"
+  },
+  {
+   "id": "hinglish_calls/80",
+   "label": 1,
+   "conv_only": "warn",
+   "cues_only": "scam",
+   "hybrid": "scam"
+  },
+  {
+   "id": "hinglish_calls/82",
+   "label": 0,
+   "conv_only": "none",
+   "cues_only": "none",
+   "hybrid": "none"
+  },
+  {
+   "id": "hinglish_calls/86",
+   "label": 1,
+   "conv_only": "warn",
+   "cues_only": "none",
+   "hybrid": "warn"
+  },
+  {
+   "id": "hinglish_calls/87",
+   "label": 1,
+   "conv_only": "scam",
+   "cues_only": "none",
+   "hybrid": "warn"
+  },
+  {
+   "id": "hinglish_calls/89",
+   "label": 1,
+   "conv_only": "scam",
+   "cues_only": "none",
+   "hybrid": "warn"
+  },
+  {
+   "id": "hinglish_calls/96",
+   "label": 1,
+   "conv_only": "warn",
+   "cues_only": "warn",
+   "hybrid": "warn"
+  },
+  {
+   "id": "hinglish_calls/98",
+   "label": 0,
+   "conv_only": "none",
+   "cues_only": "none",
+   "hybrid": "none"
+  },
+  {
+   "id": "hinglish_calls/103",
+   "label": 1,
+   "conv_only": "warn",
+   "cues_only": "warn",
+   "hybrid": "warn"
+  },
+  {
+   "id": "hinglish_calls/110",
+   "label": 0,
+   "conv_only": "none",
+   "cues_only": "none",
+   "hybrid": "none"
+  },
+  {
+   "id": "hinglish_calls/111",
+   "label": 0,
+   "conv_only": "none",
+   "cues_only": "none",
+   "hybrid": "none"
+  },
+  {
+   "id": "hinglish_calls/117",
+   "label": 1,
+   "conv_only": "warn",
+   "cues_only": "scam",
+   "hybrid": "scam"
+  },
+  {
+   "id": "hinglish_calls/118",
+   "label": 1,
+   "conv_only": "scam",
+   "cues_only": "warn",
+   "hybrid": "scam"
+  },
+  {
+   "id": "hinglish_calls/119",
+   "label": 1,
+   "conv_only": "warn",
+   "cues_only": "warn",
+   "hybrid": "warn"
+  },
+  {
+   "id": "hinglish_calls/120",
+   "label": 1,
+   "conv_only": "warn",
+   "cues_only": "watch",
+   "hybrid": "warn"
+  },
+  {
+   "id": "hinglish_calls/134",
+   "label": 1,
+   "conv_only": "warn",
+   "cues_only": "watch",
+   "hybrid": "warn"
+  },
+  {
+   "id": "hinglish_calls/138",
+   "label": 0,
+   "conv_only": "none",
+   "cues_only": "none",
+   "hybrid": "none"
+  },
+  {
+   "id": "hinglish_calls/139",
+   "label": 1,
+   "conv_only": "warn",
+   "cues_only": "watch",
+   "hybrid": "warn"
+  },
+  {
+   "id": "hinglish_calls/144",
+   "label": 0,
+   "conv_only": "none",
+   "cues_only": "none",
+   "hybrid": "none"
+  },
+  {
+   "id": "hinglish_calls/146",
+   "label": 1,
+   "conv_only": "warn",
+   "cues_only": "warn",
+   "hybrid": "warn"
+  },
+  {
+   "id": "hinglish_calls/149",
+   "label": 1,
+   "conv_only": "scam",
+   "cues_only": "watch",
+   "hybrid": "scam"
+  },
+  {
+   "id": "hinglish_calls/150",
+   "label": 1,
+   "conv_only": "warn",
+   "cues_only": "warn",
+   "hybrid": "warn"
+  },
+  {
+   "id": "hinglish_calls/154",
+   "label": 1,
+   "conv_only": "scam",
+   "cues_only": "watch",
+   "hybrid": "warn"
+  },
+  {
+   "id": "hinglish_calls/158",
+   "label": 1,
+   "conv_only": "scam",
+   "cues_only": "scam",
+   "hybrid": "scam"
+  },
+  {
+   "id": "hinglish_calls/160",
+   "label": 1,
+   "conv_only": "warn",
+   "cues_only": "warn",
+   "hybrid": "warn"
+  },
+  {
+   "id": "hinglish_calls/162",
+   "label": 1,
+   "conv_only": "warn",
+   "cues_only": "warn",
+   "hybrid": "warn"
+  },
+  {
+   "id": "hinglish_calls/169",
+   "label": 1,
+   "conv_only": "warn",
+   "cues_only": "warn",
+   "hybrid": "warn"
+  },
+  {
+   "id": "hinglish_calls/170",
+   "label": 1,
+   "conv_only": "warn",
+   "cues_only": "watch",
+   "hybrid": "warn"
+  },
+  {
+   "id": "hinglish_calls/179",
+   "label": 0,
+   "conv_only": "none",
+   "cues_only": "none",
+   "hybrid": "none"
+  },
+  {
+   "id": "hinglish_calls/180",
+   "label": 1,
+   "conv_only": "warn",
+   "cues_only": "scam",
+   "hybrid": "scam"
+  },
+  {
+   "id": "hinglish_calls/188",
+   "label": 1,
+   "conv_only": "warn",
+   "cues_only": "none",
+   "hybrid": "warn"
+  },
+  {
+   "id": "hinglish_calls/201",
+   "label": 1,
+   "conv_only": "warn",
+   "cues_only": "warn",
+   "hybrid": "warn"
+  },
+  {
+   "id": "hinglish_calls/203",
+   "label": 1,
+   "conv_only": "scam",
+   "cues_only": "watch",
+   "hybrid": "warn"
+  },
+  {
+   "id": "hinglish_calls/214",
+   "label": 0,
+   "conv_only": "none",
+   "cues_only": "none",
+   "hybrid": "none"
+  },
+  {
+   "id": "hinglish_calls/232",
+   "label": 1,
+   "conv_only": "warn",
+   "cues_only": "watch",
+   "hybrid": "warn"
+  },
+  {
+   "id": "hinglish_calls/238",
+   "label": 1,
+   "conv_only": "warn",
+   "cues_only": "none",
+   "hybrid": "warn"
+  },
+  {
+   "id": "hinglish_calls/242",
+   "label": 1,
+   "conv_only": "warn",
+   "cues_only": "watch",
+   "hybrid": "warn"
+  },
+  {
+   "id": "hinglish_calls/250",
+   "label": 1,
+   "conv_only": "warn",
+   "cues_only": "warn",
+   "hybrid": "warn"
+  },
+  {
+   "id": "hinglish_calls/254",
+   "label": 1,
+   "conv_only": "warn",
+   "cues_only": "watch",
+   "hybrid": "warn"
+  },
+  {
+   "id": "hinglish_calls/260",
+   "label": 0,
+   "conv_only": "none",
+   "cues_only": "none",
+   "hybrid": "none"
+  },
+  {
+   "id": "hinglish_calls/262",
+   "label": 1,
+   "conv_only": "scam",
+   "cues_only": "watch",
+   "hybrid": "warn"
+  },
+  {
+   "id": "hinglish_calls/264",
+   "label": 1,
+   "conv_only": "warn",
+   "cues_only": "warn",
+   "hybrid": "warn"
+  },
+  {
+   "id": "hinglish_calls/265",
+   "label": 1,
+   "conv_only": "scam",
+   "cues_only": "warn",
+   "hybrid": "scam"
+  },
+  {
+   "id": "hinglish_calls/267",
+   "label": 1,
+   "conv_only": "warn",
+   "cues_only": "watch",
+   "hybrid": "warn"
+  },
+  {
+   "id": "hinglish_calls/275",
+   "label": 0,
+   "conv_only": "none",
+   "cues_only": "none",
+   "hybrid": "none"
+  },
+  {
+   "id": "hinglish_calls/277",
+   "label": 1,
+   "conv_only": "scam",
+   "cues_only": "watch",
+   "hybrid": "warn"
+  },
+  {
+   "id": "hinglish_calls/281",
+   "label": 1,
+   "conv_only": "warn",
+   "cues_only": "warn",
+   "hybrid": "warn"
+  },
+  {
+   "id": "hinglish_calls/282",
+   "label": 1,
+   "conv_only": "scam",
+   "cues_only": "warn",
+   "hybrid": "scam"
+  },
+  {
+   "id": "hinglish_calls/283",
+   "label": 1,
+   "conv_only": "scam",
+   "cues_only": "warn",
+   "hybrid": "scam"
+  },
+  {
+   "id": "hinglish_calls/289",
+   "label": 1,
+   "conv_only": "scam",
+   "cues_only": "watch",
+   "hybrid": "warn"
+  },
+  {
+   "id": "hinglish_calls/294",
+   "label": 0,
+   "conv_only": "none",
+   "cues_only": "none",
+   "hybrid": "none"
+  },
+  {
+   "id": "hinglish_calls/302",
+   "label": 0,
+   "conv_only": "none",
+   "cues_only": "none",
+   "hybrid": "none"
+  },
+  {
+   "id": "hinglish_calls/304",
+   "label": 1,
+   "conv_only": "scam",
+   "cues_only": "warn",
+   "hybrid": "scam"
+  },
+  {
+   "id": "hinglish_calls/310",
+   "label": 1,
+   "conv_only": "warn",
+   "cues_only": "watch",
+   "hybrid": "warn"
+  },
+  {
+   "id": "hinglish_calls/312",
+   "label": 1,
+   "conv_only": "scam",
+   "cues_only": "warn",
+   "hybrid": "scam"
+  },
+  {
+   "id": "hinglish_calls/314",
+   "label": 1,
+   "conv_only": "warn",
+   "cues_only": "warn",
+   "hybrid": "warn"
+  },
+  {
+   "id": "hinglish_calls/315",
+   "label": 1,
+   "conv_only": "warn",
+   "cues_only": "warn",
+   "hybrid": "warn"
+  },
+  {
+   "id": "hinglish_calls/325",
+   "label": 1,
+   "conv_only": "warn",
+   "cues_only": "none",
+   "hybrid": "warn"
+  },
+  {
+   "id": "hinglish_calls/329",
+   "label": 1,
+   "conv_only": "warn",
+   "cues_only": "warn",
+   "hybrid": "warn"
+  },
+  {
+   "id": "hinglish_calls/331",
+   "label": 1,
+   "conv_only": "scam",
+   "cues_only": "warn",
+   "hybrid": "scam"
+  },
+  {
+   "id": "hinglish_calls/332",
+   "label": 1,
+   "conv_only": "warn",
+   "cues_only": "warn",
+   "hybrid": "warn"
+  },
+  {
+   "id": "hinglish_calls/333",
+   "label": 1,
+   "conv_only": "warn",
+   "cues_only": "warn",
+   "hybrid": "warn"
+  },
+  {
+   "id": "hinglish_calls/340",
+   "label": 0,
+   "conv_only": "none",
+   "cues_only": "none",
+   "hybrid": "none"
+  },
+  {
+   "id": "hinglish_calls/342",
+   "label": 1,
+   "conv_only": "warn",
+   "cues_only": "warn",
+   "hybrid": "warn"
+  },
+  {
+   "id": "hinglish_calls/344",
+   "label": 1,
+   "conv_only": "warn",
+   "cues_only": "none",
+   "hybrid": "warn"
+  },
+  {
+   "id": "hinglish_calls/345",
+   "label": 1,
+   "conv_only": "scam",
+   "cues_only": "watch",
+   "hybrid": "warn"
+  },
+  {
+   "id": "hinglish_calls/347",
+   "label": 1,
+   "conv_only": "scam",
+   "cues_only": "scam",
+   "hybrid": "scam"
+  },
+  {
+   "id": "hinglish_calls/351",
+   "label": 1,
+   "conv_only": "scam",
+   "cues_only": "watch",
+   "hybrid": "warn"
+  },
+  {
+   "id": "hinglish_calls/353",
+   "label": 1,
+   "conv_only": "scam",
+   "cues_only": "watch",
+   "hybrid": "warn"
+  },
+  {
+   "id": "hinglish_calls/357",
+   "label": 1,
+   "conv_only": "warn",
+   "cues_only": "warn",
+   "hybrid": "warn"
+  },
+  {
+   "id": "hinglish_calls/359",
+   "label": 1,
+   "conv_only": "warn",
+   "cues_only": "warn",
+   "hybrid": "warn"
+  },
+  {
+   "id": "hinglish_calls/364",
+   "label": 1,
+   "conv_only": "warn",
+   "cues_only": "watch",
+   "hybrid": "warn"
+  },
+  {
+   "id": "hinglish_calls/366",
+   "label": 1,
+   "conv_only": "warn",
+   "cues_only": "none",
+   "hybrid": "warn"
+  },
+  {
+   "id": "hinglish_calls/373",
+   "label": 1,
+   "conv_only": "warn",
+   "cues_only": "none",
+   "hybrid": "warn"
+  },
+  {
+   "id": "hinglish_calls/374",
+   "label": 1,
+   "conv_only": "warn",
+   "cues_only": "watch",
+   "hybrid": "warn"
+  },
+  {
+   "id": "hinglish_calls/387",
+   "label": 1,
+   "conv_only": "scam",
+   "cues_only": "warn",
+   "hybrid": "scam"
+  },
+  {
+   "id": "hinglish_calls/388",
+   "label": 1,
+   "conv_only": "warn",
+   "cues_only": "none",
+   "hybrid": "warn"
+  },
+  {
+   "id": "hinglish_calls/391",
+   "label": 1,
+   "conv_only": "warn",
+   "cues_only": "warn",
+   "hybrid": "warn"
+  },
+  {
+   "id": "hinglish_calls/395",
+   "label": 1,
+   "conv_only": "warn",
+   "cues_only": "warn",
+   "hybrid": "warn"
+  },
+  {
+   "id": "hinglish_calls/396",
+   "label": 0,
+   "conv_only": "none",
+   "cues_only": "none",
+   "hybrid": "none"
+  },
+  {
+   "id": "hinglish_calls/399",
+   "label": 1,
+   "conv_only": "warn",
+   "cues_only": "warn",
+   "hybrid": "warn"
+  },
+  {
+   "id": "hinglish_calls/402",
+   "label": 1,
+   "conv_only": "warn",
+   "cues_only": "watch",
+   "hybrid": "warn"
+  },
+  {
+   "id": "hinglish_calls/406",
+   "label": 1,
+   "conv_only": "warn",
+   "cues_only": "warn",
+   "hybrid": "warn"
+  },
+  {
+   "id": "hinglish_calls/416",
+   "label": 1,
+   "conv_only": "warn",
+   "cues_only": "watch",
+   "hybrid": "warn"
+  },
+  {
+   "id": "hinglish_calls/420",
+   "label": 1,
+   "conv_only": "warn",
+   "cues_only": "watch",
+   "hybrid": "warn"
+  },
+  {
+   "id": "hinglish_calls/426",
+   "label": 1,
+   "conv_only": "warn",
+   "cues_only": "watch",
+   "hybrid": "warn"
+  },
+  {
+   "id": "hinglish_calls/438",
+   "label": 1,
+   "conv_only": "warn",
+   "cues_only": "watch",
+   "hybrid": "warn"
+  },
+  {
+   "id": "hinglish_calls/445",
+   "label": 1,
+   "conv_only": "warn",
+   "cues_only": "warn",
+   "hybrid": "warn"
+  },
+  {
+   "id": "hinglish_calls/446",
+   "label": 1,
+   "conv_only": "scam",
+   "cues_only": "warn",
+   "hybrid": "scam"
+  },
+  {
+   "id": "hinglish_calls/467",
+   "label": 1,
+   "conv_only": "warn",
+   "cues_only": "none",
+   "hybrid": "warn"
+  },
+  {
+   "id": "hinglish_calls/474",
+   "label": 1,
+   "conv_only": "scam",
+   "cues_only": "warn",
+   "hybrid": "scam"
+  },
+  {
+   "id": "hinglish_calls/481",
+   "label": 1,
+   "conv_only": "scam",
+   "cues_only": "watch",
+   "hybrid": "warn"
+  },
+  {
+   "id": "hinglish_calls/486",
+   "label": 1,
+   "conv_only": "warn",
+   "cues_only": "warn",
+   "hybrid": "warn"
+  },
+  {
+   "id": "hinglish_calls/487",
+   "label": 1,
+   "conv_only": "warn",
+   "cues_only": "warn",
+   "hybrid": "warn"
+  },
+  {
+   "id": "hinglish_calls/491",
+   "label": 1,
+   "conv_only": "scam",
+   "cues_only": "none",
+   "hybrid": "warn"
+  },
+  {
+   "id": "hinglish_calls/504",
+   "label": 1,
+   "conv_only": "scam",
+   "cues_only": "warn",
+   "hybrid": "scam"
+  },
+  {
+   "id": "hinglish_calls/517",
+   "label": 1,
+   "conv_only": "warn",
+   "cues_only": "none",
+   "hybrid": "warn"
+  },
+  {
+   "id": "hinglish_calls/518",
+   "label": 1,
+   "conv_only": "warn",
+   "cues_only": "watch",
+   "hybrid": "warn"
+  },
+  {
+   "id": "hinglish_calls/523",
+   "label": 1,
+   "conv_only": "warn",
+   "cues_only": "none",
+   "hybrid": "warn"
+  },
+  {
+   "id": "hinglish_calls/524",
+   "label": 1,
+   "conv_only": "warn",
+   "cues_only": "warn",
+   "hybrid": "warn"
+  },
+  {
+   "id": "hinglish_calls/529",
+   "label": 1,
+   "conv_only": "warn",
+   "cues_only": "watch",
+   "hybrid": "warn"
+  },
+  {
+   "id": "hinglish_calls/532",
+   "label": 1,
+   "conv_only": "warn",
+   "cues_only": "warn",
+   "hybrid": "warn"
+  },
+  {
+   "id": "hinglish_calls/534",
+   "label": 1,
+   "conv_only": "warn",
+   "cues_only": "watch",
+   "hybrid": "warn"
+  },
+  {
+   "id": "hinglish_calls/535",
+   "label": 1,
+   "conv_only": "warn",
+   "cues_only": "warn",
+   "hybrid": "warn"
+  },
+  {
+   "id": "hinglish_calls/536",
+   "label": 1,
+   "conv_only": "scam",
+   "cues_only": "warn",
+   "hybrid": "scam"
+  },
+  {
+   "id": "hinglish_calls/560",
+   "label": 1,
+   "conv_only": "warn",
+   "cues_only": "warn",
+   "hybrid": "warn"
+  },
+  {
+   "id": "hinglish_calls/563",
+   "label": 1,
+   "conv_only": "warn",
+   "cues_only": "warn",
+   "hybrid": "warn"
+  },
+  {
+   "id": "hinglish_calls/579",
+   "label": 1,
+   "conv_only": "warn",
+   "cues_only": "warn",
+   "hybrid": "warn"
+  },
+  {
+   "id": "hinglish_calls/586",
+   "label": 1,
+   "conv_only": "warn",
+   "cues_only": "none",
+   "hybrid": "warn"
+  },
+  {
+   "id": "hinglish_calls/594",
+   "label": 1,
+   "conv_only": "warn",
+   "cues_only": "none",
+   "hybrid": "warn"
+  },
+  {
+   "id": "hinglish_calls/598",
+   "label": 1,
+   "conv_only": "warn",
+   "cues_only": "warn",
+   "hybrid": "warn"
+  },
+  {
+   "id": "hinglish_calls/600",
+   "label": 1,
+   "conv_only": "warn",
+   "cues_only": "warn",
+   "hybrid": "warn"
+  },
+  {
+   "id": "hinglish_calls/617",
+   "label": 1,
+   "conv_only": "warn",
+   "cues_only": "watch",
+   "hybrid": "warn"
+  },
+  {
+   "id": "hinglish_calls/628",
+   "label": 1,
+   "conv_only": "warn",
+   "cues_only": "warn",
+   "hybrid": "warn"
+  },
+  {
+   "id": "hinglish_calls/629",
+   "label": 1,
+   "conv_only": "warn",
+   "cues_only": "warn",
+   "hybrid": "warn"
+  },
+  {
+   "id": "hinglish_calls/640",
+   "label": 1,
+   "conv_only": "warn",
+   "cues_only": "watch",
+   "hybrid": "warn"
+  },
+  {
+   "id": "hinglish_calls/641",
+   "label": 1,
+   "conv_only": "scam",
+   "cues_only": "warn",
+   "hybrid": "scam"
+  },
+  {
+   "id": "hinglish_calls/655",
+   "label": 1,
+   "conv_only": "warn",
+   "cues_only": "warn",
+   "hybrid": "warn"
+  },
+  {
+   "id": "hinglish_calls/657",
+   "label": 1,
+   "conv_only": "warn",
+   "cues_only": "watch",
+   "hybrid": "warn"
+  },
+  {
+   "id": "hinglish_calls/661",
+   "label": 1,
+   "conv_only": "scam",
+   "cues_only": "warn",
+   "hybrid": "scam"
+  },
+  {
+   "id": "hinglish_calls/667",
+   "label": 1,
+   "conv_only": "warn",
+   "cues_only": "warn",
+   "hybrid": "warn"
+  },
+  {
+   "id": "hinglish_calls/676",
+   "label": 1,
+   "conv_only": "warn",
+   "cues_only": "warn",
+   "hybrid": "warn"
+  },
+  {
+   "id": "hinglish_calls/678",
+   "label": 1,
+   "conv_only": "warn",
+   "cues_only": "warn",
+   "hybrid": "warn"
+  },
+  {
+   "id": "hinglish_calls/683",
+   "label": 1,
+   "conv_only": "warn",
+   "cues_only": "warn",
+   "hybrid": "warn"
+  },
+  {
+   "id": "hinglish_calls/685",
+   "label": 1,
+   "conv_only": "warn",
+   "cues_only": "watch",
+   "hybrid": "warn"
+  },
+  {
+   "id": "hinglish_calls/693",
+   "label": 1,
+   "conv_only": "warn",
+   "cues_only": "warn",
+   "hybrid": "warn"
+  },
+  {
+   "id": "hinglish_calls/694",
+   "label": 1,
+   "conv_only": "warn",
+   "cues_only": "none",
+   "hybrid": "warn"
+  },
+  {
+   "id": "hinglish_calls/697",
+   "label": 1,
+   "conv_only": "warn",
+   "cues_only": "warn",
+   "hybrid": "warn"
+  },
+  {
+   "id": "hinglish_calls/703",
+   "label": 1,
+   "conv_only": "warn",
+   "cues_only": "warn",
+   "hybrid": "warn"
+  },
+  {
+   "id": "hinglish_calls/713",
+   "label": 1,
+   "conv_only": "scam",
+   "cues_only": "warn",
+   "hybrid": "scam"
+  },
+  {
+   "id": "hinglish_calls/715",
+   "label": 1,
+   "conv_only": "warn",
+   "cues_only": "none",
+   "hybrid": "warn"
+  },
+  {
+   "id": "hinglish_calls/717",
+   "label": 1,
+   "conv_only": "warn",
+   "cues_only": "none",
+   "hybrid": "warn"
+  },
+  {
+   "id": "hinglish_calls/721",
+   "label": 1,
+   "conv_only": "warn",
+   "cues_only": "warn",
+   "hybrid": "warn"
+  },
+  {
+   "id": "hinglish_calls/723",
+   "label": 1,
+   "conv_only": "warn",
+   "cues_only": "none",
+   "hybrid": "warn"
+  },
+  {
+   "id": "hinglish_calls/737",
+   "label": 1,
+   "conv_only": "warn",
+   "cues_only": "warn",
+   "hybrid": "warn"
+  },
+  {
+   "id": "team_calls/en_digital_arrest",
+   "label": 1,
+   "conv_only": "watch",
+   "cues_only": "scam",
+   "hybrid": "warn"
+  },
+  {
+   "id": "team_calls/hi_digital_arrest",
+   "label": 1,
+   "conv_only": "scam",
+   "cues_only": "scam",
+   "hybrid": "scam"
+  },
+  {
+   "id": "team_calls/hinglish_digital_arrest",
+   "label": 1,
+   "conv_only": "scam",
+   "cues_only": "scam",
+   "hybrid": "scam"
+  },
+  {
+   "id": "team_calls/en_bank_kyc_otp",
+   "label": 1,
+   "conv_only": "warn",
+   "cues_only": "scam",
+   "hybrid": "scam"
+  },
+  {
+   "id": "team_calls/hinglish_kyc_anydesk",
+   "label": 1,
+   "conv_only": "scam",
+   "cues_only": "scam",
+   "hybrid": "scam"
+  },
+  {
+   "id": "team_calls/hi_family_emergency",
+   "label": 1,
+   "conv_only": "warn",
+   "cues_only": "scam",
+   "hybrid": "scam"
+  },
+  {
+   "id": "team_calls/hinglish_family_emergency_spoofed",
+   "label": 1,
+   "conv_only": "none",
+   "cues_only": "scam",
+   "hybrid": "watch"
+  },
+  {
+   "id": "team_calls/en_trai_sim",
+   "label": 1,
+   "conv_only": "warn",
+   "cues_only": "warn",
+   "hybrid": "warn"
+  },
+  {
+   "id": "team_calls/en_courier_customs",
+   "label": 1,
+   "conv_only": "watch",
+   "cues_only": "scam",
+   "hybrid": "warn"
+  },
+  {
+   "id": "team_calls/hinglish_job_task",
+   "label": 1,
+   "conv_only": "warn",
+   "cues_only": "warn",
+   "hybrid": "warn"
+  },
+  {
+   "id": "team_calls/en_investment",
+   "label": 1,
+   "conv_only": "scam",
+   "cues_only": "warn",
+   "hybrid": "scam"
+  },
+  {
+   "id": "team_calls/hi_lottery_kbc",
+   "label": 1,
+   "conv_only": "scam",
+   "cues_only": "warn",
+   "hybrid": "scam"
+  },
+  {
+   "id": "team_calls/en_electricity",
+   "label": 1,
+   "conv_only": "warn",
+   "cues_only": "scam",
+   "hybrid": "scam"
+  },
+  {
+   "id": "team_calls/hinglish_otp_refund",
+   "label": 1,
+   "conv_only": "scam",
+   "cues_only": "scam",
+   "hybrid": "scam"
+  },
+  {
+   "id": "team_calls/en_short_digital_arrest_opening",
+   "label": 1,
+   "conv_only": "watch",
+   "cues_only": "warn",
+   "hybrid": "warn"
+  },
+  {
+   "id": "team_calls/en_genuine_bank_fraud_alert",
+   "label": 0,
+   "conv_only": "none",
+   "cues_only": "warn",
+   "hybrid": "watch"
+  },
+  {
+   "id": "team_calls/en_delivery_otp",
+   "label": 0,
+   "conv_only": "none",
+   "cues_only": "watch",
+   "hybrid": "watch"
+  },
+  {
+   "id": "team_calls/hinglish_delivery_otp_abhi",
+   "label": 0,
+   "conv_only": "none",
+   "cues_only": "watch",
+   "hybrid": "watch"
+  },
+  {
+   "id": "team_calls/hinglish_son_asks_money",
+   "label": 0,
+   "conv_only": "none",
+   "cues_only": "watch",
+   "hybrid": "watch"
+  },
+  {
+   "id": "team_calls/hi_doctor",
+   "label": 0,
+   "conv_only": "none",
+   "cues_only": "watch",
+   "hybrid": "watch"
+  },
+  {
+   "id": "team_calls/en_news_discussion",
+   "label": 0,
+   "conv_only": "none",
+   "cues_only": "warn",
+   "hybrid": "watch"
+  },
+  {
+   "id": "team_calls/hi_news_discussion",
+   "label": 0,
+   "conv_only": "warn",
+   "cues_only": "warn",
+   "hybrid": "warn"
+  },
+  {
+   "id": "team_calls/en_genuine_kyc_branch",
+   "label": 0,
+   "conv_only": "none",
+   "cues_only": "warn",
+   "hybrid": "watch"
+  },
+  {
+   "id": "team_calls/en_telemarketing_card",
+   "label": 0,
+   "conv_only": "none",
+   "cues_only": "warn",
+   "hybrid": "watch"
+  },
+  {
+   "id": "team_calls/hinglish_family_plans",
+   "label": 0,
+   "conv_only": "none",
+   "cues_only": "none",
+   "hybrid": "none"
+  },
+  {
+   "id": "team_calls/en_mechanic_payment",
+   "label": 0,
+   "conv_only": "none",
+   "cues_only": "watch",
+   "hybrid": "watch"
+  },
+  {
+   "id": "team_calls/hi_police_verification_genuine",
+   "label": 0,
+   "conv_only": "none",
+   "cues_only": "warn",
+   "hybrid": "watch"
+  },
+  {
+   "id": "team_calls/en_ceo_vendor_payment",
+   "label": 1,
+   "conv_only": "warn",
+   "cues_only": "scam",
+   "hybrid": "scam"
+  },
+  {
+   "id": "team_calls/hinglish_boss_genuine_reminder",
+   "label": 0,
+   "conv_only": "none",
+   "cues_only": "none",
+   "hybrid": "none"
+  },
+  {
+   "id": "adversarial/para_digital_arrest_soft",
+   "label": 1,
+   "conv_only": "watch",
+   "cues_only": "scam",
+   "hybrid": "warn"
+  },
+  {
+   "id": "adversarial/para_kyc_polite",
+   "label": 1,
+   "conv_only": "watch",
+   "cues_only": "none",
+   "hybrid": "watch"
+  },
+  {
+   "id": "adversarial/para_investment_friendly",
+   "label": 1,
+   "conv_only": "watch",
+   "cues_only": "warn",
+   "hybrid": "warn"
+  },
+  {
+   "id": "adversarial/para_job_task",
+   "label": 1,
+   "conv_only": "scam",
+   "cues_only": "warn",
+   "hybrid": "scam"
+  },
+  {
+   "id": "adversarial/para_family_emergency",
+   "label": 1,
+   "conv_only": "none",
+   "cues_only": "warn",
+   "hybrid": "watch"
+  },
+  {
+   "id": "adversarial/misspell_digital_arrest",
+   "label": 1,
+   "conv_only": "warn",
+   "cues_only": "scam",
+   "hybrid": "scam"
+  },
+  {
+   "id": "adversarial/misspell_otp",
+   "label": 1,
+   "conv_only": "none",
+   "cues_only": "warn",
+   "hybrid": "watch"
+  },
+  {
+   "id": "adversarial/translit_hi_to_latin_arrest",
+   "label": 1,
+   "conv_only": "watch",
+   "cues_only": "warn",
+   "hybrid": "warn"
+  },
+  {
+   "id": "adversarial/translit_latin_to_hi_kyc",
+   "label": 1,
+   "conv_only": "scam",
+   "cues_only": "scam",
+   "hybrid": "scam"
+  },
+  {
+   "id": "adversarial/translit_mixed_script",
+   "label": 1,
+   "conv_only": "warn",
+   "cues_only": "scam",
+   "hybrid": "scam"
+  },
+  {
+   "id": "adversarial/negation_abuse_safe_account",
+   "label": 1,
+   "conv_only": "watch",
+   "cues_only": "warn",
+   "hybrid": "warn"
+  },
+  {
+   "id": "adversarial/negation_abuse_no_money",
+   "label": 1,
+   "conv_only": "scam",
+   "cues_only": "warn",
+   "hybrid": "scam"
+  },
+  {
+   "id": "adversarial/slowburn_courier",
+   "label": 1,
+   "conv_only": "watch",
+   "cues_only": "warn",
+   "hybrid": "warn"
+  },
+  {
+   "id": "adversarial/slowburn_trai",
+   "label": 1,
+   "conv_only": "warn",
+   "cues_only": "scam",
+   "hybrid": "scam"
+  },
+  {
+   "id": "adversarial/slowburn_hi_reward",
+   "label": 1,
+   "conv_only": "warn",
+   "cues_only": "watch",
+   "hybrid": "warn"
+  },
+  {
+   "id": "adversarial/no_cue_words_scam",
+   "label": 1,
+   "conv_only": "none",
+   "cues_only": "warn",
+   "hybrid": "watch"
+  },
+  {
+   "id": "adversarial/genuine_bank_fraud_check",
+   "label": 0,
+   "conv_only": "none",
+   "cues_only": "warn",
+   "hybrid": "watch"
+  },
+  {
+   "id": "adversarial/genuine_bank_loan_followup",
+   "label": 0,
+   "conv_only": "none",
+   "cues_only": "none",
+   "hybrid": "none"
+  },
+  {
+   "id": "adversarial/genuine_delivery_otp",
+   "label": 0,
+   "conv_only": "none",
+   "cues_only": "watch",
+   "hybrid": "watch"
+  },
+  {
+   "id": "adversarial/genuine_delivery_hi",
+   "label": 0,
+   "conv_only": "none",
+   "cues_only": "watch",
+   "hybrid": "watch"
+  },
+  {
+   "id": "adversarial/genuine_police_verification",
+   "label": 0,
+   "conv_only": "warn",
+   "cues_only": "warn",
+   "hybrid": "warn"
+  },
+  {
+   "id": "adversarial/genuine_police_complaint",
+   "label": 0,
+   "conv_only": "none",
+   "cues_only": "warn",
+   "hybrid": "watch"
+  },
+  {
+   "id": "adversarial/relatives_discuss_digital_arrest",
+   "label": 0,
+   "conv_only": "scam",
+   "cues_only": "warn",
+   "hybrid": "scam"
+  },
+  {
+   "id": "adversarial/relatives_discuss_otp",
+   "label": 0,
+   "conv_only": "watch",
+   "cues_only": "scam",
+   "hybrid": "warn"
+  },
+  {
+   "id": "adversarial/relatives_discuss_hi",
+   "label": 0,
+   "conv_only": "watch",
+   "cues_only": "watch",
+   "hybrid": "watch"
+  },
+  {
+   "id": "adversarial/genuine_son_needs_money",
+   "label": 0,
+   "conv_only": "none",
+   "cues_only": "watch",
+   "hybrid": "watch"
+  },
+  {
+   "id": "adversarial/genuine_insurance_renewal",
+   "label": 0,
+   "conv_only": "none",
+   "cues_only": "warn",
+   "hybrid": "watch"
+  },
+  {
+   "id": "adversarial/genuine_electricity_hi",
+   "label": 0,
+   "conv_only": "none",
+   "cues_only": "warn",
+   "hybrid": "watch"
+  },
+  {
+   "id": "adversarial/genuine_doctor_appointment",
+   "label": 0,
+   "conv_only": "none",
+   "cues_only": "none",
+   "hybrid": "none"
+  },
+  {
+   "id": "adversarial/genuine_customer_care_callback",
+   "label": 0,
+   "conv_only": "none",
+   "cues_only": "none",
+   "hybrid": "none"
+  },
+  {
+   "id": "near_domain/bank_kyc_branch_visit",
+   "label": 0,
+   "conv_only": "none",
+   "cues_only": "warn",
+   "hybrid": "watch"
+  },
+  {
+   "id": "near_domain/bank_card_blocked_info",
+   "label": 0,
+   "conv_only": "none",
+   "cues_only": "watch",
+   "hybrid": "watch"
+  },
+  {
+   "id": "near_domain/bank_loan_offer",
+   "label": 0,
+   "conv_only": "none",
+   "cues_only": "watch",
+   "hybrid": "watch"
+  },
+  {
+   "id": "near_domain/bank_cheque_confirm",
+   "label": 0,
+   "conv_only": "none",
+   "cues_only": "watch",
+   "hybrid": "watch"
+  },
+  {
+   "id": "near_domain/bank_fd_maturity",
+   "label": 0,
+   "conv_only": "none",
+   "cues_only": "none",
+   "hybrid": "none"
+  },
+  {
+   "id": "near_domain/courier_delivery_otp",
+   "label": 0,
+   "conv_only": "none",
+   "cues_only": "warn",
+   "hybrid": "watch"
+  },
+  {
+   "id": "near_domain/courier_address_check",
+   "label": 0,
+   "conv_only": "watch",
+   "cues_only": "warn",
+   "hybrid": "warn"
+  },
+  {
+   "id": "near_domain/courier_cod",
+   "label": 0,
+   "conv_only": "none",
+   "cues_only": "watch",
+   "hybrid": "watch"
+  },
+  {
+   "id": "near_domain/courier_customs_real",
+   "label": 0,
+   "conv_only": "none",
+   "cues_only": "warn",
+   "hybrid": "watch"
+  },
+  {
+   "id": "near_domain/police_passport_verification",
+   "label": 0,
+   "conv_only": "none",
+   "cues_only": "warn",
+   "hybrid": "watch"
+  },
+  {
+   "id": "near_domain/police_complaint_followup",
+   "label": 0,
+   "conv_only": "none",
+   "cues_only": "warn",
+   "hybrid": "watch"
+  },
+  {
+   "id": "near_domain/police_traffic_challan",
+   "label": 0,
+   "conv_only": "watch",
+   "cues_only": "warn",
+   "hybrid": "warn"
+  },
+  {
+   "id": "near_domain/family_hospital_real",
+   "label": 0,
+   "conv_only": "none",
+   "cues_only": "watch",
+   "hybrid": "watch"
+  },
+  {
+   "id": "near_domain/family_money_real",
+   "label": 0,
+   "conv_only": "none",
+   "cues_only": "watch",
+   "hybrid": "watch"
+  },
+  {
+   "id": "near_domain/boss_real_meeting",
+   "label": 0,
+   "conv_only": "none",
+   "cues_only": "watch",
+   "hybrid": "watch"
+  },
+  {
+   "id": "near_domain/boss_real_payment",
+   "label": 0,
+   "conv_only": "none",
+   "cues_only": "none",
+   "hybrid": "none"
+  },
+  {
+   "id": "near_domain/telecom_real_recharge",
+   "label": 0,
+   "conv_only": "none",
+   "cues_only": "none",
+   "hybrid": "none"
+  },
+  {
+   "id": "near_domain/telecom_sim_upgrade_real",
+   "label": 0,
+   "conv_only": "none",
+   "cues_only": "warn",
+   "hybrid": "watch"
+  },
+  {
+   "id": "near_domain/insurance_renewal",
+   "label": 0,
+   "conv_only": "none",
+   "cues_only": "warn",
+   "hybrid": "watch"
+  },
+  {
+   "id": "near_domain/electricity_real",
+   "label": 0,
+   "conv_only": "none",
+   "cues_only": "warn",
+   "hybrid": "watch"
+  },
+  {
+   "id": "near_domain/job_real_interview",
+   "label": 0,
+   "conv_only": "none",
+   "cues_only": "none",
+   "hybrid": "none"
+  },
+  {
+   "id": "near_domain/investment_real_advisor",
+   "label": 0,
+   "conv_only": "none",
+   "cues_only": "none",
+   "hybrid": "none"
+  },
+  {
+   "id": "near_domain/reward_real_cashback",
+   "label": 0,
+   "conv_only": "none",
+   "cues_only": "watch",
+   "hybrid": "watch"
+  },
+  {
+   "id": "near_domain/scam_warning_news",
+   "label": 0,
+   "conv_only": "scam",
+   "cues_only": "warn",
+   "hybrid": "scam"
+  },
+  {
+   "id": "near_domain/bank_fraud_check_real",
+   "label": 0,
+   "conv_only": "none",
+   "cues_only": "watch",
+   "hybrid": "watch"
+  },
+  {
+   "id": "near_domain/victim_like_genuine_upi",
+   "label": 0,
+   "conv_only": "none",
+   "cues_only": "watch",
+   "hybrid": "watch"
+  },
+  {
+   "id": "near_domain/aadhaar_center_real",
+   "label": 0,
+   "conv_only": "none",
+   "cues_only": "none",
+   "hybrid": "none"
+  },
+  {
+   "id": "near_domain/bank_atm_card_dispatch",
+   "label": 0,
+   "conv_only": "none",
+   "cues_only": "watch",
+   "hybrid": "watch"
+  },
+  {
+   "id": "near_domain/hospital_appointment",
+   "label": 0,
+   "conv_only": "none",
+   "cues_only": "watch",
+   "hybrid": "watch"
+  },
+  {
+   "id": "near_domain/school_fee_reminder",
+   "label": 0,
+   "conv_only": "none",
+   "cues_only": "warn",
+   "hybrid": "watch"
+  }
+ ],
+ "markdown": "| set | path | scam calls | recall at warn | recall at scam | genuine calls | false warn | false scam |\n|---|---|---:|---:|---:|---:|---:|---:|\n| adversarial | conv_only | 16 | 43.8% | 18.8% | 14 | 14.3% | 7.1% |\n| adversarial | cues_only | 16 | 87.5% | 31.2% | 14 | 50.0% | 7.1% |\n| adversarial | hybrid | 16 | 75.0% | 37.5% | 14 | 21.4% | 7.1% |\n| hinglish_calls | conv_only | 124 | 100.0% | 25.8% | 22 | 0.0% | 0.0% |\n| hinglish_calls | cues_only | 124 | 54.8% | 4.0% | 22 | 0.0% | 0.0% |\n| hinglish_calls | hybrid | 124 | 100.0% | 17.7% | 22 | 0.0% | 0.0% |\n| near_domain | conv_only | 0 | - | - | 30 | 3.3% | 3.3% |\n| near_domain | cues_only | 0 | - | - | 30 | 40.0% | 0.0% |\n| near_domain | hybrid | 0 | - | - | 30 | 10.0% | 3.3% |\n| team_calls | conv_only | 16 | 75.0% | 37.5% | 13 | 7.7% | 0.0% |\n| team_calls | cues_only | 16 | 100.0% | 68.8% | 13 | 46.2% | 0.0% |\n| team_calls | hybrid | 16 | 93.8% | 62.5% | 13 | 7.7% | 0.0% |"
+}

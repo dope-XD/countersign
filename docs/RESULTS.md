@@ -495,3 +495,31 @@ These are the ways basic mode fails today, from the tables above and from testin
 8. **Hindi SMS without call words.** Short Devanagari phishing texts ("your IRCTC id is blocked, open the link") often
    stay below amber: the cue rules are built for calls.
 
+
+## Hybrid detection: both judges on every call (25 Oct)
+
+`python -m ml.eval.hybrid_eval` (text, fed segment by segment as the phone does, on an unknown number; `models/eval/hybrid.json`).
+The conversation check alone vs the cue rules alone vs the hybrid (watch/warn = the higher judge, but cue words alone need the
+conversation model at watch for amber; scam needs two independent sources; a context signal counts once).
+
+| set | path | scam calls | recall at warn | recall at scam | genuine calls | false warn | false scam |
+|---|---|---:|---:|---:|---:|---:|---:|
+| team_calls | conversation only | 16 | 75.0% | 37.5% | 13 | 7.7% | 0.0% |
+| team_calls | **hybrid** | 16 | **93.8%** | **62.5%** | 13 | 7.7% | 0.0% |
+| adversarial | conversation only | 16 | 43.8% | 18.8% | 14 | 14.3% | 7.1% |
+| adversarial | **hybrid** | 16 | **75.0%** | **37.5%** | 14 | 21.4% | 7.1% |
+| hinglish_calls | conversation only | 124 | 100.0% | 25.8% | 22 | 0.0% | 0.0% |
+| hinglish_calls | **hybrid** | 124 | 100.0% | 17.7% | 22 | 0.0% | 0.0% |
+| near_domain (new, genuine only) | conversation only | 0 | - | - | 30 | 3.3% | 3.3% |
+| near_domain (new, genuine only) | **hybrid** | 0 | - | - | 30 | 10.0% | 3.3% |
+
+Costs, said plainly: on Hinglish call lines the hybrid reaches red less often (17.7% vs 25.8%), because the
+conversation model alone no longer makes red; amber stays at 100%. False amber rises on the adversarial set (14.3% to
+21.4%) and on the new near-domain genuine calls (3.3% to 10.0%). Without the "model at watch" rule for cue words, false
+amber was 40-50%, so that rule stays.
+
+**The smarter check** (`ml/eval/llm_confirm.py`, Gemma 4 E2B q4 through Ollama, the phone's prompt and parser): spot
+checks give `scam` on a digital-arrest and a KYC/OTP scam, and `ok` on a real Amazon delivery OTP call, at ~14-23 s per call
+on this laptop (GTX 1050, mostly CPU). The full run and the phone runtime (LiteRT-LM, `LlmCheck.kt`) are not done yet;
+until the near-domain gate (false scam at most 5%) is measured, the phone has no smarter check and nothing changes for it.
+Not measured yet: audio end to end, victim-side (earpiece) calls, real role-play calls on phones.

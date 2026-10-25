@@ -240,10 +240,16 @@ fun textSegments(text: String, maxWords: Int = 20): List<String> =
 class ConvCall(private val models: ConvModels, private val matcher: Matcher, private val cfg: ConvConfig, private val rules: Rules) {
     private val segments = ArrayList<String>()
     private val acc = Accumulator(cfg)
-    private val reasons = ArrayList<String>()
+    private val moves = ArrayList<String>()
     private var context = emptySet<String>()
     var lastP: Double? = null
         private set
+
+    /** The moves the caller made so far (cue category ids). */
+    val reasons: List<String> get() = moves.toList()
+
+    /** The conversation model's own level, from what was said only (no context). */
+    val modelLevel: String get() = acc.modelLevel
 
     fun feed(segment: String): Verdict {
         if (segmentText(segment).isEmpty()) return verdict()
@@ -256,9 +262,9 @@ class ConvCall(private val models: ConvModels, private val matcher: Matcher, pri
         // name the move only when this segment made the risk rise (or the level went up); once the model has
         // reached amber with no reason named yet, its closest move is named even below the matcher's threshold
         val warned = LEVELS.indexOf(acc.modelLevel) >= LEVELS.indexOf("warn")
-        if (rise >= cfg.whyRise || acc.modelLevel != before || (warned && reasons.isEmpty())) {
-            val m = matcher.match(models.embed(segmentText(segment)), guess = warned && reasons.isEmpty())
-            if (m?.category != null && m.category !in reasons) reasons.add(m.category)
+        if (rise >= cfg.whyRise || acc.modelLevel != before || (warned && moves.isEmpty())) {
+            val m = matcher.match(models.embed(segmentText(segment)), guess = warned && moves.isEmpty())
+            if (m?.category != null && m.category !in moves) moves.add(m.category)
         }
         return verdict()
     }
@@ -271,8 +277,8 @@ class ConvCall(private val models: ConvModels, private val matcher: Matcher, pri
 
     fun verdict(): Verdict {
         val lvl = acc.judge(context)
-        val why = reasons + context.filter { it in cfg.shownContext }.sorted()
-        var kind = if (lvl != "none") scamType(reasons.toSet(), rules) else "unknown"
+        val why = moves + context.filter { it in cfg.shownContext }.sorted()
+        var kind = if (lvl != "none") scamType(moves.toSet(), rules) else "unknown"
         if (kind == "unknown" && "caller_check_failed" in context && lvl != "none") kind = "impersonation"
         val sources = buildSet {
             if (acc.modelLevel != "none") add("phone_ai")

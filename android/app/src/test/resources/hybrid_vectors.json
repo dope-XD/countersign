@@ -1,0 +1,2140 @@
+[
+ {
+  "id": "team_calls/en_digital_arrest",
+  "segments": [
+   "Hello, am I speaking with Mrs Sunita Sharma?",
+   "This is inspector Rajesh Kumar from Mumbai police cyber crime branch.",
+   "A FedEx parcel in your name was seized by customs. It had five passports and MDMA drugs.",
+   "There is an arrest warrant against you for money laundering. This is a non bailable case.",
+   "You must stay on the video call on Skype for the investigation. Keep your camera on.",
+   "Do not tell anyone in your family, this is strictly confidential, a national secret.",
+   "To prove your innocence, transfer all your savings to the RBI safe account for verification. It is refundable."
+  ],
+  "context": [
+   "remote_app_opened"
+  ],
+  "llm": null,
+  "levels": [
+   "warn",
+   "warn",
+   "scam",
+   "scam",
+   "scam",
+   "scam",
+   "scam"
+  ],
+  "level": "scam",
+  "type": "digital_arrest",
+  "cues": [
+   "secrecy",
+   "remote_app_opened",
+   "authority",
+   "money_ask",
+   "parcel_customs",
+   "threat",
+   "verification_pretext",
+   "video_move"
+  ],
+  "sources": [
+   "context",
+   "cues",
+   "phone_ai"
+  ],
+  "reason": null
+ },
+ {
+  "id": "team_calls/hi_digital_arrest",
+  "segments": [
+   "नमस्ते, मैं मुंबई पुलिस साइबर क्राइम से इंस्पेक्टर शर्मा बोल रहा हूं।",
+   "आपके नाम से एक पार्सल कस्टम ने जब्त किया है, उसमें ड्रग्स मिले हैं।",
+   "आपके खिलाफ मनी लॉन्ड्रिंग का केस दर्ज है, गिरफ्तारी का वारंट निकला है।",
+   "आपको अभी वीडियो कॉल पर रहना होगा, कैमरा चालू रखिए।",
+   "किसी को मत बताना, घरवालों को मत बताना, यह गोपनीय जांच है।",
+   "अपनी जमा राशि आरबीआई के खाते में ट्रांसफर कीजिए, जांच के बाद वापस मिल जाएगी।"
+  ],
+  "context": [
+   "unknown_number"
+  ],
+  "llm": null,
+  "levels": [
+   "watch",
+   "warn",
+   "scam",
+   "scam",
+   "scam",
+   "scam"
+  ],
+  "level": "scam",
+  "type": "digital_arrest",
+  "cues": [
+   "parcel_customs",
+   "bank_claim_not_1600",
+   "authority",
+   "money_ask",
+   "secrecy",
+   "threat",
+   "urgency",
+   "video_move"
+  ],
+  "sources": [
+   "cues",
+   "phone_ai"
+  ],
+  "reason": null
+ },
+ {
+  "id": "team_calls/hinglish_digital_arrest",
+  "segments": [
+   "Madam main CBI officer bol raha hoon, Delhi police headquarters se.",
+   "Aapke Aadhaar se ek sim card liya gaya hai jo money laundering mein use hua hai.",
+   "Aapka arrest warrant nikla hai, aapko digital arrest mein rehna hoga.",
+   "Phone mat katna aur kisi ko mat batana.",
+   "Verification ke liye paise bhejo is account mein, abhi ke abhi."
+  ],
+  "context": [
+   "international_number",
+   "unknown_number"
+  ],
+  "llm": {
+   "verdict": "scam",
+   "type": "digital_arrest",
+   "reason_en": "They threaten arrest and ask for money.",
+   "reason_hi": "वे गिरफ़्तारी की धमकी देकर पैसे मांग रहे हैं।"
+  },
+  "levels": [
+   "warn",
+   "scam",
+   "scam",
+   "scam",
+   "scam"
+  ],
+  "level": "scam",
+  "type": "trai_sim",
+  "cues": [
+   "authority",
+   "sim_block",
+   "bank_claim_not_1600",
+   "international_number",
+   "money_ask",
+   "secrecy",
+   "threat",
+   "urgency",
+   "video_move"
+  ],
+  "sources": [
+   "context",
+   "cues",
+   "llm",
+   "phone_ai"
+  ],
+  "reason": "They threaten arrest and ask for money."
+ },
+ {
+  "id": "team_calls/en_bank_kyc_otp",
+  "segments": [
+   "Good morning sir, I am calling from SBI head office.",
+   "Your KYC is pending and your account will be blocked today itself.",
+   "To update your KYC I have sent a six digit code to your mobile.",
+   "Please tell me the code you received, it is only for verification.",
+   "Sir quickly, otherwise your account will be frozen and the money transfer will stop."
+  ],
+  "context": [
+   "series_1600",
+   "synthetic_voice",
+   "unknown_number"
+  ],
+  "llm": {
+   "verdict": "scam",
+   "type": "digital_arrest",
+   "reason_en": "They threaten arrest and ask for money.",
+   "reason_hi": "वे गिरफ़्तारी की धमकी देकर पैसे मांग रहे हैं।"
+  },
+  "levels": [
+   "warn",
+   "warn",
+   "scam",
+   "scam",
+   "scam"
+  ],
+  "level": "scam",
+  "type": "otp_upi",
+  "cues": [
+   "credentials",
+   "synthetic_voice",
+   "boss_pretext",
+   "money_ask",
+   "threat",
+   "urgency",
+   "verification_pretext"
+  ],
+  "sources": [
+   "cues",
+   "llm",
+   "phone_ai",
+   "voice"
+  ],
+  "reason": "They threaten arrest and ask for money."
+ },
+ {
+  "id": "team_calls/hinglish_kyc_anydesk",
+  "segments": [
+   "Sir aapka KYC update karna hai warna account band ho jayega.",
+   "Aap Play Store se AnyDesk app download karo.",
+   "Jo nau digit ka code aaya hai woh mujhe bataiye.",
+   "Ab apna UPI pin daaliye, ek rupaye ka verification hoga."
+  ],
+  "context": [
+   "video_call_unknown"
+  ],
+  "llm": {
+   "verdict": "ok",
+   "type": "unknown",
+   "reason_en": "",
+   "reason_hi": ""
+  },
+  "levels": [
+   "scam",
+   "scam",
+   "scam",
+   "scam"
+  ],
+  "level": "scam",
+  "type": "remote_access",
+  "cues": [
+   "sim_block",
+   "remote_access",
+   "video_call_unknown",
+   "credentials",
+   "threat",
+   "verification_pretext"
+  ],
+  "sources": [
+   "context",
+   "cues",
+   "phone_ai"
+  ],
+  "reason": null
+ },
+ {
+  "id": "team_calls/hi_family_emergency",
+  "segments": [
+   "मम्मी, मैं राहुल बोल रहा हूं, मेरा एक्सीडेंट हो गया है।",
+   "यह मेरे दोस्त का फोन है, मेरा फोन खराब हो गया।",
+   "अस्पताल वाले अभी पचास हजार रुपये मांग रहे हैं, तुरंत भेज दो।",
+   "पापा को मत बताना, वो परेशान हो जाएंगे। इस यूपीआई पर पैसे भेजो।"
+  ],
+  "context": [
+   "remote_app_opened",
+   "unknown_number"
+  ],
+  "llm": {
+   "verdict": "ok",
+   "type": "unknown",
+   "reason_en": "",
+   "reason_hi": ""
+  },
+  "levels": [
+   "warn",
+   "warn",
+   "scam",
+   "scam"
+  ],
+  "level": "scam",
+  "type": "family_emergency",
+  "cues": [
+   "secrecy",
+   "remote_app_opened",
+   "family_emergency",
+   "money_ask",
+   "urgency"
+  ],
+  "sources": [
+   "context",
+   "cues",
+   "phone_ai"
+  ],
+  "reason": null
+ },
+ {
+  "id": "team_calls/hinglish_family_emergency_spoofed",
+  "segments": [
+   "Mummy main hoon, bahut badi musibat mein hoon.",
+   "Police station mein hoon, zamanat ke liye paise chahiye.",
+   "Jaldi se GPay kar do, kisi ko mat batana."
+  ],
+  "context": [
+   "known_contact"
+  ],
+  "llm": {
+   "verdict": "unsure",
+   "type": "unknown",
+   "reason_en": "",
+   "reason_hi": ""
+  },
+  "levels": [
+   "watch",
+   "watch",
+   "watch"
+  ],
+  "level": "watch",
+  "type": "family_emergency",
+  "cues": [
+   "authority",
+   "family_emergency",
+   "money_ask",
+   "secrecy",
+   "urgency"
+  ],
+  "sources": [
+   "cues"
+  ],
+  "reason": null
+ },
+ {
+  "id": "team_calls/en_trai_sim",
+  "segments": [
+   "This is an automated call from TRAI, the telecom regulatory authority.",
+   "Your mobile number will be disconnected in two hours because it is being used for illegal activity.",
+   "Press nine to speak to the officer.",
+   "Sir, a case is registered against your number, I will connect you to Mumbai police."
+  ],
+  "context": [
+   "unknown_number"
+  ],
+  "llm": {
+   "verdict": "unsure",
+   "type": "unknown",
+   "reason_en": "",
+   "reason_hi": ""
+  },
+  "levels": [
+   "watch",
+   "watch",
+   "warn",
+   "warn"
+  ],
+  "level": "warn",
+  "type": "digital_arrest",
+  "cues": [
+   "secrecy",
+   "authority",
+   "bank_claim_not_1600",
+   "sim_block",
+   "threat"
+  ],
+  "sources": [
+   "cues",
+   "phone_ai"
+  ],
+  "reason": null
+ },
+ {
+  "id": "team_calls/en_courier_customs",
+  "segments": [
+   "Hello, this is calling from DHL courier.",
+   "Your parcel from Taiwan is held at customs because it contains illegal items.",
+   "You need to pay the clearance fee of eighteen thousand rupees now, or a case will be filed."
+  ],
+  "context": [
+   "international_number",
+   "unknown_number"
+  ],
+  "llm": null,
+  "levels": [
+   "watch",
+   "scam",
+   "scam"
+  ],
+  "level": "scam",
+  "type": "courier_customs",
+  "cues": [
+   "bank_claim_not_1600",
+   "international_number",
+   "authority",
+   "money_ask",
+   "parcel_customs",
+   "threat"
+  ],
+  "sources": [
+   "context",
+   "cues",
+   "phone_ai"
+  ],
+  "reason": null
+ },
+ {
+  "id": "team_calls/hinglish_job_task",
+  "segments": [
+   "Hello ma'am, part time job hai, ghar baithe kamai.",
+   "Bas YouTube videos like karne hain, har task ka commission milega.",
+   "Pehle prepaid task ke liye do hazaar rupees transfer karo, double wapas milega."
+  ],
+  "context": [
+   "caller_check_failed",
+   "series_1600",
+   "unknown_number"
+  ],
+  "llm": null,
+  "levels": [
+   "warn",
+   "warn",
+   "scam"
+  ],
+  "level": "scam",
+  "type": "impersonation",
+  "cues": [
+   "investment",
+   "caller_check_failed",
+   "job_task",
+   "money_ask"
+  ],
+  "sources": [
+   "caller_check",
+   "context",
+   "cues",
+   "phone_ai"
+  ],
+  "reason": null
+ },
+ {
+  "id": "team_calls/en_investment",
+  "segments": [
+   "Sir I am from a SEBI registered advisory, we give stock tips with guaranteed returns.",
+   "Join our telegram group and install our trading app.",
+   "Invest fifty thousand now and you will get daily profit, double your money in one month."
+  ],
+  "context": [
+   "video_call_unknown"
+  ],
+  "llm": {
+   "verdict": "scam",
+   "type": "digital_arrest",
+   "reason_en": "They threaten arrest and ask for money.",
+   "reason_hi": "वे गिरफ़्तारी की धमकी देकर पैसे मांग रहे हैं।"
+  },
+  "levels": [
+   "watch",
+   "scam",
+   "scam"
+  ],
+  "level": "scam",
+  "type": "investment",
+  "cues": [
+   "investment",
+   "job_task",
+   "video_call_unknown",
+   "money_ask"
+  ],
+  "sources": [
+   "context",
+   "cues",
+   "llm",
+   "phone_ai"
+  ],
+  "reason": "They threaten arrest and ask for money."
+ },
+ {
+  "id": "team_calls/hi_lottery_kbc",
+  "segments": [
+   "बधाई हो, आप कौन बनेगा करोड़पति की लॉटरी में पच्चीस लाख रुपये जीत गए हैं।",
+   "इनाम पाने के लिए पहले प्रोसेसिंग फीस जमा कीजिए।",
+   "जो ओटीपी आया है वह बताइए ताकि पैसा आपके खाते में भेजा जा सके।"
+  ],
+  "context": [
+   "remote_app_opened",
+   "unknown_number"
+  ],
+  "llm": {
+   "verdict": "scam",
+   "type": "digital_arrest",
+   "reason_en": "They threaten arrest and ask for money.",
+   "reason_hi": "वे गिरफ़्तारी की धमकी देकर पैसे मांग रहे हैं।"
+  },
+  "levels": [
+   "warn",
+   "scam",
+   "scam"
+  ],
+  "level": "scam",
+  "type": "reward",
+  "cues": [
+   "reward",
+   "remote_app_opened",
+   "credentials",
+   "money_ask"
+  ],
+  "sources": [
+   "context",
+   "cues",
+   "llm",
+   "phone_ai"
+  ],
+  "reason": "They threaten arrest and ask for money."
+ },
+ {
+  "id": "team_calls/en_electricity",
+  "segments": [
+   "Dear customer, your electricity connection will be cut tonight at nine thirty because your bill is pending.",
+   "Please contact the electricity officer immediately.",
+   "Click the link I sent and pay the pending bill to avoid disconnection."
+  ],
+  "context": [
+   "remote_app_opened"
+  ],
+  "llm": {
+   "verdict": "ok",
+   "type": "unknown",
+   "reason_en": "",
+   "reason_hi": ""
+  },
+  "levels": [
+   "scam",
+   "scam",
+   "scam"
+  ],
+  "level": "scam",
+  "type": "remote_access",
+  "cues": [
+   "urgency",
+   "remote_app_opened",
+   "remote_access",
+   "threat",
+   "verification_pretext"
+  ],
+  "sources": [
+   "context",
+   "cues",
+   "phone_ai"
+  ],
+  "reason": null
+ },
+ {
+  "id": "team_calls/hinglish_otp_refund",
+  "segments": [
+   "Sir aapka refund aana hai, galti se zyada payment ho gaya tha.",
+   "Main collect request bhej raha hoon, usko accept karo aur pin daalo.",
+   "OTP bata do jaldi, nahi to refund cancel ho jayega."
+  ],
+  "context": [
+   "unknown_number"
+  ],
+  "llm": {
+   "verdict": "ok",
+   "type": "unknown",
+   "reason_en": "",
+   "reason_hi": ""
+  },
+  "levels": [
+   "warn",
+   "warn",
+   "scam"
+  ],
+  "level": "scam",
+  "type": "otp_upi",
+  "cues": [
+   "threat",
+   "credentials",
+   "money_ask",
+   "reward",
+   "urgency"
+  ],
+  "sources": [
+   "cues",
+   "phone_ai"
+  ],
+  "reason": null
+ },
+ {
+  "id": "team_calls/en_short_digital_arrest_opening",
+  "segments": [
+   "This is the cyber crime branch, Delhi police.",
+   "There is a warrant against your Aadhaar number."
+  ],
+  "context": [
+   "international_number",
+   "unknown_number"
+  ],
+  "llm": {
+   "verdict": "unsure",
+   "type": "unknown",
+   "reason_en": "",
+   "reason_hi": ""
+  },
+  "levels": [
+   "watch",
+   "scam"
+  ],
+  "level": "scam",
+  "type": "digital_arrest",
+  "cues": [
+   "threat",
+   "bank_claim_not_1600",
+   "international_number",
+   "authority"
+  ],
+  "sources": [
+   "context",
+   "cues",
+   "phone_ai"
+  ],
+  "reason": null
+ },
+ {
+  "id": "team_calls/en_genuine_bank_fraud_alert",
+  "segments": [
+   "Hello, this is HDFC Bank calling about a card transaction of four thousand two hundred at Amazon.",
+   "If this was you, no action is needed.",
+   "Please remember the bank will never ask for your OTP, PIN or CVV on a call."
+  ],
+  "context": [
+   "series_1600",
+   "synthetic_voice",
+   "unknown_number"
+  ],
+  "llm": {
+   "verdict": "unsure",
+   "type": "unknown",
+   "reason_en": "",
+   "reason_hi": ""
+  },
+  "levels": [
+   "warn",
+   "warn",
+   "warn"
+  ],
+  "level": "warn",
+  "type": "otp_upi",
+  "cues": [
+   "synthetic_voice",
+   "credentials",
+   "money_ask"
+  ],
+  "sources": [
+   "cues",
+   "voice"
+  ],
+  "reason": null
+ },
+ {
+  "id": "team_calls/en_delivery_otp",
+  "segments": [
+   "Hi, I'm from Amazon delivery, I'm at your gate.",
+   "Please tell me the OTP for the delivery so I can hand over the package."
+  ],
+  "context": [
+   "video_call_unknown"
+  ],
+  "llm": null,
+  "levels": [
+   "watch",
+   "watch"
+  ],
+  "level": "watch",
+  "type": "otp_upi",
+  "cues": [
+   "video_call_unknown",
+   "credentials",
+   "parcel_customs"
+  ],
+  "sources": [
+   "context",
+   "cues"
+  ],
+  "reason": null
+ },
+ {
+  "id": "team_calls/hinglish_delivery_otp_abhi",
+  "segments": [
+   "Madam Flipkart se delivery hai, main neeche khada hoon.",
+   "OTP bata dijiye abhi, mujhe jaldi agla order dena hai."
+  ],
+  "context": [
+   "remote_app_opened",
+   "unknown_number"
+  ],
+  "llm": null,
+  "levels": [
+   "warn",
+   "warn"
+  ],
+  "level": "warn",
+  "type": "otp_upi",
+  "cues": [
+   "remote_app_opened",
+   "credentials",
+   "urgency"
+  ],
+  "sources": [
+   "context",
+   "cues"
+  ],
+  "reason": null
+ },
+ {
+  "id": "team_calls/hinglish_son_asks_money",
+  "segments": [
+   "Mummy, rent ke liye do hazaar kam pad rahe hain.",
+   "GPay kar do please, main kal wapas kar dunga. Abhi class ja raha hoon."
+  ],
+  "context": [
+   "known_contact"
+  ],
+  "llm": {
+   "verdict": "scam",
+   "type": "digital_arrest",
+   "reason_en": "They threaten arrest and ask for money.",
+   "reason_hi": "वे गिरफ़्तारी की धमकी देकर पैसे मांग रहे हैं।"
+  },
+  "levels": [
+   "watch",
+   "watch"
+  ],
+  "level": "watch",
+  "type": "digital_arrest",
+  "cues": [
+   "money_ask",
+   "urgency"
+  ],
+  "sources": [
+   "cues"
+  ],
+  "reason": null
+ },
+ {
+  "id": "team_calls/hi_doctor",
+  "segments": [
+   "नमस्ते, मैं सिटी अस्पताल से बोल रही हूं।",
+   "आपका कल सुबह दस बजे डॉक्टर के साथ अपॉइंटमेंट है, कृपया समय पर आइए।"
+  ],
+  "context": [
+   "unknown_number"
+  ],
+  "llm": {
+   "verdict": "scam",
+   "type": "digital_arrest",
+   "reason_en": "They threaten arrest and ask for money.",
+   "reason_hi": "वे गिरफ़्तारी की धमकी देकर पैसे मांग रहे हैं।"
+  },
+  "levels": [
+   "watch",
+   "watch"
+  ],
+  "level": "watch",
+  "type": "digital_arrest",
+  "cues": [
+   "family_emergency"
+  ],
+  "sources": [
+   "cues"
+  ],
+  "reason": null
+ },
+ {
+  "id": "team_calls/en_news_discussion",
+  "segments": [
+   "Did you read the news about the digital arrest scam?",
+   "Fraudsters pretend to be CBI officers on a video call and say there is an arrest warrant.",
+   "Then they ask people to transfer money. Be careful, never send money to anyone like that."
+  ],
+  "context": [
+   "international_number",
+   "unknown_number"
+  ],
+  "llm": {
+   "verdict": "ok",
+   "type": "unknown",
+   "reason_en": "",
+   "reason_hi": ""
+  },
+  "levels": [
+   "scam",
+   "scam",
+   "scam"
+  ],
+  "level": "scam",
+  "type": "digital_arrest",
+  "cues": [
+   "bank_claim_not_1600",
+   "international_number",
+   "authority",
+   "money_ask",
+   "threat",
+   "video_move"
+  ],
+  "sources": [
+   "context",
+   "cues"
+  ],
+  "reason": null
+ },
+ {
+  "id": "team_calls/hi_news_discussion",
+  "segments": [
+   "आजकल डिजिटल अरेस्ट वाली ठगी की खबर सुनी?",
+   "ठग पुलिस बनकर वीडियो कॉल करते हैं और पैसे ट्रांसफर करवाते हैं, सावधान रहना।"
+  ],
+  "context": [
+   "caller_check_failed",
+   "series_1600",
+   "unknown_number"
+  ],
+  "llm": {
+   "verdict": "ok",
+   "type": "unknown",
+   "reason_en": "",
+   "reason_hi": ""
+  },
+  "levels": [
+   "warn",
+   "scam"
+  ],
+  "level": "scam",
+  "type": "otp_upi",
+  "cues": [
+   "credentials",
+   "caller_check_failed",
+   "authority",
+   "money_ask",
+   "video_move"
+  ],
+  "sources": [
+   "caller_check",
+   "context",
+   "cues",
+   "phone_ai"
+  ],
+  "reason": null
+ },
+ {
+  "id": "team_calls/en_genuine_kyc_branch",
+  "segments": [
+   "Hello, this is your branch manager from Canara Bank.",
+   "Your KYC documents are due for renewal. Please visit the branch with your Aadhaar and PAN when convenient."
+  ],
+  "context": [
+   "video_call_unknown"
+  ],
+  "llm": {
+   "verdict": "unsure",
+   "type": "unknown",
+   "reason_en": "",
+   "reason_hi": ""
+  },
+  "levels": [
+   "watch",
+   "watch"
+  ],
+  "level": "watch",
+  "type": "unknown",
+  "cues": [
+   "video_call_unknown",
+   "verification_pretext"
+  ],
+  "sources": [
+   "context",
+   "cues"
+  ],
+  "reason": null
+ },
+ {
+  "id": "team_calls/en_telemarketing_card",
+  "segments": [
+   "Sir, you have a pre-approved credit card offer with a higher credit card limit and no annual fee.",
+   "Shall I send the application link on WhatsApp? You can apply when you want."
+  ],
+  "context": [
+   "remote_app_opened",
+   "unknown_number"
+  ],
+  "llm": {
+   "verdict": "unsure",
+   "type": "unknown",
+   "reason_en": "",
+   "reason_hi": ""
+  },
+  "levels": [
+   "warn",
+   "warn"
+  ],
+  "level": "warn",
+  "type": "unknown",
+  "cues": [
+   "bank_claim_not_1600",
+   "remote_app_opened",
+   "verification_pretext"
+  ],
+  "sources": [
+   "context",
+   "cues"
+  ],
+  "reason": null
+ },
+ {
+  "id": "team_calls/hinglish_family_plans",
+  "segments": [
+   "Haan papa, Diwali pe ghar aa raha hoon.",
+   "Ticket book kar liya hai, train subah chhe baje hai. Mummy ko bol dena."
+  ],
+  "context": [
+   "remote_app_opened"
+  ],
+  "llm": null,
+  "levels": [
+   "warn",
+   "warn"
+  ],
+  "level": "warn",
+  "type": "unknown",
+  "cues": [
+   "remote_app_opened"
+  ],
+  "sources": [
+   "context"
+  ],
+  "reason": null
+ },
+ {
+  "id": "team_calls/en_mechanic_payment",
+  "segments": [
+   "Your car is ready, madam. The service cost is six thousand five hundred rupees.",
+   "You can pay by UPI when you pick it up this evening."
+  ],
+  "context": [
+   "unknown_number"
+  ],
+  "llm": null,
+  "levels": [
+   "watch",
+   "watch"
+  ],
+  "level": "watch",
+  "type": "unknown",
+  "cues": [
+   "money_ask"
+  ],
+  "sources": [
+   "cues"
+  ],
+  "reason": null
+ },
+ {
+  "id": "team_calls/hi_police_verification_genuine",
+  "segments": [
+   "नमस्ते, मैं थाने से बोल रहा हूं, आपके किरायेदार के पुलिस वेरिफिकेशन के बारे में।",
+   "कल दोपहर तक उनके आधार की कॉपी लेकर थाने आ जाइए।"
+  ],
+  "context": [
+   "international_number",
+   "unknown_number"
+  ],
+  "llm": {
+   "verdict": "scam",
+   "type": "digital_arrest",
+   "reason_en": "They threaten arrest and ask for money.",
+   "reason_hi": "वे गिरफ़्तारी की धमकी देकर पैसे मांग रहे हैं।"
+  },
+  "levels": [
+   "scam",
+   "scam"
+  ],
+  "level": "scam",
+  "type": "digital_arrest",
+  "cues": [
+   "bank_claim_not_1600",
+   "international_number",
+   "authority",
+   "verification_pretext"
+  ],
+  "sources": [
+   "context",
+   "cues",
+   "llm"
+  ],
+  "reason": "They threaten arrest and ask for money."
+ },
+ {
+  "id": "team_calls/en_ceo_vendor_payment",
+  "segments": [
+   "Hi Neha, this is Vikram, your MD speaking. I am in a board meeting so I cannot talk now.",
+   "We are closing a confidential acquisition. Keep this between us, don't tell finance yet.",
+   "Please process the payment to the new vendor today, I'm sending the new bank account details on WhatsApp.",
+   "It is urgent, do the RTGS in the next thirty minutes."
+  ],
+  "context": [
+   "series_1600",
+   "synthetic_voice",
+   "unknown_number"
+  ],
+  "llm": {
+   "verdict": "scam",
+   "type": "digital_arrest",
+   "reason_en": "They threaten arrest and ask for money.",
+   "reason_hi": "वे गिरफ़्तारी की धमकी देकर पैसे मांग रहे हैं।"
+  },
+  "levels": [
+   "warn",
+   "warn",
+   "scam",
+   "scam"
+  ],
+  "level": "scam",
+  "type": "boss_payment",
+  "cues": [
+   "urgency",
+   "synthetic_voice",
+   "boss_pretext",
+   "money_ask",
+   "payment_redirect",
+   "secrecy"
+  ],
+  "sources": [
+   "cues",
+   "llm",
+   "phone_ai",
+   "voice"
+  ],
+  "reason": "They threaten arrest and ask for money."
+ },
+ {
+  "id": "team_calls/hinglish_boss_genuine_reminder",
+  "segments": [
+   "Haan Neha, Vikram bol raha hoon.",
+   "Kal ki review meeting ke slides ready hain? Finance team ko bhi bula lena.",
+   "Aur haan, invoice wala kaam normal process se hi karna, purchase order ke baad."
+  ],
+  "context": [
+   "video_call_unknown"
+  ],
+  "llm": {
+   "verdict": "ok",
+   "type": "unknown",
+   "reason_en": "",
+   "reason_hi": ""
+  },
+  "levels": [
+   "watch",
+   "watch",
+   "watch"
+  ],
+  "level": "watch",
+  "type": "unknown",
+  "cues": [
+   "video_call_unknown"
+  ],
+  "sources": [
+   "context",
+   "cues"
+  ],
+  "reason": null
+ },
+ {
+  "id": "adversarial/para_digital_arrest_soft",
+  "segments": [
+   "Good afternoon madam, I am calling from the investigation wing in Mumbai",
+   "A parcel booked on your identity has some objectionable items",
+   "We need you to stay on this video call while we record your statement, and please keep this confidential until",
+   "the matter is settled",
+   "A refundable security amount has to be deposited for clearance"
+  ],
+  "context": [
+   "remote_app_opened",
+   "unknown_number"
+  ],
+  "llm": {
+   "verdict": "ok",
+   "type": "unknown",
+   "reason_en": "",
+   "reason_hi": ""
+  },
+  "levels": [
+   "warn",
+   "warn",
+   "scam",
+   "scam",
+   "scam"
+  ],
+  "level": "scam",
+  "type": "courier_customs",
+  "cues": [
+   "money_ask",
+   "remote_app_opened",
+   "parcel_customs",
+   "secrecy",
+   "video_move"
+  ],
+  "sources": [
+   "context",
+   "cues",
+   "phone_ai"
+  ],
+  "reason": null
+ },
+ {
+  "id": "adversarial/para_kyc_polite",
+  "segments": [
+   "Hello sir, this is from your bank's customer care",
+   "Your account will be paused today as the documents are outdated",
+   "To avoid any inconvenience I will send a short code to your mobile, kindly read it back to me so",
+   "I can complete the update from my side"
+  ],
+  "context": [
+   "known_contact"
+  ],
+  "llm": {
+   "verdict": "unsure",
+   "type": "unknown",
+   "reason_en": "",
+   "reason_hi": ""
+  },
+  "levels": [
+   "none",
+   "none",
+   "none",
+   "none"
+  ],
+  "level": "none",
+  "type": "unknown",
+  "cues": [],
+  "sources": [],
+  "reason": null
+ },
+ {
+  "id": "adversarial/para_investment_friendly",
+  "segments": [
+   "Hi uncle, I got your number from the WhatsApp group",
+   "Our members doubled their savings in three weeks with our stock tips",
+   "You just transfer fifty thousand to our partner account to start, and we guarantee the returns",
+   "Seats are limited, decide by tonight"
+  ],
+  "context": [
+   "unknown_number"
+  ],
+  "llm": {
+   "verdict": "unsure",
+   "type": "unknown",
+   "reason_en": "",
+   "reason_hi": ""
+  },
+  "levels": [
+   "none",
+   "watch",
+   "warn",
+   "warn"
+  ],
+  "level": "warn",
+  "type": "investment",
+  "cues": [
+   "money_ask",
+   "investment"
+  ],
+  "sources": [
+   "cues",
+   "phone_ai"
+  ],
+  "reason": null
+ },
+ {
+  "id": "adversarial/para_job_task",
+  "segments": [
+   "Hello ji, part time kaam hai ghar baithe",
+   "Bas YouTube videos like karne hain aur har task ke paise milenge",
+   "Pehle thoda amount deposit karna padega taaki aapka account activate ho jaye, baad mein sab wapas mil jayega commission ke",
+   "saath"
+  ],
+  "context": [
+   "international_number",
+   "unknown_number"
+  ],
+  "llm": null,
+  "levels": [
+   "watch",
+   "watch",
+   "scam",
+   "scam"
+  ],
+  "level": "scam",
+  "type": "job_task",
+  "cues": [
+   "parcel_customs",
+   "international_number",
+   "job_task",
+   "money_ask"
+  ],
+  "sources": [
+   "context",
+   "cues",
+   "phone_ai"
+  ],
+  "reason": null
+ },
+ {
+  "id": "adversarial/para_family_emergency",
+  "segments": [
+   "Aunty main Rahul ka dost bol raha hoon",
+   "Rahul ka accident ho gaya hai aur hospital wale abhi paise maang rahe hain",
+   "Uska phone toot gaya hai isliye main call kar raha hoon",
+   "Jaldi se is number pe UPI kar dijiye, ghar pe kisi ko mat batana, woh pareshan ho jayenge"
+  ],
+  "context": [
+   "caller_check_failed",
+   "series_1600",
+   "unknown_number"
+  ],
+  "llm": null,
+  "levels": [
+   "warn",
+   "warn",
+   "warn",
+   "scam"
+  ],
+  "level": "scam",
+  "type": "impersonation",
+  "cues": [
+   "caller_check_failed",
+   "family_emergency",
+   "secrecy",
+   "urgency"
+  ],
+  "sources": [
+   "caller_check",
+   "context",
+   "cues"
+  ],
+  "reason": null
+ },
+ {
+  "id": "adversarial/misspell_digital_arrest",
+  "segments": [
+   "this is inspecter sharma from mumbay polise cyber crme",
+   "your adhaar is linkd to a mony landering case and a arest warent is isued",
+   "do not tel anyone and transfar the amount to the saftey acount for verfication or you will be arested today"
+  ],
+  "context": [
+   "video_call_unknown"
+  ],
+  "llm": {
+   "verdict": "scam",
+   "type": "digital_arrest",
+   "reason_en": "They threaten arrest and ask for money.",
+   "reason_hi": "वे गिरफ़्तारी की धमकी देकर पैसे मांग रहे हैं।"
+  },
+  "levels": [
+   "watch",
+   "scam",
+   "scam"
+  ],
+  "level": "scam",
+  "type": "digital_arrest",
+  "cues": [
+   "secrecy",
+   "video_call_unknown",
+   "authority",
+   "money_ask",
+   "threat",
+   "verification_pretext"
+  ],
+  "sources": [
+   "context",
+   "cues",
+   "llm",
+   "phone_ai"
+  ],
+  "reason": "They threaten arrest and ask for money."
+ },
+ {
+  "id": "adversarial/misspell_otp",
+  "segments": [
+   "sir aapke acount mein kyc pending hai, aaj band ho jayega",
+   "aapke mobil pe ek otpi aaya hoga woh bata dijiye, main yahi se updat kar deta hoon",
+   "jaldi kijiye warna card blok ho jayega"
+  ],
+  "context": [
+   "remote_app_opened",
+   "unknown_number"
+  ],
+  "llm": {
+   "verdict": "scam",
+   "type": "digital_arrest",
+   "reason_en": "They threaten arrest and ask for money.",
+   "reason_hi": "वे गिरफ़्तारी की धमकी देकर पैसे मांग रहे हैं।"
+  },
+  "levels": [
+   "scam",
+   "scam",
+   "scam"
+  ],
+  "level": "scam",
+  "type": "bank_kyc",
+  "cues": [
+   "bank_claim_not_1600",
+   "remote_app_opened",
+   "threat",
+   "urgency",
+   "verification_pretext"
+  ],
+  "sources": [
+   "context",
+   "cues",
+   "llm"
+  ],
+  "reason": "They threaten arrest and ask for money."
+ },
+ {
+  "id": "adversarial/translit_hi_to_latin_arrest",
+  "segments": [
+   "main dilli pulis se inspektar varma bol raha hoon",
+   "aapke naam par mani londring ka kes darj hua hai",
+   "aapko dijital arest kiya ja raha hai",
+   "kisi ko mat bataiye aur apne khate ka paisa surakshit khate mein bhej dijiye"
+  ],
+  "context": [
+   "remote_app_opened"
+  ],
+  "llm": {
+   "verdict": "ok",
+   "type": "unknown",
+   "reason_en": "",
+   "reason_hi": ""
+  },
+  "levels": [
+   "warn",
+   "warn",
+   "scam",
+   "scam"
+  ],
+  "level": "scam",
+  "type": "digital_arrest",
+  "cues": [
+   "parcel_customs",
+   "remote_app_opened",
+   "authority",
+   "reward",
+   "secrecy",
+   "threat",
+   "video_move"
+  ],
+  "sources": [
+   "context",
+   "cues",
+   "phone_ai"
+  ],
+  "reason": null
+ },
+ {
+  "id": "adversarial/translit_latin_to_hi_kyc",
+  "segments": [
+   "हैलो सर मैं एसबीआई बैंक से बोल रहा हूँ",
+   "आपका केवाईसी अपडेट नहीं है इसलिए आज आपका अकाउंट ब्लॉक हो जाएगा",
+   "आपके फ़ोन पर एक ओटीपी आया होगा, वो बता दीजिए ताकि मैं अभी अपडेट कर दूँ"
+  ],
+  "context": [
+   "unknown_number"
+  ],
+  "llm": {
+   "verdict": "ok",
+   "type": "unknown",
+   "reason_en": "",
+   "reason_hi": ""
+  },
+  "levels": [
+   "none",
+   "warn",
+   "scam"
+  ],
+  "level": "scam",
+  "type": "bank_kyc",
+  "cues": [
+   "sim_block",
+   "bank_claim_not_1600",
+   "credentials",
+   "threat",
+   "urgency",
+   "verification_pretext"
+  ],
+  "sources": [
+   "cues",
+   "phone_ai"
+  ],
+  "reason": null
+ },
+ {
+  "id": "adversarial/translit_mixed_script",
+  "segments": [
+   "Madam मैं CBI से officer बोल रहा हूँ",
+   "आपके Aadhaar से एक parcel भेजा गया है जिसमें drugs मिले हैं",
+   "आप video call पर रहिए, किसी को मत बताइए, और जांच के लिए पैसे RBI के account में transfer कीजिए"
+  ],
+  "context": [
+   "international_number",
+   "unknown_number"
+  ],
+  "llm": {
+   "verdict": "unsure",
+   "type": "unknown",
+   "reason_en": "",
+   "reason_hi": ""
+  },
+  "levels": [
+   "watch",
+   "scam",
+   "scam"
+  ],
+  "level": "scam",
+  "type": "digital_arrest",
+  "cues": [
+   "parcel_customs",
+   "bank_claim_not_1600",
+   "international_number",
+   "authority",
+   "money_ask",
+   "secrecy",
+   "threat",
+   "video_move"
+  ],
+  "sources": [
+   "context",
+   "cues",
+   "phone_ai"
+  ],
+  "reason": null
+ },
+ {
+  "id": "adversarial/negation_abuse_safe_account",
+  "segments": [
+   "Ma'am I am not asking for your OTP, never share it with anyone",
+   "I'm from the RBI fraud cell",
+   "Your savings are not safe in your account right now because of a hacking case",
+   "Just move them to the secure RBI account I give you, and don't tell your bank manager because he is",
+   "under investigation"
+  ],
+  "context": [
+   "series_1600",
+   "synthetic_voice",
+   "unknown_number"
+  ],
+  "llm": {
+   "verdict": "unsure",
+   "type": "unknown",
+   "reason_en": "",
+   "reason_hi": ""
+  },
+  "levels": [
+   "warn",
+   "warn",
+   "warn",
+   "warn",
+   "warn"
+  ],
+  "level": "warn",
+  "type": "digital_arrest",
+  "cues": [
+   "synthetic_voice",
+   "authority",
+   "money_ask",
+   "secrecy",
+   "urgency"
+  ],
+  "sources": [
+   "cues",
+   "phone_ai",
+   "voice"
+  ],
+  "reason": null
+ },
+ {
+  "id": "adversarial/negation_abuse_no_money",
+  "segments": [
+   "Ghabraiye mat, hum aapse koi paisa nahi maang rahe",
+   "Bas verification ke liye AnyDesk app download kijiye aur jo code aaye woh bata dijiye",
+   "Ye sab RBI ke rules ke hisaab se ho raha hai, kisi ko batane ki zaroorat nahi hai"
+  ],
+  "context": [
+   "video_call_unknown"
+  ],
+  "llm": null,
+  "levels": [
+   "watch",
+   "scam",
+   "scam"
+  ],
+  "level": "scam",
+  "type": "remote_access",
+  "cues": [
+   "remote_access",
+   "threat",
+   "video_call_unknown",
+   "authority"
+  ],
+  "sources": [
+   "context",
+   "cues",
+   "phone_ai"
+  ],
+  "reason": null
+ },
+ {
+  "id": "adversarial/slowburn_courier",
+  "segments": [
+   "Hello, am I speaking to Mrs Iyer",
+   "I'm calling from the courier company about a delivery",
+   "Are you at home today",
+   "Okay good",
+   "Your package was sent from Mumbai to Taiwan",
+   "It contains five passports and some cards",
+   "Customs has stopped it",
+   "I'm connecting you to the narcotics officer",
+   "Officer here: this is serious, you must not disconnect",
+   "Pay the verification fee now through the link I send"
+  ],
+  "context": [
+   "remote_app_opened",
+   "unknown_number"
+  ],
+  "llm": null,
+  "levels": [
+   "warn",
+   "warn",
+   "warn",
+   "warn",
+   "warn",
+   "warn",
+   "warn",
+   "warn",
+   "warn",
+   "warn"
+  ],
+  "level": "warn",
+  "type": "courier_customs",
+  "cues": [
+   "secrecy",
+   "money_ask",
+   "bank_claim_not_1600",
+   "remote_app_opened",
+   "authority",
+   "parcel_customs"
+  ],
+  "sources": [
+   "context",
+   "cues",
+   "phone_ai"
+  ],
+  "reason": null
+ },
+ {
+  "id": "adversarial/slowburn_trai",
+  "segments": [
+   "Hello madam, how are you",
+   "I hope you are keeping well",
+   "I'm calling regarding your mobile connection",
+   "We noticed some activity",
+   "There are complaints filed against your number in Delhi",
+   "Your SIM will be blocked in two hours by the telecom department",
+   "To stop this I will transfer you to the police, and you will need to pay a fine to clear",
+   "your name"
+  ],
+  "context": [
+   "known_contact"
+  ],
+  "llm": {
+   "verdict": "scam",
+   "type": "digital_arrest",
+   "reason_en": "They threaten arrest and ask for money.",
+   "reason_hi": "वे गिरफ़्तारी की धमकी देकर पैसे मांग रहे हैं।"
+  },
+  "levels": [
+   "none",
+   "none",
+   "none",
+   "none",
+   "none",
+   "watch",
+   "scam",
+   "scam"
+  ],
+  "level": "scam",
+  "type": "trai_sim",
+  "cues": [
+   "authority",
+   "money_ask",
+   "sim_block"
+  ],
+  "sources": [
+   "cues",
+   "llm",
+   "phone_ai"
+  ],
+  "reason": "They threaten arrest and ask for money."
+ },
+ {
+  "id": "adversarial/slowburn_hi_reward",
+  "segments": [
+   "नमस्ते जी, आप कैसे हैं",
+   "मैं कौन बनेगा करोड़पति के ऑफिस से बोल रहा हूँ",
+   "आपका नंबर लकी ड्रॉ में आया है",
+   "बधाई हो, आपने पच्चीस लाख रुपये जीते हैं",
+   "बस प्रोसेसिंग फीस के दस हज़ार रुपये भेज दीजिए, फिर पूरी रकम आपके खाते में आ जाएगी"
+  ],
+  "context": [
+   "unknown_number"
+  ],
+  "llm": {
+   "verdict": "scam",
+   "type": "digital_arrest",
+   "reason_en": "They threaten arrest and ask for money.",
+   "reason_hi": "वे गिरफ़्तारी की धमकी देकर पैसे मांग रहे हैं।"
+  },
+  "levels": [
+   "none",
+   "watch",
+   "watch",
+   "watch",
+   "scam"
+  ],
+  "level": "scam",
+  "type": "reward",
+  "cues": [
+   "money_ask",
+   "reward"
+  ],
+  "sources": [
+   "cues",
+   "llm",
+   "phone_ai"
+  ],
+  "reason": "They threaten arrest and ask for money."
+ },
+ {
+  "id": "adversarial/no_cue_words_scam",
+  "segments": [
+   "Hi ma'am, I'm the person who rented your flat listing online",
+   "I've sent you the deposit by mistake twice, forty thousand extra",
+   "Could you please return the extra to my brother's number",
+   "I'm in a meeting, please do it in the next ten minutes, he really needs it for an operation"
+  ],
+  "context": [
+   "international_number",
+   "unknown_number"
+  ],
+  "llm": {
+   "verdict": "ok",
+   "type": "unknown",
+   "reason_en": "",
+   "reason_hi": ""
+  },
+  "levels": [
+   "watch",
+   "watch",
+   "watch",
+   "scam"
+  ],
+  "level": "scam",
+  "type": "family_emergency",
+  "cues": [
+   "international_number",
+   "family_emergency",
+   "money_ask"
+  ],
+  "sources": [
+   "context",
+   "cues"
+  ],
+  "reason": null
+ },
+ {
+  "id": "adversarial/genuine_bank_fraud_check",
+  "segments": [
+   "Hello, this is HDFC Bank's fraud monitoring team",
+   "We blocked a card transaction of twelve thousand rupees at an online store a few minutes ago",
+   "If this was not you, no action is needed, the card stays blocked and you can collect a new one",
+   "from your branch",
+   "We will never ask for your PIN or OTP"
+  ],
+  "context": [
+   "caller_check_failed",
+   "series_1600",
+   "unknown_number"
+  ],
+  "llm": {
+   "verdict": "ok",
+   "type": "unknown",
+   "reason_en": "",
+   "reason_hi": ""
+  },
+  "levels": [
+   "warn",
+   "warn",
+   "warn",
+   "warn",
+   "scam"
+  ],
+  "level": "scam",
+  "type": "impersonation",
+  "cues": [
+   "caller_check_failed",
+   "credentials",
+   "money_ask"
+  ],
+  "sources": [
+   "caller_check",
+   "context",
+   "cues"
+  ],
+  "reason": null
+ },
+ {
+  "id": "adversarial/genuine_bank_loan_followup",
+  "segments": [
+   "Namaste sir, main ICICI branch se bol rahi hoon",
+   "Aapne home loan ke liye form bhara tha, uske documents ke liye aapko branch aana hoga",
+   "Original PAN aur salary slip le aaiye",
+   "Koi payment phone pe nahi hogi, sab branch mein counter pe hoga"
+  ],
+  "context": [
+   "video_call_unknown"
+  ],
+  "llm": {
+   "verdict": "unsure",
+   "type": "unknown",
+   "reason_en": "",
+   "reason_hi": ""
+  },
+  "levels": [
+   "watch",
+   "watch",
+   "watch",
+   "watch"
+  ],
+  "level": "watch",
+  "type": "unknown",
+  "cues": [
+   "video_call_unknown"
+  ],
+  "sources": [
+   "context",
+   "cues"
+  ],
+  "reason": null
+ },
+ {
+  "id": "adversarial/genuine_delivery_otp",
+  "segments": [
+   "Hi, I'm the Flipkart delivery person, I'm at your gate with the washing machine",
+   "It's open box delivery, so once I unpack it and you check it, please tell me the delivery OTP that",
+   "you got from Flipkart, then I can close the order",
+   "Should I bring it up to the third floor"
+  ],
+  "context": [
+   "remote_app_opened",
+   "unknown_number"
+  ],
+  "llm": {
+   "verdict": "unsure",
+   "type": "unknown",
+   "reason_en": "",
+   "reason_hi": ""
+  },
+  "levels": [
+   "warn",
+   "warn",
+   "warn",
+   "warn"
+  ],
+  "level": "warn",
+  "type": "otp_upi",
+  "cues": [
+   "remote_app_opened",
+   "credentials"
+  ],
+  "sources": [
+   "context",
+   "cues"
+  ],
+  "reason": null
+ },
+ {
+  "id": "adversarial/genuine_delivery_hi",
+  "segments": [
+   "हैलो मैडम, मैं ब्लू डार्ट से बोल रहा हूँ",
+   "आपका पार्सल आया है लेकिन घर पर ताला लगा है",
+   "क्या मैं इसे पड़ोसी के पास छोड़ दूँ या कल सुबह दस बजे फिर आऊँ",
+   "कोई पैसा नहीं देना है, पेमेंट पहले हो चुका है"
+  ],
+  "context": [
+   "remote_app_opened"
+  ],
+  "llm": null,
+  "levels": [
+   "warn",
+   "warn",
+   "warn",
+   "warn"
+  ],
+  "level": "warn",
+  "type": "unknown",
+  "cues": [
+   "remote_app_opened",
+   "parcel_customs"
+  ],
+  "sources": [
+   "context",
+   "cues"
+  ],
+  "reason": null
+ },
+ {
+  "id": "adversarial/genuine_police_verification",
+  "segments": [
+   "Namaste ji, main Kotwali thane se constable bol raha hoon",
+   "Aapke passport ki police verification ke liye kal subah gyarah baje thane aa jaiye",
+   "Aadhaar aur address proof ki photocopy le aaiye",
+   "Phone pe koi paisa ya details nahi chahiye"
+  ],
+  "context": [
+   "unknown_number"
+  ],
+  "llm": null,
+  "levels": [
+   "warn",
+   "warn",
+   "warn",
+   "warn"
+  ],
+  "level": "warn",
+  "type": "otp_upi",
+  "cues": [
+   "authority",
+   "credentials",
+   "bank_claim_not_1600",
+   "parcel_customs"
+  ],
+  "sources": [
+   "cues",
+   "phone_ai"
+  ],
+  "reason": null
+ },
+ {
+  "id": "adversarial/genuine_police_complaint",
+  "segments": [
+   "Good evening, this is Sub Inspector Rao from Indiranagar police station",
+   "You had filed a complaint about your stolen bicycle last week",
+   "We have found a few bicycles, could you come to the station on Saturday to identify yours",
+   "Please bring the purchase bill if you have it"
+  ],
+  "context": [
+   "international_number",
+   "unknown_number"
+  ],
+  "llm": {
+   "verdict": "scam",
+   "type": "digital_arrest",
+   "reason_en": "They threaten arrest and ask for money.",
+   "reason_hi": "वे गिरफ़्तारी की धमकी देकर पैसे मांग रहे हैं।"
+  },
+  "levels": [
+   "watch",
+   "watch",
+   "watch",
+   "watch"
+  ],
+  "level": "watch",
+  "type": "digital_arrest",
+  "cues": [
+   "bank_claim_not_1600",
+   "international_number",
+   "authority"
+  ],
+  "sources": [
+   "context",
+   "cues"
+  ],
+  "reason": null
+ },
+ {
+  "id": "adversarial/relatives_discuss_digital_arrest",
+  "segments": [
+   "Mummy aapne news dekhi",
+   "Ek aunty ko kisi ne fake police bankar video call pe digital arrest kar diya aur unse das lakh transfer",
+   "karwa liye",
+   "Agar kabhi koi CBI ya police wala phone karke paise maange to turant phone kaat dena aur mujhe call karna"
+  ],
+  "context": [
+   "series_1600",
+   "synthetic_voice",
+   "unknown_number"
+  ],
+  "llm": {
+   "verdict": "scam",
+   "type": "digital_arrest",
+   "reason_en": "They threaten arrest and ask for money.",
+   "reason_hi": "वे गिरफ़्तारी की धमकी देकर पैसे मांग रहे हैं।"
+  },
+  "levels": [
+   "warn",
+   "warn",
+   "scam",
+   "scam"
+  ],
+  "level": "scam",
+  "type": "digital_arrest",
+  "cues": [
+   "authority",
+   "synthetic_voice",
+   "money_ask",
+   "threat",
+   "urgency",
+   "video_move"
+  ],
+  "sources": [
+   "cues",
+   "llm",
+   "phone_ai",
+   "voice"
+  ],
+  "reason": "They threaten arrest and ask for money."
+ },
+ {
+  "id": "adversarial/relatives_discuss_otp",
+  "segments": [
+   "Papa, remember what I told you",
+   "If anyone calls saying your KYC is expired or your account will be blocked, and asks for an OTP, it's",
+   "a scam",
+   "The bank never asks for OTP on a call",
+   "Just cut the call and phone me",
+   "Did you get the new debit card yet"
+  ],
+  "context": [
+   "video_call_unknown"
+  ],
+  "llm": {
+   "verdict": "ok",
+   "type": "unknown",
+   "reason_en": "",
+   "reason_hi": ""
+  },
+  "levels": [
+   "watch",
+   "scam",
+   "scam",
+   "scam",
+   "scam",
+   "scam"
+  ],
+  "level": "scam",
+  "type": "bank_kyc",
+  "cues": [
+   "video_call_unknown",
+   "credentials",
+   "threat",
+   "verification_pretext"
+  ],
+  "sources": [
+   "context",
+   "cues",
+   "phone_ai"
+  ],
+  "reason": null
+ },
+ {
+  "id": "adversarial/relatives_discuss_hi",
+  "segments": [
+   "दीदी, कल हमारे पड़ोस में एक अंकल के साथ धोखा हुआ",
+   "किसी ने बैंक वाला बनकर उनका ओटीपी ले लिया और पैसे निकाल लिए",
+   "तुम मम्मी को समझा देना कि किसी को भी फ़ोन पर ओटीपी या पिन नहीं बताना है"
+  ],
+  "context": [
+   "remote_app_opened",
+   "unknown_number"
+  ],
+  "llm": {
+   "verdict": "ok",
+   "type": "unknown",
+   "reason_en": "",
+   "reason_hi": ""
+  },
+  "levels": [
+   "warn",
+   "warn",
+   "warn"
+  ],
+  "level": "warn",
+  "type": "otp_upi",
+  "cues": [
+   "remote_app_opened",
+   "credentials"
+  ],
+  "sources": [
+   "context",
+   "cues",
+   "phone_ai"
+  ],
+  "reason": null
+ },
+ {
+  "id": "adversarial/genuine_son_needs_money",
+  "segments": [
+   "Haan mummy main bol raha hoon",
+   "Hostel ki fees ki last date kal hai, papa se baat hui thi",
+   "Aap jab free ho tab mere account mein bhej dena, koi jaldi nahi hai",
+   "Aur haan, didi ki shaadi ki shopping kab karni hai"
+  ],
+  "context": [
+   "known_contact"
+  ],
+  "llm": {
+   "verdict": "unsure",
+   "type": "unknown",
+   "reason_en": "",
+   "reason_hi": ""
+  },
+  "levels": [
+   "none",
+   "none",
+   "watch",
+   "watch"
+  ],
+  "level": "watch",
+  "type": "unknown",
+  "cues": [
+   "urgency"
+  ],
+  "sources": [
+   "cues"
+  ],
+  "reason": null
+ },
+ {
+  "id": "adversarial/genuine_insurance_renewal",
+  "segments": [
+   "Hello sir, this is Priya from LIC branch office",
+   "Your policy premium is due on the fifteenth",
+   "You can pay at the branch, through the LIC app or on the official website",
+   "Would you like me to send you the due amount by SMS",
+   "There's no penalty if paid within the grace period"
+  ],
+  "context": [
+   "unknown_number"
+  ],
+  "llm": {
+   "verdict": "unsure",
+   "type": "unknown",
+   "reason_en": "",
+   "reason_hi": ""
+  },
+  "levels": [
+   "none",
+   "watch",
+   "watch",
+   "watch",
+   "watch"
+  ],
+  "level": "watch",
+  "type": "digital_arrest",
+  "cues": [
+   "bank_claim_not_1600",
+   "authority",
+   "threat"
+  ],
+  "sources": [
+   "cues"
+  ],
+  "reason": null
+ },
+ {
+  "id": "adversarial/genuine_electricity_hi",
+  "segments": [
+   "नमस्ते, मैं बिजली विभाग से बोल रहा हूँ",
+   "कल सुबह नौ से बारह बजे तक आपके इलाके में मरम्मत के लिए बिजली बंद रहेगी",
+   "कृपया पानी की मोटर पहले चला लें",
+   "इसके लिए आपको कुछ नहीं करना है"
+  ],
+  "context": [
+   "international_number",
+   "unknown_number"
+  ],
+  "llm": null,
+  "levels": [
+   "watch",
+   "watch",
+   "watch",
+   "watch"
+  ],
+  "level": "watch",
+  "type": "unknown",
+  "cues": [
+   "bank_claim_not_1600",
+   "international_number",
+   "verification_pretext"
+  ],
+  "sources": [
+   "context",
+   "cues"
+  ],
+  "reason": null
+ },
+ {
+  "id": "adversarial/genuine_doctor_appointment",
+  "segments": [
+   "Hello, Apollo clinic se bol rahe hain",
+   "Aapka kal shaam paanch baje Dr Mehta ke saath appointment hai",
+   "Blood test ki report saath le aaiyega aur subah khali pet rehna hai",
+   "Agar time change karna ho to isi number pe bata dijiye"
+  ],
+  "context": [
+   "caller_check_failed",
+   "series_1600",
+   "unknown_number"
+  ],
+  "llm": null,
+  "levels": [
+   "warn",
+   "warn",
+   "warn",
+   "warn"
+  ],
+  "level": "warn",
+  "type": "impersonation",
+  "cues": [
+   "caller_check_failed"
+  ],
+  "sources": [
+   "caller_check",
+   "context"
+  ],
+  "reason": null
+ },
+ {
+  "id": "adversarial/genuine_customer_care_callback",
+  "segments": [
+   "Hello, I'm calling back from Airtel customer care about the complaint you raised about slow internet",
+   "Our engineer will visit tomorrow between ten and one",
+   "He will not ask for any payment",
+   "Is that time okay for you"
+  ],
+  "context": [
+   "video_call_unknown"
+  ],
+  "llm": {
+   "verdict": "scam",
+   "type": "digital_arrest",
+   "reason_en": "They threaten arrest and ask for money.",
+   "reason_hi": "वे गिरफ़्तारी की धमकी देकर पैसे मांग रहे हैं।"
+  },
+  "levels": [
+   "watch",
+   "watch",
+   "watch",
+   "watch"
+  ],
+  "level": "watch",
+  "type": "digital_arrest",
+  "cues": [
+   "video_call_unknown"
+  ],
+  "sources": [
+   "context",
+   "cues"
+  ],
+  "reason": null
+ }
+]

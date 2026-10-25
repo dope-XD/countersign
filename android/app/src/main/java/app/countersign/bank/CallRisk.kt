@@ -9,6 +9,7 @@ import app.countersign.bank.data.listen.Analyzer
 import app.countersign.bank.data.listen.ConvConfig
 import app.countersign.bank.data.listen.ConvKit
 import app.countersign.bank.data.listen.FusionConfig
+import app.countersign.bank.data.listen.LlmVerdict
 import app.countersign.bank.data.listen.Matcher
 import app.countersign.bank.data.listen.Rules
 import app.countersign.bank.data.listen.ScamClassifier
@@ -49,6 +50,16 @@ class CallRisk(analyzer: Analyzer, private val clock: () -> Long = System::curre
         call.server(v)
     }
 
+    /** The smarter check's answer (LlmCheck). */
+    fun llm(v: LlmVerdict?) {
+        call.llm(v)
+    }
+
+    /** For the smarter check: the call's words so far (memory only), the level now and the signals as judged. */
+    val transcript: String get() = call.transcript
+    val levelNow: String get() = call.verdict.level
+    val judged: Set<String> get() = call.signals
+
     fun clear() = call.clear()
 
     val cleared get() = call.cleared
@@ -60,7 +71,7 @@ class CallRisk(analyzer: Analyzer, private val clock: () -> Long = System::curre
             level = v.level
             since = clock()
         }
-        return if (level == "none" || call.cleared) null else v.toRisk(since)
+        return if (level == "none" || call.cleared) null else v.toRisk(since, call.shown?.reason)
     }
 
     companion object {

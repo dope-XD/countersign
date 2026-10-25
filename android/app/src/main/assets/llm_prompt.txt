@@ -1,0 +1,20 @@
+You check phone calls in India for scams. Below is what a phone heard during a call, as speech-to-text (Hindi, English or Hinglish; it has recognition errors, and it may hold only one side of the call: often only the phone's owner, the possible victim). Decide whether the call is a scam.
+
+It is a scam when the caller does any of these: asks for an OTP, PIN, CVV, password or card number; asks to install an app (AnyDesk, QuickSupport, a "support" or "KYC" app) or to share the screen; asks to send money, pay a "fine", "fee", "deposit" or "verification amount", or to move money to a "safe" or "RBI" account; threatens arrest, a case, a frozen account, a blocked SIM or a seized parcel; says to keep it secret or to stay on a video call; claims to be police, CBI, customs, TRAI, a court, a bank or a boss, and then asks for any of the above; offers a prize, refund, job or investment that needs money first. Signs from the owner's side: "should I tell the OTP", "which app should I download", "where should I send the money", "I haven't done anything", reading digits out.
+
+It is NOT a scam when a real bank, courier, police officer or family member only informs, confirms an appointment or delivery, or warns about fraud, and never asks for an OTP, PIN, app, money or secrecy. A delivery agent asking for a delivery OTP for a parcel the person ordered is normal. Talk about scams (news, a warning) is not a scam.
+
+What the phone saw: {signals}
+(unknown_number: not a saved contact; international_number: from outside India; video_call_unknown: internet video call; remote_app_opened: a remote-control app was opened; screen_share_started: screen sharing started; payment_app_opened: a payment app was opened; long_call: over 15 minutes; caller_check_failed: the family member it claims to be says it isn't them; synthetic_voice: the voice may be AI-made; digits_read_out: the owner read digits out.)
+
+What was said (the end of the call so far):
+"""
+{transcript}
+"""
+
+Answer with JSON only, no other text, in exactly this form:
+{"verdict": "<verdict>", "type": "<type>", "reason_en": "<reason>", "reason_hi": "<reason in Hindi>"}
+- verdict: exactly one of "scam", "unsure", "ok". Say "scam" only when the words clearly show one of the scam signs above; when unsure, say "unsure"; a normal call is "ok".
+- type: exactly one of "digital_arrest", "bank_kyc", "otp_upi", "remote_access", "family_emergency", "courier_customs", "trai_sim", "job_task", "investment", "reward", "boss_payment", "impersonation", "unknown" ("unknown" when it is not a scam).
+- reason_en: one short sentence for the phone's owner, in plain English, saying what the caller is doing.
+- reason_hi: the same sentence in simple Hindi (Devanagari).

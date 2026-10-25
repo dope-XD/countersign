@@ -10,7 +10,8 @@ from dataclasses import dataclass, field
 
 from engine.listener.classifier import Classifier, classifier
 from engine.listener.fusion import Judge, fuse
-from engine.listener.rules import CallScorer, score_text
+from engine.listener.hybrid import derived
+from engine.listener.rules import CallScorer, normalize, score_text
 
 SYNTHETIC_VOICE = "synthetic_voice"
 EVIDENCE = {"remote_app_opened", "caller_check_failed", "video_call_unknown", "international_number", "long_call"}
@@ -44,8 +45,9 @@ def analyze_text(
 ) -> Analysis:
     clf = clf or classifier()
     j = clf.judge(text, min_words=clf.meta["min_words_text"] if min_words is None else min_words)
-    ctx = signals(set(context), voice_clone, voice_threshold)
-    v = fuse(score_text(text), ctx, judge=j, cfg=cfg)
+    cues = score_text(text)
+    ctx = derived(signals(set(context), voice_clone, voice_threshold), normalize(text), set(cues.categories))
+    v = fuse(cues, ctx, judge=j, cfg=cfg)
     why = list(dict.fromkeys(v.cues + sorted(c for c in ctx if c == SYNTHETIC_VOICE or c in EVIDENCE)))
     return Analysis(
         level=v.level,
@@ -66,6 +68,7 @@ class LiveCall:
     clf: Classifier = field(default_factory=classifier)
     scorer: CallScorer = field(default_factory=CallScorer)
     words: list[str] = field(default_factory=list)
+    tokens: list[str] = field(default_factory=list)
     context: set[str] = field(default_factory=set)
     prev: str = "none"
 
@@ -73,8 +76,11 @@ class LiveCall:
         if text.strip():
             self.scorer.feed(text)
             self.words.append(text)
+            self.tokens += normalize(text)
         j: Judge = self.clf.judge(" ".join(self.words), min_words=self.clf.meta["min_words_call"])
-        self.prev = fuse(self.scorer.result(), self.context, judge=j, prev=self.prev).level
+        cues = self.scorer.result()
+        ctx = derived(self.context, self.tokens, set(cues.categories))
+        self.prev = fuse(cues, ctx, judge=j, prev=self.prev).level
         return self.prev
 
 
