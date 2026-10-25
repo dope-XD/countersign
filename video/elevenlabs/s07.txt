@@ -1,0 +1,1 @@
+[confident, conversational] We read up before we built. Google and Samsung both run their scam checks on the phone. A twenty twenty-six study of eleven thousand real scam calls found small fine-tuned models scored eighty-three, and chatbots at most seventy. So we fine-tuned one on thirty-one thousand Indian bank calls. It runs on a six-gigabyte phone.

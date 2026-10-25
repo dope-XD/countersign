@@ -1,0 +1,19 @@
+Mummy's phone rings. The man says he's from the CBI, and there's a parcel in her name with drugs in it.
+<break time="2.5s" />
+He tells her to stay on the line and tell no one. Fifty-eight minutes later he asks her to move her savings, to clear her name. <break time="0.6s" /> She does.
+<break time="2.5s" />
+Our first version listened for words like police and OTP. Then a real bank called, used the same words, and it went off. <break time="0.6s" /> So we started again.
+<break time="2.5s" />
+This is Countersign. Everyone in the family installs it.
+<break time="2.5s" />
+On speaker, her phone writes the call down by itself. A model we trained reads it as it goes and asks: is this caller doing what scammers do? <break time="0.6s" /> Saying he's police. Telling her to keep quiet. The card turns amber and says why. If the caller claims to be Rahul, the app asks Rahul's phone. <break time="0.6s" /> It says no.
+<break time="2.5s" />
+If it turns red, Rahul's phone rings full screen, or he gets an SMS if his app is off. If Mummy opens GPay, a red screen gets there first.
+<break time="2.5s" />
+We read up before we built. Google and Samsung both run their scam checks on the phone. A twenty twenty-six study of eleven thousand real scam calls found small fine-tuned models scored eighty-three, and chatbots at most seventy. So we fine-tuned one on thirty-one thousand Indian bank calls. It runs on a six-gigabyte phone.
+<break time="2.5s" />
+We tested it on calls it never trained on. Our old version flagged half the genuine calls. This one flags about two in a hundred. It catches eighty-eight percent of the scams, a few fewer than before, and gets twenty-eight of the thirty kit samples right.
+<break time="2.5s" />
+It isn't perfect. A scam read politely from a script in English can slip past it, and relatives talking about scams sometimes set it off. If it's wrong, two taps clear it and tell the family. Only suspicious calls reach our server, and the audio is dropped after the check. <break time="0.6s" /> We keep one thing: a twenty-second encrypted clip of a confirmed scam, for thirty days.
+<break time="2.5s" />
+Countersign. <break time="0.6s" /> Catch the scam while it's still a call.

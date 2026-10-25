@@ -70,7 +70,7 @@ export const S09: React.FC = () => {
             <Words text="Wrong? Two taps." at={wrong - 0.1} size={80} weight={700} />
           </div>
           {clip ? (
-            <Pop at={wrong - 0.1} from="up" style={{left: 800, top: 220}}>
+            <Pop at={wrong - 0.1} from="up" style={{left: 845, top: 220}}>
               <div style={{width: 640, height: 664, borderRadius: 28, overflow: 'hidden', boxShadow: '0 40px 100px rgba(20,32,43,0.22)', border: `1px solid ${C.line}`, position: 'relative', background: '#fff'}}>
                 <Sequence from={Math.round((tap1 - 1.02) * fps)} layout="none">
                   <OffthreadVideo src={staticFile('clips/not_a_scam.mp4')} muted style={{width: 640, height: 664, objectFit: 'cover'}} />
@@ -107,7 +107,7 @@ export const S09: React.FC = () => {
             <Tap x={110} y={190 + 330} at={yes} />
           </Pop>
           )}
-          <Pop at={gone} from="right" style={{left: 1475, top: 0}}>
+          <Pop at={gone} from="right" style={{left: 1510, top: 0}}>
             <div style={{position: 'absolute', left: 92, top: 110}}>
               <Face name="Rahul" color={C.green} size={56} label={false} />
             </div>

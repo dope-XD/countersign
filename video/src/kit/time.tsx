@@ -30,12 +30,17 @@ export const useScene = () => {
   const frame = useCurrentFrame();
   const {fps} = useVideoConfig();
   const t = frame / fps;
-  // Time of a phrase, by its share of the characters spoken before it (close enough for one voice, and it follows a
-  // re-recorded voice without hand-timing).
+  // Time of a phrase: between the sentence starts tools/vo.py found in the audio (anchors), by its share of the
+  // characters, so a new recording retimes every cue by itself.
   const cue = (phrase: string, offset = 0) => {
     const i = s.vo.indexOf(phrase);
     if (i < 0) throw new Error(`cue "${phrase}" not in ${s.id}`);
-    return s.row.voStart + (i / s.vo.length) * s.row.voDur + offset;
+    const a = s.row.anchors;
+    let j = 0;
+    while (j < a.length - 2 && a[j + 1][0] <= i) j++;
+    const [c0, t0] = a[j];
+    const [c1, t1] = a[j + 1];
+    return s.row.voStart + t0 + ((i - c0) / Math.max(1, c1 - c0)) * (t1 - t0) + offset;
   };
   const voEnd = s.row.voStart + s.row.voDur;
   return {t, dur: s.dur, cue, voEnd, out: s.dur - 0.45};

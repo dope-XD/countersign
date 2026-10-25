@@ -1,0 +1,1 @@
+[clear, calm, explaining] On speaker, her phone writes the call down by itself. A model we trained reads it as it goes and asks: is this caller doing what scammers do? ... Saying he's police. Telling her to keep quiet. The card turns amber and says why. If the caller claims to be Rahul, the app asks Rahul's phone. ... It says no.

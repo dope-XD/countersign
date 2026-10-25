@@ -1,0 +1,1 @@
+[plain, a little rueful] Our first version listened for words like police and OTP. Then a real bank called, used the same words, and it went off. ... So we started again.

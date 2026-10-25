@@ -9,9 +9,11 @@ npm run build        # voice, music, render, loudness: out/countersign.mp4
 npm run studio       # preview and scrub in the browser
 ```
 
-- `script.json` is the voiceover, one line per scene. `tools/vo.py` checks it for AI-sounding words, writes
-  `SCRIPT.md` to read from, makes the voice (a recorded take from `recorded/<scene>.m4a`, or a `say` placeholder),
-  and times every scene in `src/timeline.json`.
+- `script.json` is the voiceover, one line per scene, with delivery directions. `tools/vo.py` checks it for
+  AI-sounding words, writes `SCRIPT.md` (to read aloud) and `elevenlabs/` (see `elevenlabs/ELEVENLABS.md`), and
+  makes the voice: `recorded/s01.mp3` … per scene, or one `recorded/full.mp3` cut at its long pauses, or a `say`
+  placeholder. It times every scene in `src/timeline.json` and pins each sentence to the pause before it, so the
+  captions follow the real voice.
 - `music/make_music.py` scores the music to that timeline and writes the sound effects.
 - `src/scenes/` holds the ten scenes. Screens are redrawn with the app's own words and colours; the one clip marked
   "Real app, recorded" (`public/clips/not_a_scam.mp4`) is a screen recording of the app on the emulator.
