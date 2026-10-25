@@ -10,12 +10,12 @@
    ],
    "about": "The 'your son's friend, he's had an accident, hospital needs an advance' call, as reported to 1930 again and again: a new number, a friend's name, panic, a small urgent amount, 'don't tell uncle'.",
    "lines": [
-    "Hello? Haan aunty namaste, main Amit bol raha hoon, Rahul ka dost, college wala.",
-    "Aunty ek problem ho gayi hai, Rahul ka bike se accident ho gaya, hum log abhi hospital mein hain.",
-    "Nahi nahi ghabraiye mat, woh theek hai, bas sir pe chot hai, par doctor bol rahe hain abhi operation karna padega.",
-    "Hospital wale pachaas hazaar advance maang rahe hain, Rahul ka phone toot gaya isliye main call kar raha hoon.",
-    "Aap na abhi isi number pe GPay kar do, aur uncle ko abhi mat batana, woh tension le lenge.",
-    "Aunty jaldi please, koi OTP aaye to mujhe bata dena, main counter pe khada hoon."
+    "Hello? Haan aunty namaste... main Amit bol raha hoon, Rahul ka dost. College wala, pehchana?",
+    "Aunty ek problem ho gayi hai... Rahul ka bike se accident ho gaya, hum log abhi hospital mein hain.",
+    "Nahi nahi aunty, ghabraiye mat, woh theek hai. Bas sir pe chot lagi hai, par doctor bol rahe hain abhi operation karna padega.",
+    "Hospital wale pachaas hazaar advance maang rahe hain. Rahul ka phone toot gaya na, isliye main call kar raha hoon.",
+    "Aap na abhi isi number pe GPay kar do. Aur uncle ko abhi mat batana please, woh tension le lenge.",
+    "Aunty jaldi karo please... koi OTP aaye toh mujhe bata dena, main counter pe hi khada hoon."
    ]
   },
   {
@@ -27,10 +27,10 @@
    ],
    "about": "A real delivery agent at the gate: the OTP is the delivery code for a parcel she ordered.",
    "lines": [
-    "Haan madam, Amazon se bol raha hoon, aapka parcel aaya hai.",
-    "Main neeche gate pe hoon, aap aa rahe ho ya guard ko de doon?",
-    "Achha theek hai, ek delivery wala OTP aaya hoga aapke phone pe, woh bata do bas.",
-    "Haan ho gaya madam, guard ke paas rakh diya hai, thank you."
+    "Haan madam, Amazon se... aapka parcel aaya hai.",
+    "Main neeche gate pe khada hoon. Aap aa rahe ho ya guard ko de doon?",
+    "Achha theek hai. Ek OTP aaya hoga delivery wala, woh bata do bas.",
+    "Haan ho gaya madam, guard bhaiya ke paas rakh diya. Thank you!"
    ]
   },
   {
@@ -42,12 +42,12 @@
    ],
    "about": "The FedEx-parcel-to-'Mumbai cyber crime' handoff that starts most digital-arrest cases: a parcel with drugs, an FIR on her Aadhaar, a Skype call, 'don't tell your husband', money to an 'RBI verification account'.",
    "lines": [
-    "Hello, am I speaking with Mrs Sharma? Ma'am this is FedEx, your parcel to Taiwan has been stopped at Mumbai customs.",
-    "It has five passports and some MD drugs inside, so I'm connecting you to Mumbai cyber crime police.",
-    "Ma'am, Sub Inspector Vikram here. There's an FIR on your Aadhaar, money laundering case, there is an arrest warrant. You have to join a Skype video call right now.",
-    "Don't disconnect and don't tell anybody, not even your husband, this is a confidential investigation.",
-    "To clear your name you have to transfer your funds to the RBI verification account, it'll be refunded in 24 hours.",
-    "Ma'am do it now, otherwise the local police will come to your house tonight."
+    "Hello, am I speaking to Mrs Sharma? Ma'am I'm calling from FedEx, your parcel to Taiwan is held at Mumbai customs.",
+    "Ma'am it has five passports and some MD drugs inside. I'm connecting you to Mumbai cyber crime, please hold.",
+    "Hello ma'am, Sub Inspector Vikram this side. There's an FIR on your Aadhaar, money laundering case, arrest warrant is there. You have to come on Skype video call right now.",
+    "Don't cut the call, and don't tell anybody, not even your husband. This is a confidential investigation.",
+    "To clear your name you have to transfer your funds to the RBI verification account. It'll be refunded in 24 hours.",
+    "Ma'am please do it now, otherwise local police will come to your house tonight only."
    ]
   },
   {
