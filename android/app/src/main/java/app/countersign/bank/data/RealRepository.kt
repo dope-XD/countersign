@@ -126,7 +126,17 @@ class RealRepository(private val app: Application) : Repository {
 
     override suspend fun refresh() {
         if (!Prefs.signedIn) return
-        _home.value = parseHome(Api.get("/api/m/home"))
+        try {
+            _home.value = parseHome(Api.get("/api/m/home"))
+        } catch (e: ApiError) {
+            // the relay doesn't know this phone any more (its account was lost): back to sign-up instead of an
+            // endless Retry (#92). The downloaded model pack stays.
+            if (e.code == 401) {
+                Log.w(TAG, "account gone from the relay: signing out")
+                signOut()
+            }
+            throw e
+        }
     }
 
     override suspend fun setPrefs(lang: Lang?, channel: CheckChannel?, shareCallStatus: Boolean?): Me {
