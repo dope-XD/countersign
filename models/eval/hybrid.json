@@ -22,7 +22,7 @@
   "adversarial/hybrid": {
    "n_scam": 16,
    "warn_scam": 12,
-   "red_scam": 6,
+   "red_scam": 7,
    "n_genuine": 14,
    "warn_genuine": 3,
    "red_genuine": 1
@@ -52,11 +52,11 @@
   },
   "near_domain/cues_only": {
    "n_genuine": 30,
-   "warn_genuine": 12
+   "warn_genuine": 9
   },
   "near_domain/hybrid": {
    "n_genuine": 30,
-   "warn_genuine": 3,
+   "warn_genuine": 2,
    "red_genuine": 1
   },
   "team_calls/conv_only": {
@@ -75,8 +75,8 @@
   },
   "team_calls/hybrid": {
    "n_scam": 16,
-   "warn_scam": 15,
-   "red_scam": 10,
+   "warn_scam": 16,
+   "red_scam": 12,
    "n_genuine": 13,
    "warn_genuine": 1
   }
@@ -1109,7 +1109,7 @@
    "label": 1,
    "conv_only": "watch",
    "cues_only": "scam",
-   "hybrid": "warn"
+   "hybrid": "scam"
   },
   {
    "id": "team_calls/hi_digital_arrest",
@@ -1151,7 +1151,7 @@
    "label": 1,
    "conv_only": "none",
    "cues_only": "scam",
-   "hybrid": "watch"
+   "hybrid": "warn"
   },
   {
    "id": "team_calls/en_trai_sim",
@@ -1165,7 +1165,7 @@
    "label": 1,
    "conv_only": "watch",
    "cues_only": "scam",
-   "hybrid": "warn"
+   "hybrid": "scam"
   },
   {
    "id": "team_calls/hinglish_job_task",
@@ -1312,7 +1312,7 @@
    "label": 1,
    "conv_only": "watch",
    "cues_only": "scam",
-   "hybrid": "warn"
+   "hybrid": "scam"
   },
   {
    "id": "adversarial/para_kyc_polite",
@@ -1563,8 +1563,8 @@
    "id": "near_domain/courier_address_check",
    "label": 0,
    "conv_only": "watch",
-   "cues_only": "warn",
-   "hybrid": "warn"
+   "cues_only": "watch",
+   "hybrid": "watch"
   },
   {
    "id": "near_domain/courier_cod",
@@ -1640,8 +1640,8 @@
    "id": "near_domain/telecom_sim_upgrade_real",
    "label": 0,
    "conv_only": "none",
-   "cues_only": "warn",
-   "hybrid": "watch"
+   "cues_only": "none",
+   "hybrid": "none"
   },
   {
    "id": "near_domain/insurance_renewal",
@@ -1724,9 +1724,9 @@
    "id": "near_domain/school_fee_reminder",
    "label": 0,
    "conv_only": "none",
-   "cues_only": "warn",
-   "hybrid": "watch"
+   "cues_only": "none",
+   "hybrid": "none"
   }
  ],
- "markdown": "| set | path | scam calls | recall at warn | recall at scam | genuine calls | false warn | false scam |\n|---|---|---:|---:|---:|---:|---:|---:|\n| adversarial | conv_only | 16 | 43.8% | 18.8% | 14 | 14.3% | 7.1% |\n| adversarial | cues_only | 16 | 87.5% | 31.2% | 14 | 50.0% | 7.1% |\n| adversarial | hybrid | 16 | 75.0% | 37.5% | 14 | 21.4% | 7.1% |\n| hinglish_calls | conv_only | 124 | 100.0% | 25.8% | 22 | 0.0% | 0.0% |\n| hinglish_calls | cues_only | 124 | 54.8% | 4.0% | 22 | 0.0% | 0.0% |\n| hinglish_calls | hybrid | 124 | 100.0% | 17.7% | 22 | 0.0% | 0.0% |\n| near_domain | conv_only | 0 | - | - | 30 | 3.3% | 3.3% |\n| near_domain | cues_only | 0 | - | - | 30 | 40.0% | 0.0% |\n| near_domain | hybrid | 0 | - | - | 30 | 10.0% | 3.3% |\n| team_calls | conv_only | 16 | 75.0% | 37.5% | 13 | 7.7% | 0.0% |\n| team_calls | cues_only | 16 | 100.0% | 68.8% | 13 | 46.2% | 0.0% |\n| team_calls | hybrid | 16 | 93.8% | 62.5% | 13 | 7.7% | 0.0% |"
+ "markdown": "| set | path | scam calls | recall at warn | recall at scam | genuine calls | false warn | false scam |\n|---|---|---:|---:|---:|---:|---:|---:|\n| adversarial | conv_only | 16 | 43.8% | 18.8% | 14 | 14.3% | 7.1% |\n| adversarial | cues_only | 16 | 87.5% | 31.2% | 14 | 50.0% | 7.1% |\n| adversarial | hybrid | 16 | 75.0% | 43.8% | 14 | 21.4% | 7.1% |\n| hinglish_calls | conv_only | 124 | 100.0% | 25.8% | 22 | 0.0% | 0.0% |\n| hinglish_calls | cues_only | 124 | 54.8% | 4.0% | 22 | 0.0% | 0.0% |\n| hinglish_calls | hybrid | 124 | 100.0% | 17.7% | 22 | 0.0% | 0.0% |\n| near_domain | conv_only | 0 | - | - | 30 | 3.3% | 3.3% |\n| near_domain | cues_only | 0 | - | - | 30 | 30.0% | 0.0% |\n| near_domain | hybrid | 0 | - | - | 30 | 6.7% | 3.3% |\n| team_calls | conv_only | 16 | 75.0% | 37.5% | 13 | 7.7% | 0.0% |\n| team_calls | cues_only | 16 | 100.0% | 68.8% | 13 | 46.2% | 0.0% |\n| team_calls | hybrid | 16 | 100.0% | 75.0% | 13 | 7.7% | 0.0% |"
 }

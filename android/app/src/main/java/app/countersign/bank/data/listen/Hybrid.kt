@@ -10,7 +10,7 @@ package app.countersign.bank.data.listen
  * Pure Kotlin. Port of engine/listener/hybrid.py; keep the two identical (HybridTest, hybrid_vectors.json).
  */
 
-private val BANK_CLAIM = setOf("authority", "verification_pretext")
+private val BANK_CLAIM = setOf("authority", "verification_pretext") // claims to be police, a court or a bank, from an unknown number that isn't 1600-series
 private val TRUSTED = setOf("known_contact", "caller_verified")
 private val PHONE = setOf("context", "caller_check", "voice")
 
@@ -47,8 +47,8 @@ fun combine(
     var level = cap(cue.level)
     if (conv != null) {
         // cue words alone are not enough for amber while the conversation model hears nothing of a scam (genuine bank
-        // and courier calls use the same words); a phone signal still is
-        if (level == "warn" && convModel == "none" && cue.sources.none { it in PHONE }) level = "watch"
+        // and courier calls use the same words), unless they are strong enough for their own red; a phone signal still is
+        if (level == "warn" && cue.level != "scam" && convModel == "none" && cue.sources.none { it in PHONE }) level = "watch"
         level = higher(level, cap(conv.level))
     }
     val llmScam = llm?.verdict == "scam"
@@ -61,7 +61,7 @@ fun combine(
         val cuePaired = cue.level == "scam" && !cue.alone
         convPaired || cuePaired ||
             (convSaid && (atLeast(cue.level, "warn") || raiseLlm)) ||
-            (cue.level == "scam" && cue.alone && (atLeast(convModel, "warn") || raiseLlm))
+            (cue.level == "scam" && cue.alone && (atLeast(convModel, "watch") || raiseLlm))
     }
     red = red || (raiseLlm && atLeast(level, "warn"))
     if (red) level = "scam"

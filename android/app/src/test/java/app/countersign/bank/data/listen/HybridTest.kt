@@ -98,7 +98,8 @@ class HybridTest {
         assertEquals("warn", combine(none, v("scam", "phone_ai"), "scam").verdict.level) // the conversation model alone
         assertEquals("scam", combine(v("warn"), v("scam", "phone_ai"), "scam").verdict.level)
         assertEquals("scam", combine(none, v("scam", "phone_ai"), "scam", llm = scam).verdict.level)
-        assertEquals("warn", combine(v("scam", alone = true), none, "watch").verdict.level) // the cue words alone
+        assertEquals("warn", combine(v("scam", alone = true), none, "none").verdict.level) // the cue words alone
+        assertEquals("scam", combine(v("scam", alone = true), v("watch", "phone_ai"), "watch").verdict.level)
         assertEquals("scam", combine(v("scam", alone = true), null).verdict.level) // basic mode: as before
         assertEquals("scam", combine(v("scam", "cues", "context"), none, "none").verdict.level)
     }

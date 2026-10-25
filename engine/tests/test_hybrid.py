@@ -78,8 +78,8 @@ def test_the_conversation_model_alone_never_makes_scam():
 
 def test_the_cue_rules_alone_need_a_second_source_with_the_model_pack():
     alone = v("scam", alone=True)
-    assert combine(alone, NONE, "watch")[0].level == "warn"
-    assert combine(alone, v("warn", ("phone_ai",)), "warn")[0].level == "scam"
+    assert combine(alone, NONE, "none")[0].level == "warn"  # strong cue words reach amber even with the model quiet
+    assert combine(alone, v("watch", ("phone_ai",)), "watch")[0].level == "scam"  # the model hearing something is the second source
     assert combine(alone, None)[0].level == "scam"  # basic mode: as before
 
 

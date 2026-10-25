@@ -26,7 +26,7 @@ from engine.listener.fusion import LEVELS, Verdict, config, fuse, higher
 from engine.listener.llm import LlmVerdict
 from engine.listener.rules import ASSETS, CallScorer, digits_read_out, normalize
 
-BANK_CLAIM = {"authority", "verification_pretext"}
+BANK_CLAIM = {"authority", "verification_pretext"}  # claims to be police, a court or a bank, from an unknown number that isn't 1600-series
 TRUSTED = {"known_contact", "caller_verified"}
 PHONE = {"context", "caller_check", "voice"}
 
@@ -65,8 +65,8 @@ def combine(
     level = cap(cue.level)
     if conv is not None:
         # cue words alone are not enough for amber while the conversation model hears nothing of a scam (genuine bank
-        # and courier calls use the same words); a phone signal still is
-        if level == "warn" and conv_model == "none" and not set(cue.sources) & PHONE:
+        # and courier calls use the same words), unless they are strong enough for their own red; a phone signal still is
+        if level == "warn" and cue.level != "scam" and conv_model == "none" and not set(cue.sources) & PHONE:
             level = "watch"
         level = higher(level, cap(conv.level))
     llm_scam = llm is not None and llm.verdict == "scam"
@@ -81,7 +81,7 @@ def combine(
             conv_paired
             or cue_paired
             or (conv_said and (at_least(cue.level, "warn") or raise_llm))
-            or (cue.level == "scam" and cue.alone and (at_least(conv_model, "warn") or raise_llm))
+            or (cue.level == "scam" and cue.alone and (at_least(conv_model, "watch") or raise_llm))
         )
     red = red or (raise_llm and at_least(level, "warn"))
     if red:

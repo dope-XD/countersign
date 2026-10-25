@@ -505,13 +505,18 @@ conversation model at watch for amber; scam needs two independent sources; a con
 | set | path | scam calls | recall at warn | recall at scam | genuine calls | false warn | false scam |
 |---|---|---:|---:|---:|---:|---:|---:|
 | team_calls | conversation only | 16 | 75.0% | 37.5% | 13 | 7.7% | 0.0% |
-| team_calls | **hybrid** | 16 | **93.8%** | **62.5%** | 13 | 7.7% | 0.0% |
+| team_calls | **hybrid** | 16 | **100.0%** | **75.0%** | 13 | 7.7% | 0.0% |
 | adversarial | conversation only | 16 | 43.8% | 18.8% | 14 | 14.3% | 7.1% |
-| adversarial | **hybrid** | 16 | **75.0%** | **37.5%** | 14 | 21.4% | 7.1% |
+| adversarial | **hybrid** | 16 | **75.0%** | **43.8%** | 14 | 21.4% | 7.1% |
 | hinglish_calls | conversation only | 124 | 100.0% | 25.8% | 22 | 0.0% | 0.0% |
 | hinglish_calls | **hybrid** | 124 | 100.0% | 17.7% | 22 | 0.0% | 0.0% |
 | near_domain (new, genuine only) | conversation only | 0 | - | - | 30 | 3.3% | 3.3% |
-| near_domain (new, genuine only) | **hybrid** | 0 | - | - | 30 | 10.0% | 3.3% |
+| near_domain (new, genuine only) | **hybrid** | 0 | - | - | 30 | 6.7% | 3.3% |
+
+Two rules were refined the same day, each kept only because false amber and false red on every genuine set stayed
+the same or fell: cue words strong enough for their own red (four kinds of evidence with an ask) may reach amber
+while the model is quiet, and they make red once the model hears anything (watch). The police word "thana" no longer
+matches "thank" (a delivery agent's "thank you" counted as a police claim).
 
 Costs, said plainly: on Hinglish call lines the hybrid reaches red less often (17.7% vs 25.8%), because the
 conversation model alone no longer makes red; amber stays at 100%. False amber rises on the adversarial set (14.3% to

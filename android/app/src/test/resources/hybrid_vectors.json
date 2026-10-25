@@ -274,9 +274,9 @@
   "levels": [
    "watch",
    "watch",
-   "watch"
+   "warn"
   ],
-  "level": "watch",
+  "level": "warn",
   "type": "family_emergency",
   "cues": [
    "authority",
