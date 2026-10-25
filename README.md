@@ -124,7 +124,7 @@ You can see every screen and every alert without any calls, using pretend data. 
 
 ## For developers
 
-How every part works, from the call ringing to the alarm on a family phone: [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md). The 2-page summary we hand to the jury: [docs/report/Countersign-report.pdf](docs/report/Countersign-report.pdf).
+How every part works, from the call ringing to the alarm on a family phone: [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md). The system as a short paper (5 pages, with every measured result): [docs/paper/Countersign-paper.pdf](docs/paper/Countersign-paper.pdf).
 
 **Build the app**
 

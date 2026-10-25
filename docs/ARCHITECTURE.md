@@ -2,12 +2,12 @@
 
 This is the whole system, from the moment a call rings to the alarm on a family member's phone. Each part says what
 it does, where it lives in the code, the numbers it uses, and what data it keeps. Written against `main` at
-`d6912dc` (25 Oct). The diagrams are made by `docs/img/make_diagrams.py`; a 2-page summary for the jury is
-[docs/report/Countersign-report.pdf](report/Countersign-report.pdf). Where something is designed but not built yet, it says so (see "Not built yet" at the end).
+`d6912dc` (25 Oct). The figures come from `docs/paper/figures.py`; the same system as a short paper for the jury:
+[docs/paper/Countersign-paper.pdf](paper/Countersign-paper.pdf). Where something is designed but not built yet, it says so (see "Not built yet" at the end).
 
 ## The pieces at a glance
 
-![The system: Mummy's phone does the listening and judging; the relay passes ids between family phones; the detection server is optional](img/system.svg)
+![The system: Mummy's phone does the listening and judging; the relay passes ids between family phones; the detection server is optional](paper/fig/architecture.svg)
 
 Three places run code:
 
@@ -49,7 +49,7 @@ to reach family; the detection server is optional.
 
 ## 2. A call rings
 
-![One call, step by step, and the two-tap way out of a false alarm](img/call-timeline.svg)
+![One scam call as messages between the phones and servers, including the two-tap way out of a false alarm](paper/fig/sequence.svg)
 
 1. **Who is calling** (`CallScreener.kt`, `OutgoingCalls.kt`): the app holds the call-screening role only to read the
    number. Every call goes through untouched; the number goes to `FamilyNumbers` in memory and is matched to a family
@@ -175,7 +175,7 @@ Every new segment goes into one `Analyzer.Call` per call (`data/listen/Analyzer.
 
 ### The two together (`Hybrid.kt`, `combine`)
 
-![How it decides: two judges, red needs two independent sources](img/decision.svg)
+![How it decides: two judges, red needs two independent sources](paper/fig/decision.svg)
 
 - **watch / amber** = the higher of the two judges. But cue words alone don't make amber while the conversation model
   hears nothing of a scam, because genuine bank and courier calls use the same words; a phone signal still does.
