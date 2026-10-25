@@ -369,7 +369,7 @@ def page2():
         yy = y + 18 + i * 19
         if i == 0:
             pg.p.append(f'<path d="M{rx} {yy - 14} H{rx + rw}" stroke="{INK}" stroke-width="1.2"/>')
-        for c, (x, cell) in enumerate(zip(cols, row, strict=True)):
+        for x, cell in zip(cols, row, strict=True):
             pg.text(x, yy, cell, BODY, 700 if i == 0 else 400)
         if i in (0, len(table) - 1):
             pg.p.append(f'<path d="M{rx} {yy + 6} H{rx + rw}" stroke="{INK}" stroke-width="{1.2 if i else 0.7}"/>')
