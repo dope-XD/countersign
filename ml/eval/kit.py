@@ -74,15 +74,17 @@ class Phone:
         return float(np.asarray(out).reshape(-1)[-1])
 
 
-def check(text: str, basic: bool, min_words: int | None = None) -> tuple[str, str, list[str], float | None]:
-    """(level, type, why, p) from the conversation check, or from basic mode."""
+def check(text: str, basic: bool, min_words: int | None = None, context: frozenset[str] = frozenset()) -> tuple[str, str, list[str], float | None]:
+    """(level, type, why, p) as the phone's "Check a recording or message" gives them: the hybrid (Analyzer.text
+    with the model pack), or basic mode."""
     if basic:
-        a = analyze_text(text, min_words=min_words)
+        a = analyze_text(text, min_words=min_words, context=set(context))
         return a.level, a.type, a.cues, a.p_scam
     from engine.listener.conversation import analyze_text as conv_text
+    from engine.listener.hybrid import analyze_text as hybrid_text
 
-    st = conv_text(text)
-    return st.level, st.type, st.reasons, st.p
+    v = hybrid_text(text, context)
+    return v.level, v.type, v.cues, conv_text(text).p
 
 
 def run(folder: Path, basic: bool = False) -> list[dict]:
@@ -102,8 +104,11 @@ def run(folder: Path, basic: bool = False) -> list[dict]:
             x = load_audio(p)
             text, secs = phone.transcribe(x), len(x) / 16000
             voice = phone.voice_score(x)
-            level, kind, why, p_scam = check(text, basic, min_words=12)  # what the call says, as on "Check a recording"
         thr = phone.voice_meta["threshold"] if phone and phone.voice_meta else 0.5
+        if p.suffix.lower() != ".txt":
+            # as on "Check a recording" (Analyzer.text): a computer-made voice is one more piece of evidence
+            ctx = frozenset({"synthetic_voice"}) if voice is not None and voice >= thr else frozenset()
+            level, kind, why, p_scam = check(text, basic, min_words=12, context=ctx)
         e = expected.get(p.name, {})
         want = e.get("expect")
         if want in ("scam", "harmless"):
