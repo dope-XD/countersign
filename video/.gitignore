@@ -1,0 +1,6 @@
+node_modules/
+out/
+# made by tools/vo.py and music/make_music.py
+public/vo/
+public/audio/
+recorded/

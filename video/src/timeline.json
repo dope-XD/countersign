@@ -1,0 +1,86 @@
+{
+ "fps": 60,
+ "total": 144.0833,
+ "scenes": [
+  {
+   "id": "s01",
+   "start": 0.0,
+   "dur": 9.0,
+   "voStart": 0.5,
+   "voDur": 6.336,
+   "recorded": false
+  },
+  {
+   "id": "s02",
+   "start": 9.0,
+   "dur": 12.0,
+   "voStart": 0.5,
+   "voDur": 8.574,
+   "recorded": false
+  },
+  {
+   "id": "s03",
+   "start": 21.0,
+   "dur": 11.033333333333333,
+   "voStart": 0.5,
+   "voDur": 9.638,
+   "recorded": false
+  },
+  {
+   "id": "s04",
+   "start": 32.0333,
+   "dur": 5.2,
+   "voStart": 0.5,
+   "voDur": 3.806,
+   "recorded": false
+  },
+  {
+   "id": "s05",
+   "start": 37.2333,
+   "dur": 23.0,
+   "voStart": 0.5,
+   "voDur": 19.588,
+   "recorded": false
+  },
+  {
+   "id": "s06",
+   "start": 60.2333,
+   "dur": 11.233333333333333,
+   "voStart": 0.5,
+   "voDur": 9.831,
+   "recorded": false
+  },
+  {
+   "id": "s07",
+   "start": 71.4667,
+   "dur": 23.0,
+   "voStart": 0.5,
+   "voDur": 21.603,
+   "recorded": false
+  },
+  {
+   "id": "s08",
+   "start": 94.4667,
+   "dur": 17.466666666666665,
+   "voStart": 0.5,
+   "voDur": 16.065,
+   "recorded": false
+  },
+  {
+   "id": "s09",
+   "start": 111.9333,
+   "dur": 25.15,
+   "voStart": 0.5,
+   "voDur": 23.751,
+   "recorded": false
+  },
+  {
+   "id": "s10",
+   "start": 137.0833,
+   "dur": 7.0,
+   "voStart": 0.5,
+   "voDur": 3.142,
+   "recorded": false
+  }
+ ]
+}
