@@ -285,6 +285,11 @@
     <string name="alarm_boss_payment">Someone is pretending to be the boss and asking for a payment.</string>
     <string name="why_boss_pretext">says they are your boss, busy in a meeting</string>
     <string name="why_payment_redirect">a new account or urgent transfer</string>
+    <string name="why_direct_ask">asks you for it directly</string>
+    <string name="step_who">Who they claim to be</string>
+    <string name="step_trouble">The trouble</string>
+    <string name="step_pressure">The pressure</string>
+    <string name="step_want">What they want</string>
     <string name="why_victim_says">you were being asked for a code or money</string>
     <string name="why_digits_read_out">you read out a code</string>
     <string name="why_bank_claim_not_1600">says police or bank, from an unknown number</string>

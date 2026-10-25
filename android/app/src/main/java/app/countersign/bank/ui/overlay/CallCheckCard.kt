@@ -66,8 +66,9 @@ import app.countersign.bank.data.RiskLevel
 import app.countersign.bank.data.RiskSource
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.material3.TextButton
-import app.countersign.bank.ui.components.whyLine
+import app.countersign.bank.ui.components.ScamStory
 import app.countersign.bank.data.FalseAlarmReason
+import app.countersign.bank.data.Lang
 import app.countersign.bank.data.ScamType
 import app.countersign.bank.data.Scenario
 import app.countersign.bank.data.Verdict
@@ -100,12 +101,13 @@ import kotlinx.coroutines.delay
  * - The call listener: "Put on speaker so we can listen", a quiet "Listening for scams", an amber card at
  *   `warn` (the scam type, one line of advice, [onAlertFamily]) and a red one at `scam` ("Hang up", "Family
  *   alerted ✓" and a Call button: [onCall] for the checked member, else [onCallMember] with someone online).
- *   Both cards say why they fired (the cue ids in plain words) and offer the false-alarm path: "I know this caller"
+ *   Both cards show the scam's four steps this call has made (who they claim to be, the trouble, the pressure, what
+ *   they want: ui/components/Why.kt) and offer the false-alarm path: "I know this caller"
  *   on amber, "It's not a scam" on red, each with an inline confirm, then [onNotAScam]. A cleared call shows one
  *   green line, "Cleared. Family told it's fine."
  *
- * It never takes more than the top third of the screen (45% while warning, which still keeps clear of the bottom
- * half), so the dialer's end-call button stays free. If large fonts make it taller than that, it scrolls.
+ * It never takes more than the top third of the screen (60% while warning, for the scam's four steps), so the
+ * dialer's end-call button stays free. If large fonts make it taller than that, it scrolls.
  */
 // The screen's height, not the window's: C's overlay window wraps the card, so its own size says nothing.
 @SuppressLint("ConfigurationScreenWidthHeight")
@@ -140,7 +142,8 @@ fun CallCheckCard(
         if (check?.outcome == Outcome.DANGER || level == RiskLevel.SCAM) haptics.performHapticFeedback(HapticFeedbackType.LongPress)
     }
 
-    val maxHeight = (LocalConfiguration.current.screenHeightDp * if (alarmed) 0.45f else 1 / 3f).dp
+    // alarmed: room for the scam's four steps and the buttons; the dialer's hang-up button stays below
+    val maxHeight = (LocalConfiguration.current.screenHeightDp * if (alarmed) 0.6f else 1 / 3f).dp
     AnimatedVisibility(shown, exit = fadeOut(tween(FADE_MS))) {
         Card(
             Modifier.fillMaxWidth().padding(8.dp).heightIn(max = maxHeight),
@@ -226,7 +229,10 @@ private fun Listener(
     val risk = state.risk
     // the false-alarm confirm, inline: an overlay window can't open a dialog
     var confirming by remember(risk?.level) { mutableStateOf<FalseAlarmReason?>(null) }
-    val why = risk?.let { whyLine(it.cues) }
+    // the scam's steps this call has made, instead of a list of words; the smarter check's sentence above them
+    val story: (@Composable () -> Unit)? = risk?.let { r -> { ScamStory(r.cues, Green, Ink, Muted) } }
+    val hindi = LocalConfiguration.current.locales[0].language == Lang.HI.code
+    val reason = risk?.reason?.forLang(if (hindi) Lang.HI else Lang.EN)
     when {
         state.cleared -> Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
             Icon(Icons.Filled.Check, contentDescription = null, tint = Green, modifier = Modifier.size(24.dp))
@@ -245,7 +251,7 @@ private fun Listener(
             val callLabel = check?.label ?: other?.label
             val call = if (check != null) onCall else other?.let { m -> { onCallMember(m.id) } }
             // no advice line here: "Hang up" is the advice, and the buttons must stay in view
-            RiskCard(Red, RedSoft, stringResource(R.string.scam_title), why, onClose) {
+            RiskCard(Red, RedSoft, stringResource(R.string.scam_title), reason, onClose, story) {
                 Row(Modifier.padding(end = 12.dp), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(10.dp)) {
                     // the family is alarmed as soon as a call reaches scam
                     Row(Modifier.weight(1f), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(6.dp)) {
@@ -261,7 +267,7 @@ private fun Listener(
             }
         }
         risk?.level == RiskLevel.WARN ->
-            RiskCard(Amber, AmberSoft, stringResource(risk.type.headline()), listOfNotNull(stringResource(risk.type.advice()), why).joinToString("\n"), onClose) {
+            RiskCard(Amber, AmberSoft, stringResource(risk.type.headline()), listOfNotNull(reason, stringResource(risk.type.advice())).joinToString("\n"), onClose, story) {
                 BigButton(stringResource(R.string.action_alert_family), onAlertFamily, Modifier.padding(end = 12.dp), kind = ButtonKind.No)
                 FalseAlarmLink(stringResource(R.string.action_know_caller)) { confirming = FalseAlarmReason.KNOW_CALLER }
             }
@@ -328,9 +334,17 @@ private fun FalseAlarmLink(text: String, onClick: () -> Unit) {
     }
 }
 
-/** The amber or red listener card: a headline with a warning sign, a line of advice if any, then its buttons. [onClose] adds ✕. */
+/** The amber or red listener card: a headline with a warning sign, a line of advice if any, the scam's steps, then its buttons. [onClose] adds ✕. */
 @Composable
-private fun RiskCard(fg: Color, bg: Color, headline: String, advice: String?, onClose: (() -> Unit)?, buttons: @Composable () -> Unit) {
+private fun RiskCard(
+    fg: Color,
+    bg: Color,
+    headline: String,
+    advice: String?,
+    onClose: (() -> Unit)?,
+    story: (@Composable () -> Unit)? = null,
+    buttons: @Composable () -> Unit,
+) {
     val shape = RoundedCornerShape(16.dp)
     Column(
         Modifier.padding(end = 12.dp).fillMaxWidth().background(bg, shape).border(2.dp, fg, shape).padding(14.dp),
@@ -346,6 +360,7 @@ private fun RiskCard(fg: Color, bg: Color, headline: String, advice: String?, on
             }
         }
         if (advice != null) Text(advice, color = Ink, style = MaterialTheme.typography.bodyMedium)
+        story?.invoke()
         buttons()
     }
 }

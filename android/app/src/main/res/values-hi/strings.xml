@@ -269,6 +269,11 @@
     <string name="alarm_boss_payment">कोई बॉस बनकर पेमेंट माँग रहा है।</string>
     <string name="why_boss_pretext">खुद को बॉस बताया, मीटिंग में होने की बात</string>
     <string name="why_payment_redirect">नया खाता या तुरंत ट्रांसफ़र</string>
+    <string name="why_direct_ask">सीधे आपसे माँगा</string>
+    <string name="step_who">खुद को क्या बताया</string>
+    <string name="step_trouble">क्या मुसीबत बताई</string>
+    <string name="step_pressure">कैसे दबाव डाला</string>
+    <string name="step_want">क्या माँगा</string>
     <string name="why_victim_says">आपसे कोड या पैसे माँगे जा रहे थे</string>
     <string name="why_digits_read_out">आपने कोई कोड बोल दिया</string>
     <string name="why_bank_claim_not_1600">पुलिस या बैंक बताया, अनजान नंबर से</string>
