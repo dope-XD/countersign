@@ -99,9 +99,39 @@ def decision():
     f = Fig(1000, 330)
     f.box(10, 40, 170, 80, ["ASR segments", "English, Hinglish,", "Hindi"], "#fff")
     f.box(10, 190, 170, 100, ["Phone context", "unknown number,", "remote-access app,", "caller check failed"], "#fff")
-    f.box(230, 14, 300, 126, ["Judge 1: conversation model", "pₜ = P(scam move so far)", "sₜ = mean(pₜ, pₜ₋₁)", "amber: sₜ ≥ 0.142", "red: sₜ ≥ 0.9855 twice in a row"], FILL, size=15)
-    f.box(230, 168, 300, 126, ["Judge 2: cue rules", "19 categories, negation-aware;", "amber: ≥ 2 strong categories", "red: ≥ 4 incl. an action and a type;", "talk about scams never counts"], FILL, size=15)
-    f.box(580, 70, 210, 176, ["Combiner", "amber = higher judge", "(cue-only amber needs", "Judge 1 ≥ watch)", "red ⇐ two independent", "sources agree"], DARK, size=15)
+    f.box(
+        230,
+        14,
+        300,
+        126,
+        ["Judge 1: conversation model", "pₜ = P(scam move so far)", "sₜ = mean(pₜ, pₜ₋₁)", "amber: sₜ ≥ 0.142", "red: sₜ ≥ 0.9855 twice in a row"],
+        FILL,
+        size=15,
+    )
+    f.box(
+        230,
+        168,
+        300,
+        126,
+        [
+            "Judge 2: cue rules",
+            "19 categories, negation-aware;",
+            "amber: ≥ 2 strong categories",
+            "red: ≥ 4 incl. an action and a type;",
+            "talk about scams never counts",
+        ],
+        FILL,
+        size=15,
+    )
+    f.box(
+        580,
+        70,
+        210,
+        176,
+        ["Combiner", "amber = higher judge", "(cue-only amber needs", "Judge 1 ≥ watch)", "red ⇐ two independent", "sources agree"],
+        DARK,
+        size=15,
+    )
     f.arrow([(180, 80), (230, 80)])
     f.arrow([(205, 80), (205, 230), (230, 230)])
     f.arrow([(180, 240), (215, 240), (215, 116), (230, 116)])

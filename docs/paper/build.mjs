@@ -1,4 +1,4 @@
-// The paper: figures (fig/*.svg, from figures.py) → vector PDFs, then paper.tex → Countersign-paper.pdf with Tectonic.
+// The paper and the 2-page brief: figures (fig/*.svg, from figures.py) → vector PDFs, then paper.tex → Countersign-paper.pdf with Tectonic.
 //   cd docs/paper && npm install && npm run build      (needs Chrome: $CHROME or the one Remotion installed for video/,
 //   python, and tectonic: brew install tectonic)
 import {execFileSync} from 'node:child_process';
@@ -18,6 +18,7 @@ if (!chrome) throw new Error('No Chrome found: set CHROME to a Chrome or Chromiu
 
 const python = [join(here, '../../.venv/bin/python'), join(here, '../../../Countersign/.venv/bin/python'), 'python3'].find((p) => p === 'python3' || existsSync(p));
 execFileSync(python, [join(here, 'figures.py')], {stdio: 'inherit'});
+execFileSync(python, [join(here, 'brief.py')], {stdio: 'inherit'});
 
 const browser = await puppeteer.launch({executablePath: chrome, headless: true});
 const page = await browser.newPage();
@@ -27,6 +28,10 @@ for (const f of readdirSync(join(here, 'fig')).filter((n) => n.endsWith('.svg'))
   await page.setContent(`<html><body style="margin:0">${svg}</body></html>`);
   await page.pdf({path: join(here, 'fig', f.replace('.svg', '.pdf')), width: `${w}px`, height: `${h}px`, printBackground: true, pageRanges: '1'});
 }
+// the 2-page brief: two A4 landscape flowchart pages
+const pages = ['page1.svg', 'page2.svg'].map((f) => readFileSync(join(here, 'brief', f), 'utf8'));
+await page.setContent(`<html><head><style>@page{size:A4 landscape;margin:0}body{margin:0}svg{display:block;width:297mm;height:210mm;page-break-after:always}</style></head><body>${pages.join('')}</body></html>`);
+await page.pdf({path: join(here, 'Countersign-brief.pdf'), preferCSSPageSize: true, printBackground: true});
 await browser.close();
 
 execFileSync('tectonic', ['-X', 'compile', '--keep-logs', 'paper.tex'], {cwd: here, stdio: 'inherit'});
