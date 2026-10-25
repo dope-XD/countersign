@@ -35,6 +35,7 @@ class Verdict:
     type: str
     cues: list[str]
     sources: list[str]
+    alone: bool = False  # `scam` from the cue words alone (one source): the hybrid wants a second one (hybrid.py)
 
 
 def higher(a: str, b: str) -> str:
@@ -52,7 +53,8 @@ def fuse(
 ) -> Verdict:
     """[cfg]: fusion settings to use instead of fusion.json (the eval's leave-one-dataset-out runs)."""
     f, r = cfg or config(), rules()
-    cats = (set(cues.categories) - {"discussion"}) | (set(context) & set(f["context_as_category"]))
+    talk = set(cues.categories) - {"discussion"}
+    cats = talk | (set(context) & set(f["context_as_category"]))
     strong = cats - r.weak
     extra = f["trusted_extra"] if set(context) & set(f["trusted_context"]) else 0
     j = judge if judge and not judge.abstain else None
@@ -66,6 +68,8 @@ def fuse(
     w = f["warn"]
     vetoed = bool(j and j.p_scam < w["clf_veto_below"])  # the classifier is sure it's harmless
     warn_cues = len(strong) >= w["min_strong"] + extra and not vetoed
+    # the same, from what was said only: a context signal that already counts on its own must not count twice
+    warn_said = len(talk - r.weak) >= w["min_strong"] + extra and not vetoed
     warn_clf = bool(j and j.p_scam >= w["clf_p"] and len(cats) >= w["clf_min_categories"])
     warn_ctx = set(context) & set(w["context_alone"])
     if warn_cues or warn_clf or warn_ctx:
@@ -82,20 +86,21 @@ def fuse(
             sources.add("context")
 
     s = f["scam"]
+    strong_ctx = set(context) & set(s["strong_context"])
     scam_cues = (
-        len(cats) >= s["cues_min_categories"] + extra
+        len(cats - strong_ctx) >= s["cues_min_categories"] + extra
         and (not s["cues_need_action"] or bool(cats & r.action))
         and (not s["cues_need_type"] or cues.type != "unknown")
         and not (s["discussion_blocks_cues"] and cues.discussion)
     )
     scam_clf = (
         bool(j and j.p_scam >= s["clf_p"] and len(cats) >= s["clf_min_categories"])
-        and (not s["clf_needs_cue_warn"] or warn_cues)
+        and (not s["clf_needs_cue_warn"] or warn_said)
         and not (s["discussion_blocks_cues"] and cues.discussion)
     )
-    strong_ctx = set(context) & set(s["strong_context"])
-    # two independent kinds of evidence: what was said (cues or the classifier) and what the phone saw
-    scam_ctx = bool(strong_ctx) and (warn_cues or warn_clf)
+    # two independent kinds of evidence: what was said (cues or the classifier) and what the phone saw; the phone's
+    # signal counts once, so it can't also be one of the cues that made the warn
+    scam_ctx = bool(strong_ctx) and (warn_said or warn_clf)
     if scam_cues or scam_clf or scam_ctx or user:
         level = "scam"
         if scam_ctx:
@@ -111,6 +116,7 @@ def fuse(
     if kind == "unknown" and "caller_check_failed" in context:
         kind = "impersonation"
 
+    alone = level == "scam" and not (scam_clf or scam_ctx or user)
     if server is not None and server.level != "none":
         # the server's stronger check heard the same call: it can raise the level, never lower it
         level = higher(level, server.level)
@@ -118,5 +124,6 @@ def fuse(
             kind = server.type
         sources |= {"server"}
         cats |= set(server.cues) - {"discussion"}
+        alone = alone and server.level != "scam"
     level = higher(level, prev)
-    return Verdict(level, kind, sorted(cats), sorted(sources))
+    return Verdict(level, kind, sorted(cats), sorted(sources), alone)

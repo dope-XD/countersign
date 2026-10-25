@@ -213,3 +213,34 @@ class CallScorer(private val r: Rules) {
         const val MAX_TOKENS = 6000 // about 40 minutes of speech; older words are dropped
     }
 }
+
+/** Number words a person reads an OTP or card number out with: English, Hinglish, Hindi (exact words only, no fuzzy match). */
+val DIGIT_WORDS: Set<String> = (
+    "zero one two three four five six seven eight nine " +
+        "shunya sunya ek do teen tin char chaar paanch panch chhe che chheh saat sat aath ath nau " +
+        "शून्य एक दो तीन चार पांच पाँच छह छः छे सात आठ नौ"
+    ).split(" ").toSet()
+
+/** An OTP is 4 to 8 digits; a 10-digit phone number is not one. */
+val DIGITS_READ_OUT = 4..8
+
+/** Lengths of the runs of digits read out in a row: "4 5 2 1", "4521", "char paanch do ek" are each 4. */
+fun digitRuns(tokens: List<String>): List<Int> {
+    val runs = ArrayList<Int>()
+    var n = 0
+    for (t in tokens) {
+        when {
+            t.isNotEmpty() && t.all { it in '0'..'9' } -> n += t.length
+            t in DIGIT_WORDS -> n += 1
+            else -> {
+                if (n > 0) runs.add(n)
+                n = 0
+            }
+        }
+    }
+    if (n > 0) runs.add(n)
+    return runs
+}
+
+/** Someone read out 4 to 8 digits in a row (on an unknown call: likely an OTP or a card's digits). */
+fun digitsReadOut(tokens: List<String>): Boolean = digitRuns(tokens).any { it in DIGITS_READ_OUT }

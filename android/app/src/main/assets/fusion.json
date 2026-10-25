@@ -1,6 +1,6 @@
 {
-  "version": 2,
-  "about": "How the call listener turns evidence into a level (docs/agents/CONTRACT.md, 'Call listener'). Same logic in data/listen/Fusion.kt and engine/listener/fusion.py. Evidence: cue categories (scam_patterns.json), our scam classifier's p_scam on the transcript ('clf', abstains under ~25 words), context signals from the phone, the voice-clone check (context id 'synthetic_voice': one piece of evidence, so it needs a scam cue to reach warn and never makes scam) and the user. When the classifier has heard enough and its p_scam is under warn.clf_veto_below, cue words alone don't make 'warn' (a real bank or police call uses the same words). A single model never makes 'scam' on its own: the classifier counts towards 'scam' only when the cue words alone already reach 'warn' (clf_needs_cue_warn) and the call isn't talk about scams. Levels never go down during a call, except when the user says 'Not a scam'. 'strong' = a category that isn't weak; 'discussion' never counts as a category.",
+  "version": 3,
+  "about": "How the call listener turns evidence into a level (docs/agents/CONTRACT.md, 'Call listener'). Same logic in data/listen/Fusion.kt and engine/listener/fusion.py. Evidence: cue categories (scam_patterns.json), our scam classifier's p_scam on the transcript ('clf', abstains under ~25 words), context signals from the phone, the voice-clone check (context id 'synthetic_voice': one piece of evidence, so it needs a scam cue to reach warn and never makes scam) and the user. When the classifier has heard enough and its p_scam is under warn.clf_veto_below, cue words alone don't make 'warn' (a real bank or police call uses the same words). A single model never makes 'scam' on its own: the classifier counts towards 'scam' only when the cue words alone already reach 'warn' (clf_needs_cue_warn) and the call isn't talk about scams. A context signal counts once: a strong phone signal makes 'scam' only with a warn from what was said (cue words without the context categories, or the classifier), and is not one of the cue categories counted towards the cue-only 'scam'. With the model pack, this is one of the two judges (engine/listener/hybrid.py, data/listen/Hybrid.kt). Levels never go down during a call, except when the user says 'Not a scam'. 'strong' = a category that isn't weak; 'discussion' never counts as a category.",
   "watch": {
     "min_categories": 1
   },
@@ -11,7 +11,9 @@
     "clf_veto_below": 0.3,
     "context_alone": [
       "caller_check_failed",
-      "remote_app_opened"
+      "remote_app_opened",
+      "screen_share_started",
+      "unknown_video_long"
     ]
   },
   "scam": {
@@ -23,7 +25,9 @@
       "remote_app_opened",
       "caller_check_failed",
       "video_call_unknown",
-      "international_number"
+      "international_number",
+      "screen_share_started",
+      "unknown_video_long"
     ],
     "clf_p": 0.9,
     "clf_min_categories": 1,
@@ -33,11 +37,17 @@
     "long_call",
     "international_number",
     "video_call_unknown",
-    "synthetic_voice"
+    "synthetic_voice",
+    "digits_read_out",
+    "bank_claim_not_1600"
   ],
   "trusted_context": [
     "caller_verified",
     "known_contact"
   ],
-  "trusted_extra": 1
+  "trusted_extra": 1,
+  "llm": {
+    "can_raise": true,
+    "about": "The smarter check (on-phone LLM): 'scam' at warn makes scam when can_raise; false = it only writes the reason (if it fails its gates: docs/RESULTS.md)."
+  }
 }

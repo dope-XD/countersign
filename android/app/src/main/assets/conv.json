@@ -14,13 +14,17 @@
   ],
   "warn_context": [
     "caller_check_failed",
-    "remote_app_opened"
+    "remote_app_opened",
+    "screen_share_started",
+    "unknown_video_long"
   ],
   "scam_context": [
     "remote_app_opened",
     "caller_check_failed",
     "video_call_unknown",
-    "international_number"
+    "international_number",
+    "screen_share_started",
+    "unknown_video_long"
   ],
   "shown_context": [
     "remote_app_opened",
@@ -28,7 +32,11 @@
     "video_call_unknown",
     "international_number",
     "long_call",
-    "synthetic_voice"
+    "synthetic_voice",
+    "screen_share_started",
+    "unknown_video_long",
+    "digits_read_out",
+    "bank_claim_not_1600"
   ],
   "t_watch": 0.0102,
   "t_warn": 0.142,

@@ -1,5 +1,6 @@
 package app.countersign.bank.data.listen
 
+import app.countersign.bank.data.Reason
 import app.countersign.bank.data.Risk
 import app.countersign.bank.data.RiskLevel
 import app.countersign.bank.data.RiskSource
@@ -20,13 +21,21 @@ fun higher(a: String, b: String) = if (LEVELS.indexOf(a) >= LEVELS.indexOf(b)) a
 /** What the scam classifier (ScamClassifier.kt) said about the transcript so far. */
 data class Judge(val pScam: Double, val type: String = "unknown", val abstain: Boolean = false)
 
-data class Verdict(val level: String, val type: String, val cues: List<String>, val sources: List<String>) {
-    fun toRisk(since: Long) = Risk(
+data class Verdict(
+    val level: String,
+    val type: String,
+    val cues: List<String>,
+    val sources: List<String>,
+    /** `scam` from the cue words alone (one source): the hybrid wants a second one (Hybrid.kt). */
+    val alone: Boolean = false,
+) {
+    fun toRisk(since: Long, reason: Reason? = null) = Risk(
         level = RiskLevel.entries.first { it.wire == level },
         type = ScamType.entries.firstOrNull { it.wire == type } ?: ScamType.UNKNOWN,
         cues = cues,
         sources = sources.mapNotNull { s -> RiskSource.entries.firstOrNull { it.wire == s } }.toSet(),
         since = since,
+        reason = reason,
     )
 }
 
@@ -51,6 +60,7 @@ class FusionConfig(private val f: JSONObject) {
     val contextAsCategory = list(f, "context_as_category")
     val trustedContext = list(f, "trusted_context")
     val trustedExtra = f.getInt("trusted_extra")
+    val llmCanRaise = f.optJSONObject("llm")?.optBoolean("can_raise", true) ?: true
 
     companion object {
         fun parse(json: String) = FusionConfig(JSONObject(json))
@@ -69,7 +79,8 @@ fun fuse(
     user: Boolean = false,
     prev: String = "none",
 ): Verdict {
-    val cats = (cues.categories.toSet() - "discussion") + (context intersect f.contextAsCategory)
+    val talk = cues.categories.toSet() - "discussion"
+    val cats = talk + (context intersect f.contextAsCategory)
     val strong = cats - rules.weak
     val extra = if ((context intersect f.trustedContext).isNotEmpty()) f.trustedExtra else 0
     val j = judge?.takeIf { !it.abstain }
@@ -83,6 +94,8 @@ fun fuse(
 
     val vetoed = j != null && j.pScam < f.warnClfVetoBelow // the classifier is sure it's harmless
     val warnCues = strong.size >= f.warnMinStrong + extra && !vetoed
+    // the same, from what was said only: a context signal that already counts on its own must not count twice
+    val warnSaid = (talk - rules.weak).size >= f.warnMinStrong + extra && !vetoed
     val warnClf = j != null && j.pScam >= f.warnClfP && cats.size >= f.warnClfMinCats
     val warnCtx = context intersect f.warnContextAlone
     if (warnCues || warnClf || warnCtx.isNotEmpty()) {
@@ -94,16 +107,17 @@ fun fuse(
         if ((warnCtx - setOf("caller_check_failed", "synthetic_voice")).isNotEmpty()) sources += "context"
     }
 
-    val scamCues = cats.size >= f.scamCuesMin + extra &&
+    val strongCtx = context intersect f.strongContext
+    val scamCues = (cats - strongCtx).size >= f.scamCuesMin + extra &&
         (!f.scamCuesNeedAction || (cats intersect rules.action).isNotEmpty()) &&
         (!f.scamCuesNeedType || cues.type != "unknown") &&
         !(f.scamDiscussionBlocks && cues.discussion)
     val scamClf = j != null && j.pScam >= f.scamClfP && cats.size >= f.scamClfMinCats &&
-        (!f.scamClfNeedsCueWarn || warnCues) &&
+        (!f.scamClfNeedsCueWarn || warnSaid) &&
         !(f.scamDiscussionBlocks && cues.discussion)
-    val strongCtx = context intersect f.strongContext
-    // two independent kinds of evidence: what was said (cues or the classifier) and what the phone saw
-    val scamCtx = strongCtx.isNotEmpty() && (warnCues || warnClf)
+    // two independent kinds of evidence: what was said (cues or the classifier) and what the phone saw; the phone's
+    // signal counts once, so it can't also be one of the cues that made the warn
+    val scamCtx = strongCtx.isNotEmpty() && (warnSaid || warnClf)
     if (scamCues || scamClf || scamCtx || user) {
         level = "scam"
         if (scamCtx) sources += if ("caller_check_failed" in strongCtx) "caller_check" else "context"
@@ -116,13 +130,15 @@ fun fuse(
     if (kind == "unknown" && "caller_check_failed" in context) kind = "impersonation"
 
     var all = cats
+    var alone = level == "scam" && !(scamClf || scamCtx || user)
     if (server != null && server.level != "none") {
         // the server's stronger check heard the same call: it can raise the level, never lower it
         level = higher(level, server.level)
         if (kind == "unknown" && server.type != "unknown") kind = server.type
         sources += "server"
         all = cats + (server.cues.toSet() - "discussion")
+        alone = alone && server.level != "scam"
     }
     level = higher(level, prev)
-    return Verdict(level, kind, all.sorted(), sources.sorted())
+    return Verdict(level, kind, all.sorted(), sources.sorted(), alone)
 }

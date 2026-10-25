@@ -202,3 +202,35 @@ def score_text(text: str) -> Result:
     s = CallScorer()
     s.feed(text)
     return s.result()
+
+
+# number words a person reads an OTP or card number out with: English, Hinglish, Hindi (exact words only, no fuzzy match)
+DIGIT_WORDS = frozenset(
+    "zero one two three four five six seven eight nine "
+    "shunya sunya ek do teen tin char chaar paanch panch chhe che chheh saat sat aath ath nau "
+    "शून्य एक दो तीन चार पांच पाँच छह छः छे सात आठ नौ".split()
+)
+DIGITS_READ_OUT = (4, 8)  # an OTP is 4 to 8 digits; a 10-digit phone number is not one
+
+
+def digit_runs(tokens: list[str]) -> list[int]:
+    """Lengths of the runs of digits read out in a row: '4 5 2 1', '4521', 'char paanch do ek' are each 4."""
+    runs, n = [], 0
+    for t in tokens:
+        if t.isascii() and t.isdigit():
+            n += len(t)
+        elif t in DIGIT_WORDS:
+            n += 1
+        else:
+            if n:
+                runs.append(n)
+            n = 0
+    if n:
+        runs.append(n)
+    return runs
+
+
+def digits_read_out(tokens: list[str]) -> bool:
+    """Someone read out 4 to 8 digits in a row (on an unknown call: likely an OTP or a card's digits)."""
+    lo, hi = DIGITS_READ_OUT
+    return any(lo <= n <= hi for n in digit_runs(tokens))
