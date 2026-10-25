@@ -126,7 +126,7 @@ def page1():
     y2 = top + 12 + h1 + 26
     h2 = pg.box(ax, y2, aw, "Segment: Silero VAD", ["Threshold 0.5; 0.4 s silence ends a segment", "Segments up to 12 s; audio dropped after use"])
     y3 = y2 + h2 + 26
-    h3 = pg.box(
+    pg.box(
         ax,
         y3,
         aw,
@@ -184,7 +184,7 @@ def page1():
     )
     cy = y
     y += hc + 12
-    hv = pg.box(
+    pg.box(
         bx,
         y,
         bw,
@@ -285,7 +285,7 @@ def page2():
         fill=DARK,
     )
     c_y = b_y + b + 22
-    c = pg.box(
+    pg.box(
         lx, c_y, lw, "Acknowledged within 60 s?", ["Yes: escalation stops", "No: text every member and call the first one from the user's phone"], fill=DARK
     )
     pg.arrow([(lx + lw / 2, top + 12 + a), (lx + lw / 2, b_y)])
