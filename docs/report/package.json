@@ -1,0 +1,7 @@
+{
+  "name": "countersign-report",
+  "private": true,
+  "type": "module",
+  "scripts": { "build": "node build.mjs" },
+  "dependencies": { "puppeteer-core": "23.11.1", "qrcode": "1.5.4" }
+}

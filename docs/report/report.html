@@ -1,0 +1,168 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Countersign: the report</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --brand: #0B5CAD; --brand-soft: #E6EEF7; --ink: #14202B; --muted: #5B6B79; --line: #D5DBE1; --paper: #F4F6F8;
+    --amber: #9A5B00; --amber-soft: #FFF1D6; --red: #B3261E; --red-soft: #FCE4E2; --green: #137A3F; --green-soft: #E3F4E9;
+  }
+  @page { size: A4; margin: 0; }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; background: #fff; color: var(--ink); font-family: Inter, -apple-system, "Segoe UI", Helvetica, Arial, sans-serif; }
+  body { -webkit-print-color-adjust: exact; print-color-adjust: exact; font-size: 9.6pt; line-height: 1.42; }
+  .page { width: 210mm; height: 297mm; padding: 10mm 12mm 8mm; display: flex; flex-direction: column; gap: 3.7mm; page-break-after: always; overflow: hidden; }
+  .page:last-child { page-break-after: auto; }
+  h1 { font-size: 27pt; font-weight: 800; letter-spacing: -0.03em; margin: 0; line-height: 1; }
+  h2 { font-size: 12.5pt; font-weight: 800; letter-spacing: -0.01em; margin: 0 0 1.6mm; }
+  p { margin: 0; }
+  svg { display: block; width: 100%; height: auto; }
+
+  header { display: flex; justify-content: space-between; align-items: center; gap: 8mm; }
+  .brand { display: flex; align-items: center; gap: 4mm; }
+  .brand .mark { width: 15mm; height: 15mm; }
+  .tagline { font-size: 13pt; font-weight: 600; color: var(--brand); margin-top: 1.4mm; }
+  .meta { font-size: 8.6pt; color: var(--muted); margin-top: 1.2mm; }
+  .qr { display: flex; align-items: center; gap: 3mm; text-align: right; font-size: 8.3pt; color: var(--muted); }
+  .qr .code { width: 24mm; height: 24mm; }
+  .qr b { color: var(--ink); display: block; font-size: 9pt; }
+
+  .problem { background: var(--paper); border-radius: 3mm; padding: 2.8mm 4mm; font-size: 10pt; }
+  .problem b { color: var(--red); }
+
+  .does { display: grid; grid-template-columns: 1fr 1fr; gap: 2.6mm 5mm; }
+  .does > div { display: grid; grid-template-columns: 7mm 1fr; gap: 2.4mm; align-items: start; }
+  .does .n { width: 7mm; height: 7mm; border-radius: 50%; background: var(--brand); color: #fff; font-weight: 800; display: grid; place-items: center; font-size: 10pt; }
+  .does h3 { margin: 0 0 0.6mm; font-size: 10.4pt; font-weight: 750; }
+
+  .figure { border: 0.3mm solid var(--line); border-radius: 3mm; padding: 2.2mm; }
+
+  .numbers { display: grid; grid-template-columns: repeat(4, 1fr); gap: 3mm; }
+  .numbers > div { border-radius: 3mm; padding: 2.6mm 3.2mm; background: var(--brand-soft); }
+  .numbers .big { font-size: 21pt; font-weight: 800; letter-spacing: -0.03em; color: var(--brand); line-height: 1.05; }
+  .numbers .what { font-weight: 650; font-size: 9.2pt; margin-top: 0.6mm; }
+  .numbers .src { font-size: 7.8pt; color: var(--muted); margin-top: 0.8mm; line-height: 1.3; }
+  .foot { font-size: 7.8pt; color: var(--muted); margin-top: auto; display: flex; justify-content: space-between; }
+
+  .decides .cols { display: grid; grid-template-columns: 1fr 1fr; gap: 6mm; }
+  .three { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 4mm; }
+  .three section { border-radius: 3mm; padding: 3mm 3.4mm; }
+  .three ul { margin: 0; padding-left: 4mm; font-size: 9.1pt; line-height: 1.36; }
+  .three li { margin: 0 0 1.2mm; }
+  .privacy { background: var(--green-soft); } .privacy h2 { color: var(--green); }
+  .misses { background: var(--amber-soft); } .misses h2 { color: var(--amber); }
+  .next { background: var(--paper); }
+  .built { display: grid; grid-template-columns: 1fr 1fr; gap: 5mm; font-size: 9pt; border-top: 0.3mm solid var(--line); padding-top: 3mm; }
+  code { font-family: ui-monospace, Menlo, Consolas, monospace; font-size: 8.4pt; background: var(--paper); padding: 0.2mm 1mm; border-radius: 1mm; }
+</style>
+</head>
+<body>
+
+<section class="page">
+  <header>
+    <div class="brand">
+      <svg class="mark" viewBox="0 0 64 64"><rect width="64" height="64" rx="14" fill="#0B5CAD"/><path d="M12 40c4-14 8-14 10 0s6 14 10 0 6-14 10 0 6 6 10-4" fill="none" stroke="#fff" stroke-width="4" stroke-linecap="round"/></svg>
+      <div>
+        <h1>Countersign</h1>
+        <div class="tagline">Catch the scam while it's still a call.</div>
+        <div class="meta">Team losers · RAKSHAM 2026 finale · Track 1</div>
+      </div>
+    </div>
+    <div class="qr">
+      <div><b>Scan for the 2-minute video</b>the code and every result</div>
+      <div class="code">{{qr}}</div>
+    </div>
+  </header>
+
+  <div class="problem">
+    Mummy's phone rings. A man says he's from the CBI: a parcel in her name had drugs in it, she must stay on the line
+    and tell no one. An hour later she moves her savings to his "safe account". Digital-arrest, fake-KYC and
+    "your son had an accident" calls all run like this, and <b>by the time the call ends, the money is gone.</b>
+  </div>
+
+  <div>
+    <h2>What Countersign does</h2>
+    <div class="does">
+      <div><span class="n">1</span><div class="t"><h3>Is it really Rahul?</h3>When a caller claims to be family, the app asks Rahul's own phone whether it is on this call. A cloned voice or a faked number fails, because Rahul's phone never placed the call.</div></div>
+      <div><span class="n">2</span><div class="t"><h3>It listens with her, on the phone</h3>On speaker, the phone turns the call into text itself and our trained model judges what the caller is doing. The card turns amber and says why: "says police, court or bank · asks you to keep it secret".</div></div>
+      <div><span class="n">3</span><div class="t"><h3>At red, the family hears</h3>Rahul's phone rings full screen, even on silent. If his app is off, Mummy's phone texts him; if nobody acts within a minute, it calls him.</div></div>
+      <div><span class="n">4</span><div class="t"><h3>A mistake costs two taps</h3>"I know this caller", then "Yes, it's fine": the warnings stop for this call and Rahul is told it was a false alarm.</div></div>
+    </div>
+  </div>
+
+  <div class="figure">{{system}}</div>
+
+  <div class="numbers">
+    <div><div class="big">2.3%</div><div class="what">of genuine calls flagged</div><div class="src">1,019 bank calls it never trained on (ICFD-31k). Our first, keyword version: 50.1%.</div></div>
+    <div><div class="big">88%</div><div class="what">of scam calls caught</div><div class="src">4,499 held-out scam calls (ICFD-31k), at amber or red.</div></div>
+    <div><div class="big">28/30</div><div class="what">on our spot-check kit</div><div class="src">10 calls, 10 messages, 10 voices; one command reruns it.</div></div>
+    <div><div class="big">10/10</div><div class="what">new scams caught</div><div class="src">Written after the model was fixed; each call also tested over a phone line.</div></div>
+  </div>
+
+  <div class="foot"><span>Every number: docs/RESULTS.md in the repository, reproducible on a laptop.</span><span>1 / 2</span></div>
+</section>
+
+<section class="page">
+  <div>
+    <h2>One call, step by step</h2>
+    <div class="figure">{{timeline}}</div>
+  </div>
+
+  <div class="decides">
+    <h2>How it decides</h2>
+    <div class="cols">
+      <p>Two judges read every call. Our model, fine-tuned on 31,000 Indian bank calls, reads the whole call so far
+      and asks whether the caller is doing what scammers do. The cue rules spot the moves in English, Hinglish and
+      Hindi, and give the reason in plain words. What the phone sees counts too: an unknown number, AnyDesk opened, a
+      failed caller check.</p>
+      <p>Amber needs one of them. Red needs two independent sources, so one odd sentence never sets off the family
+      alarm. During a call the level never goes down, unless she says it's not a scam. A computer-made voice can raise
+      a call to amber, never to red: over a speakerphone that check makes too many mistakes to decide alone.</p>
+    </div>
+  </div>
+
+  <div class="three">
+    <section class="privacy">
+      <h2>Privacy, built in</h2>
+      <ul>
+        <li>The call becomes text on the phone. Audio and words are never saved or sent.</li>
+        <li>The relay that links family phones sees ids only: who, and which kind of scam.</li>
+        <li>Only a call already at amber can go to our server for a second opinion, and its audio stays in memory.</li>
+        <li>For a confirmed scam the server keeps one 20-second encrypted clip, deleted after 30 days.</li>
+      </ul>
+    </section>
+    <section class="misses">
+      <h2>What it misses</h2>
+      <ul>
+        <li>A scam read politely from a script in English can stay below amber.</li>
+        <li>People talking <i>about</i> a scam can set it off.</li>
+        <li>A genuine call in a computer-made voice can reach amber; the card says why.</li>
+        <li>On the earpiece the phone hears mostly her, so the call has to be on speaker.</li>
+      </ul>
+    </section>
+    <section class="next">
+      <h2>What's next</h2>
+      <ul>
+        <li>A full-screen stop over payment apps. It is designed; today the call card and the home screen warn.</li>
+        <li>A small language model on the phone as a third judge. The prompt is written and tested.</li>
+        <li>A bank pilot: our server already runs the call-centre version, with app approval for risky requests.</li>
+      </ul>
+    </section>
+  </div>
+
+  <div class="built">
+    <div><b>Built on</b> multilingual-e5-small (fine-tuned by us), Meta's Omnilingual speech-to-text, NII's
+      AntiDeepfake voice model and the ICFD-31k dataset. It runs on a 6 GB phone after one 798 MB download.
+      <b>Built here:</b> 66% of the product code was written at the finale.</div>
+    <div><b>Try it yourself.</b> On the phone: Home → <i>Check a recording or message</i>, with your own file or SMS.
+      On a laptop, the same verdicts for a whole folder: <code>python -m ml.eval.kit &lt;folder&gt;</code></div>
+  </div>
+
+  <div class="foot"><span>Countersign · github.com/dope-XD/countersign</span><span>2 / 2</span></div>
+</section>
+
+</body>
+</html>

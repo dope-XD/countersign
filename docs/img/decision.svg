@@ -1,0 +1,62 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 560" width="1200" height="560">
+<rect width="1200" height="560" fill="#fff"/>
+<defs><marker id="a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" fill="#5B6B79"/></marker><marker id="ab" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" fill="#0B5CAD"/></marker><marker id="ar" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" fill="#B3261E"/></marker><marker id="ag" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" fill="#137A3F"/></marker></defs>
+<rect x="20" y="40" width="246" height="150" rx="14" fill="#fff" stroke="#D5DBE1" stroke-width="1.5"/>
+<text x="38" y="73.0" font-family="Inter, -apple-system, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="21" font-weight="700" fill="#14202B" text-anchor="start">What was said</text>
+<text x="38" y="102.4" font-family="Inter, -apple-system, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="17" font-weight="450" fill="#5B6B79" text-anchor="start">the call so far, in</text>
+<text x="38" y="124.2" font-family="Inter, -apple-system, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="17" font-weight="450" fill="#5B6B79" text-anchor="start">English, Hinglish</text>
+<text x="38" y="145.9" font-family="Inter, -apple-system, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="17" font-weight="450" fill="#5B6B79" text-anchor="start">or Hindi</text>
+<rect x="20" y="250" width="246" height="186" rx="14" fill="#fff" stroke="#D5DBE1" stroke-width="1.5"/>
+<text x="38" y="283.0" font-family="Inter, -apple-system, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="21" font-weight="700" fill="#14202B" text-anchor="start">What it saw</text>
+<text x="38" y="312.4" font-family="Inter, -apple-system, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="17" font-weight="450" fill="#5B6B79" text-anchor="start">unknown number,</text>
+<text x="38" y="334.2" font-family="Inter, -apple-system, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="17" font-weight="450" fill="#5B6B79" text-anchor="start">AnyDesk opened,</text>
+<text x="38" y="355.9" font-family="Inter, -apple-system, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="17" font-weight="450" fill="#5B6B79" text-anchor="start">caller check ✗,</text>
+<text x="38" y="377.7" font-family="Inter, -apple-system, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="17" font-weight="450" fill="#5B6B79" text-anchor="start">computer voice</text>
+<path d="M266 115 L292 115" fill="none" stroke="#5B6B79" stroke-width="2.5" stroke-linejoin="round"/>
+<path d="M266 343 L292 343" fill="none" stroke="#5B6B79" stroke-width="2.5" stroke-linejoin="round"/>
+<path d="M292 115 L292 430" fill="none" stroke="#5B6B79" stroke-width="2.5" stroke-linejoin="round"/>
+<path d="M292 130 L316 130" fill="none" stroke="#5B6B79" stroke-width="2.5" stroke-linejoin="round" marker-end="url(#a)"/>
+<path d="M292 410 L316 410" fill="none" stroke="#5B6B79" stroke-width="2.5" stroke-linejoin="round" marker-end="url(#a)"/>
+<rect x="316" y="20" width="404" height="246" rx="14" fill="#E6EEF7" stroke="#0B5CAD" stroke-width="2"/>
+<text x="334" y="53.0" font-family="Inter, -apple-system, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="21" font-weight="700" fill="#14202B" text-anchor="start">Our trained model</text>
+<text x="334" y="82.4" font-family="Inter, -apple-system, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="17" font-weight="450" fill="#5B6B79" text-anchor="start">reads the whole call: is this</text>
+<text x="334" y="104.2" font-family="Inter, -apple-system, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="17" font-weight="450" fill="#5B6B79" text-anchor="start">caller doing what scammers</text>
+<text x="334" y="125.9" font-family="Inter, -apple-system, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="17" font-weight="450" fill="#5B6B79" text-anchor="start">do? Trained on 31,000</text>
+<text x="334" y="147.7" font-family="Inter, -apple-system, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="17" font-weight="450" fill="#5B6B79" text-anchor="start">Indian bank calls.</text>
+<rect x="336" y="196" width="364" height="14" rx="7" fill="#fff" stroke="#D5DBE1" stroke-width="1.5"/>
+<rect x="336" y="196" width="52" height="14" rx="7" fill="#137A3F" stroke="#137A3F" stroke-width="1.5"/>
+<rect x="382" y="196" width="278" height="14" rx="0" fill="#F2A42B" stroke="#F2A42B" stroke-width="0"/>
+<rect x="656" y="196" width="44" height="14" rx="7" fill="#B3261E" stroke="#B3261E" stroke-width="1.5"/>
+<text x="388" y="236.0" font-family="Inter, -apple-system, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="15" font-weight="700" fill="#9A5B00" text-anchor="start">amber</text>
+<text x="700" y="236.0" font-family="Inter, -apple-system, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="15" font-weight="700" fill="#B3261E" text-anchor="end">red, twice in a row</text>
+<rect x="316" y="290" width="404" height="250" rx="14" fill="#fff" stroke="#D5DBE1" stroke-width="1.5"/>
+<text x="334" y="323.0" font-family="Inter, -apple-system, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="21" font-weight="700" fill="#14202B" text-anchor="start">Cue rules</text>
+<text x="334" y="352.4" font-family="Inter, -apple-system, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="17" font-weight="450" fill="#5B6B79" text-anchor="start">19 kinds of scam move, in three</text>
+<text x="334" y="374.2" font-family="Inter, -apple-system, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="17" font-weight="450" fill="#5B6B79" text-anchor="start">languages: “says police”, “asks</text>
+<text x="334" y="395.9" font-family="Inter, -apple-system, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="17" font-weight="450" fill="#5B6B79" text-anchor="start">for the OTP”, “keep it secret”.</text>
+<text x="334" y="417.7" font-family="Inter, -apple-system, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="17" font-weight="450" fill="#5B6B79" text-anchor="start">“We&#x27;ll never ask for your OTP”</text>
+<text x="334" y="439.4" font-family="Inter, -apple-system, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="17" font-weight="450" fill="#5B6B79" text-anchor="start">doesn&#x27;t count. Talk about</text>
+<text x="334" y="461.2" font-family="Inter, -apple-system, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="17" font-weight="450" fill="#5B6B79" text-anchor="start">scams never makes red.</text>
+<rect x="752" y="150" width="228" height="250" rx="14" fill="#14202B" stroke="#14202B" stroke-width="2"/>
+<text x="770" y="183.0" font-family="Inter, -apple-system, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="21" font-weight="700" fill="#fff" text-anchor="start">Together</text>
+<text x="770" y="212.4" font-family="Inter, -apple-system, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="17" font-weight="450" fill="#C9D2DB" text-anchor="start">amber: the higher</text>
+<text x="770" y="234.2" font-family="Inter, -apple-system, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="17" font-weight="450" fill="#C9D2DB" text-anchor="start">of the two judges</text>
+<text x="770" y="255.9" font-family="Inter, -apple-system, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="17" font-weight="450" fill="#C9D2DB" text-anchor="start"></text>
+<text x="770" y="277.7" font-family="Inter, -apple-system, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="17" font-weight="450" fill="#C9D2DB" text-anchor="start">red: two</text>
+<text x="770" y="299.4" font-family="Inter, -apple-system, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="17" font-weight="450" fill="#C9D2DB" text-anchor="start">independent sources</text>
+<text x="770" y="321.2" font-family="Inter, -apple-system, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="17" font-weight="450" fill="#C9D2DB" text-anchor="start">agree</text>
+<path d="M720 143 L736 143 L736 230 L752 230" fill="none" stroke="#5B6B79" stroke-width="2.5" stroke-linejoin="round" marker-end="url(#a)"/>
+<path d="M720 415 L736 415 L736 340 L752 340" fill="none" stroke="#5B6B79" stroke-width="2.5" stroke-linejoin="round" marker-end="url(#a)"/>
+<rect x="1016" y="404" width="164" height="64" rx="14" fill="#fff" stroke="#D5DBE1" stroke-width="2.5"/>
+<text x="1098" y="444.0" font-family="Inter, -apple-system, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="20" font-weight="800" fill="#5B6B79" text-anchor="middle">Calm</text>
+<rect x="1016" y="312" width="164" height="64" rx="14" fill="#F4F6F8" stroke="#5B6B79" stroke-width="2.5"/>
+<text x="1098" y="352.0" font-family="Inter, -apple-system, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="20" font-weight="800" fill="#14202B" text-anchor="middle">A few signs</text>
+<rect x="1016" y="220" width="164" height="64" rx="14" fill="#FFF1D6" stroke="#9A5B00" stroke-width="2.5"/>
+<text x="1098" y="260.0" font-family="Inter, -apple-system, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="20" font-weight="800" fill="#9A5B00" text-anchor="middle">Amber</text>
+<rect x="1016" y="128" width="164" height="64" rx="14" fill="#FCE4E2" stroke="#B3261E" stroke-width="2.5"/>
+<text x="1098" y="168.0" font-family="Inter, -apple-system, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="20" font-weight="800" fill="#B3261E" text-anchor="middle">Red</text>
+<path d="M980 275 L1012 275" fill="none" stroke="#5B6B79" stroke-width="2.5" stroke-linejoin="round" marker-end="url(#a)"/>
+<path d="M1000 462 L1000 132" fill="none" stroke="#5B6B79" stroke-width="2" stroke-linejoin="round" marker-end="url(#a)"/>
+<text x="1180" y="504.0" font-family="Inter, -apple-system, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="17" font-weight="500" fill="#5B6B79" text-anchor="end">never goes down in a call;</text>
+<text x="1180" y="528.0" font-family="Inter, -apple-system, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="17" font-weight="500" fill="#5B6B79" text-anchor="end">two taps clear a mistake</text>
+</svg>

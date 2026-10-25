@@ -511,7 +511,7 @@ check's result in, as the phone does).
 | calls, clean | 9/12 | 3 genuine calls at amber: friends talking about a digital-arrest call, and (because the voice *is* computer-made) the bank fraud alert and the Amazon delivery |
 | calls, phone line | 10/12 | friends talking about a scam; the bank fraud alert |
 
-Every scam reached amber or red (12/12 calls, 4/4 SMS). The misses are the known ones: talk *about* scams, and a
+Every scam reached amber or red: the 6 scam calls in both versions (12/12) and the 4 scam SMS, so 10 of 10 scams. The misses are the known ones: talk *about* scams, and a
 computer-made voice counting as one more warning sign. With a human voice the voice check stays low and those two
 genuine calls stay at "a few warning signs" (without the voice signal: 11/12 and 11/12). On the emulator's own
 "Check a recording", three of these files gave the same level and reasons as the laptop.
