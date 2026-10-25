@@ -57,7 +57,7 @@
   ],
   "llm": null,
   "levels": [
-   "warn",
+   "watch",
    "warn",
    "scam",
    "scam",
@@ -274,9 +274,9 @@
   "levels": [
    "watch",
    "watch",
-   "warn"
+   "watch"
   ],
-  "level": "warn",
+  "level": "watch",
   "type": "family_emergency",
   "cues": [
    "authority",
@@ -308,8 +308,8 @@
    "reason_hi": ""
   },
   "levels": [
-   "warn",
-   "warn",
+   "watch",
+   "watch",
    "warn",
    "warn"
   ],
@@ -413,7 +413,7 @@
    "reason_hi": "वे गिरफ़्तारी की धमकी देकर पैसे मांग रहे हैं।"
   },
   "levels": [
-   "warn",
+   "watch",
    "scam",
    "scam"
   ],
@@ -561,7 +561,7 @@
    "reason_hi": ""
   },
   "levels": [
-   "warn",
+   "watch",
    "scam"
   ],
   "level": "scam",
@@ -627,9 +627,9 @@
   "llm": null,
   "levels": [
    "watch",
-   "warn"
+   "watch"
   ],
-  "level": "warn",
+  "level": "watch",
   "type": "otp_upi",
   "cues": [
    "video_call_unknown",
@@ -822,9 +822,9 @@
   },
   "levels": [
    "watch",
-   "warn"
+   "watch"
   ],
-  "level": "warn",
+  "level": "watch",
   "type": "unknown",
   "cues": [
    "video_call_unknown",
@@ -1147,8 +1147,8 @@
   ],
   "llm": null,
   "levels": [
-   "warn",
-   "warn",
+   "watch",
+   "watch",
    "scam",
    "scam"
   ],
@@ -1219,7 +1219,7 @@
    "reason_hi": "वे गिरफ़्तारी की धमकी देकर पैसे मांग रहे हैं।"
   },
   "levels": [
-   "warn",
+   "watch",
    "scam",
    "scam"
   ],
@@ -1375,7 +1375,7 @@
    "reason_hi": ""
   },
   "levels": [
-   "warn",
+   "watch",
    "scam",
    "scam"
   ],
@@ -1623,8 +1623,8 @@
   },
   "levels": [
    "watch",
-   "warn",
-   "warn",
+   "watch",
+   "watch",
    "scam"
   ],
   "level": "scam",
@@ -1832,12 +1832,12 @@
    "reason_hi": "वे गिरफ़्तारी की धमकी देकर पैसे मांग रहे हैं।"
   },
   "levels": [
-   "warn",
-   "warn",
-   "scam",
-   "scam"
+   "watch",
+   "watch",
+   "watch",
+   "watch"
   ],
-  "level": "scam",
+  "level": "watch",
   "type": "digital_arrest",
   "cues": [
    "bank_claim_not_1600",
@@ -1846,10 +1846,9 @@
   ],
   "sources": [
    "context",
-   "cues",
-   "llm"
+   "cues"
   ],
-  "reason": "They threaten arrest and ask for money."
+  "reason": null
  },
  {
   "id": "adversarial/relatives_discuss_digital_arrest",
@@ -2024,12 +2023,12 @@
   },
   "levels": [
    "none",
-   "warn",
-   "warn",
-   "warn",
-   "warn"
+   "watch",
+   "watch",
+   "watch",
+   "watch"
   ],
-  "level": "warn",
+  "level": "watch",
   "type": "digital_arrest",
   "cues": [
    "bank_claim_not_1600",
@@ -2055,12 +2054,12 @@
   ],
   "llm": null,
   "levels": [
-   "warn",
-   "warn",
-   "warn",
-   "warn"
+   "watch",
+   "watch",
+   "watch",
+   "watch"
   ],
-  "level": "warn",
+  "level": "watch",
   "type": "unknown",
   "cues": [
    "bank_claim_not_1600",

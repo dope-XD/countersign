@@ -12,6 +12,9 @@ What was said (the end of the call so far):
 {transcript}
 """
 
-Answer with JSON only, no other text:
-{"verdict": "scam" or "unsure" or "ok", "type": one of "digital_arrest", "bank_kyc", "otp_upi", "remote_access", "family_emergency", "courier_customs", "trai_sim", "job_task", "investment", "reward", "boss_payment", "impersonation", "unknown", "reason_en": one short sentence for the owner in plain English, "reason_hi": the same sentence in simple Hindi (Devanagari)}
-Say "scam" only when the words clearly show one of the scam signs above. When unsure, say "unsure".
+Answer with JSON only, no other text, in exactly this form:
+{"verdict": "<verdict>", "type": "<type>", "reason_en": "<reason>", "reason_hi": "<reason in Hindi>"}
+- verdict: exactly one of "scam", "unsure", "ok". Say "scam" only when the words clearly show one of the scam signs above; when unsure, say "unsure"; a normal call is "ok".
+- type: exactly one of "digital_arrest", "bank_kyc", "otp_upi", "remote_access", "family_emergency", "courier_customs", "trai_sim", "job_task", "investment", "reward", "boss_payment", "impersonation", "unknown" ("unknown" when it is not a scam).
+- reason_en: one short sentence for the phone's owner, in plain English, saying what the caller is doing.
+- reason_hi: the same sentence in simple Hindi (Devanagari).

@@ -36,7 +36,7 @@ SAMPLED = ("hinglish_calls", "bothbosu")
 
 
 def ask(text: str, model: str) -> tuple[str, float]:
-    body = json.dumps({"model": model, "prompt": text, "stream": False, "options": {"temperature": 0, "num_predict": 200}}).encode()
+    body = json.dumps({"model": model, "prompt": text, "stream": False, "think": False, "options": {"temperature": 0, "num_predict": 200}}).encode()
     t = time.perf_counter()
     with urllib.request.urlopen(urllib.request.Request(URL, body, {"Content-Type": "application/json"}), timeout=600) as r:
         out = json.loads(r.read())["response"]

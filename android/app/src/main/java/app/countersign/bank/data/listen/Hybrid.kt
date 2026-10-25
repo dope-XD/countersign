@@ -12,6 +12,7 @@ package app.countersign.bank.data.listen
 
 private val BANK_CLAIM = setOf("authority", "verification_pretext")
 private val TRUSTED = setOf("known_contact", "caller_verified")
+private val PHONE = setOf("context", "caller_check", "voice")
 
 fun atLeast(level: String, floor: String) = LEVELS.indexOf(level) >= LEVELS.indexOf(floor)
 
@@ -44,7 +45,12 @@ fun combine(
     fun cap(x: String) = if (x == "scam") "warn" else x
 
     var level = cap(cue.level)
-    if (conv != null) level = higher(level, cap(conv.level))
+    if (conv != null) {
+        // cue words alone are not enough for amber while the conversation model hears nothing of a scam (genuine bank
+        // and courier calls use the same words); a phone signal still is
+        if (level == "warn" && convModel == "none" && cue.sources.none { it in PHONE }) level = "watch"
+        level = higher(level, cap(conv.level))
+    }
     val llmScam = llm?.verdict == "scam"
     val raiseLlm = llmScam && llmCanRaise
     var red = if (conv == null) {

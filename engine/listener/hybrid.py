@@ -28,6 +28,7 @@ from engine.listener.rules import ASSETS, CallScorer, digits_read_out, normalize
 
 BANK_CLAIM = {"authority", "verification_pretext"}
 TRUSTED = {"known_contact", "caller_verified"}
+PHONE = {"context", "caller_check", "voice"}
 
 
 def at_least(level: str, floor: str) -> bool:
@@ -63,6 +64,10 @@ def combine(
 
     level = cap(cue.level)
     if conv is not None:
+        # cue words alone are not enough for amber while the conversation model hears nothing of a scam (genuine bank
+        # and courier calls use the same words); a phone signal still is
+        if level == "warn" and conv_model == "none" and not set(cue.sources) & PHONE:
+            level = "watch"
         level = higher(level, cap(conv.level))
     llm_scam = llm is not None and llm.verdict == "scam"
     raise_llm = llm_scam and llm_can_raise

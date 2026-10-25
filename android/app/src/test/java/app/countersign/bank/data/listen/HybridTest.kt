@@ -98,22 +98,22 @@ class HybridTest {
         assertEquals("warn", combine(none, v("scam", "phone_ai"), "scam").verdict.level) // the conversation model alone
         assertEquals("scam", combine(v("warn"), v("scam", "phone_ai"), "scam").verdict.level)
         assertEquals("scam", combine(none, v("scam", "phone_ai"), "scam", llm = scam).verdict.level)
-        assertEquals("warn", combine(v("scam", alone = true), none, "none").verdict.level) // the cue words alone
+        assertEquals("warn", combine(v("scam", alone = true), none, "watch").verdict.level) // the cue words alone
         assertEquals("scam", combine(v("scam", alone = true), null).verdict.level) // basic mode: as before
         assertEquals("scam", combine(v("scam", "cues", "context"), none, "none").verdict.level)
     }
 
     @Test
     fun theSmarterCheckRaisesWarnNeverLowersAndItsReasonShows() {
-        val r = combine(v("warn"), none, "none", llm = scam)
+        val r = combine(v("warn"), none, "watch", llm = scam)
         assertEquals("scam", r.verdict.level)
         assertTrue("llm" in r.verdict.sources)
         assertEquals(scam.reason, r.shown?.reason)
-        assertEquals("watch", combine(v("watch"), none, "none", llm = scam).verdict.level)
-        val quiet = combine(v("warn"), none, "none", llm = LlmVerdict("ok"), prev = "warn")
+        assertEquals("watch", combine(v("watch"), none, "watch", llm = scam).verdict.level)
+        val quiet = combine(v("warn"), none, "watch", llm = LlmVerdict("ok"), prev = "warn")
         assertEquals("warn", quiet.verdict.level)
         assertNull(quiet.shown)
-        val reasonOnly = combine(v("warn"), none, "none", llm = scam, llmCanRaise = false)
+        val reasonOnly = combine(v("warn"), none, "watch", llm = scam, llmCanRaise = false)
         assertEquals("warn", reasonOnly.verdict.level)
         assertEquals(scam, reasonOnly.shown)
     }

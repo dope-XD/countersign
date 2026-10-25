@@ -26,7 +26,7 @@ from ml import listener_data
 ROOT = Path(__file__).resolve().parents[2]
 CACHE = ROOT / "data" / "conv" / "p_cache.json"
 OUT = ROOT / "models" / "eval" / "hybrid.json"
-SETS = ("team_calls", "adversarial", "hinglish_calls", "bothbosu")
+SETS = ("team_calls", "adversarial", "hinglish_calls")
 CONTEXT = {"unknown_number"}
 NEAR = ROOT / "data" / "listener" / "near_domain.jsonl"
 

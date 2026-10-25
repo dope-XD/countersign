@@ -78,7 +78,7 @@ def test_the_conversation_model_alone_never_makes_scam():
 
 def test_the_cue_rules_alone_need_a_second_source_with_the_model_pack():
     alone = v("scam", alone=True)
-    assert combine(alone, NONE, "none")[0].level == "warn"
+    assert combine(alone, NONE, "watch")[0].level == "warn"
     assert combine(alone, v("warn", ("phone_ai",)), "warn")[0].level == "scam"
     assert combine(alone, None)[0].level == "scam"  # basic mode: as before
 
@@ -89,14 +89,14 @@ def test_a_judge_that_already_paired_two_sources_stands():
 
 
 def test_the_smarter_check_raises_warn_never_lowers_and_its_reason_shows():
-    r, shown = combine(v("warn"), NONE, "none", llm=SCAM)
+    r, shown = combine(v("warn"), NONE, "watch", llm=SCAM)
     assert r.level == "scam" and "llm" in r.sources and shown == SCAM
-    r, shown = combine(v("watch"), NONE, "none", llm=SCAM)
+    r, shown = combine(v("watch"), NONE, "watch", llm=SCAM)
     assert r.level == "watch" and shown is None  # it only runs at warn; a scam word at watch isn't enough
     for quiet in (LlmVerdict("ok"), LlmVerdict("unsure")):
-        r, shown = combine(v("warn"), NONE, "none", llm=quiet, prev="warn")
+        r, shown = combine(v("warn"), NONE, "watch", llm=quiet, prev="warn")
         assert r.level == "warn" and shown is None
-    r, shown = combine(v("warn"), NONE, "none", llm=SCAM, llm_can_raise=False)
+    r, shown = combine(v("warn"), NONE, "watch", llm=SCAM, llm_can_raise=False)
     assert r.level == "warn" and shown == SCAM  # failed its gates: the reason only
 
 
@@ -138,3 +138,9 @@ def test_llm_vectors_are_current():
     """HybridTest.kt checks the phone's prompt and parser against llm_vectors.json (python -m engine.listener.llm)."""
     path = ASSETS.parents[1] / "test" / "resources" / "llm_vectors.json"
     assert json.loads(path.read_text(encoding="utf-8")) == llm.vectors()
+
+
+def test_cue_words_alone_need_the_conversation_model_to_hear_something_for_amber():
+    assert combine(v("warn"), NONE, "none")[0].level == "watch"
+    assert combine(v("warn", ("cues", "context")), NONE, "none")[0].level == "warn"  # a phone signal still reaches amber
+    assert combine(v("warn"), None)[0].level == "warn"  # basic mode: as before
