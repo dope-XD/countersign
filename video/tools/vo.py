@@ -136,14 +136,27 @@ def silences(path: Path, db: int = -38, d: float = 0.15) -> list[tuple[float, fl
 
 
 def split_full(scenes: list[dict]) -> dict[str, Path]:
-    """One take of the whole script -> one file per scene, cut in the middle of its longest pauses."""
+    """One take of the whole script -> one file per scene. Each scene should end about where its share of the
+    script's characters says; the cut goes in the longest pause near there (preferring the scene breaks the
+    script asks for, but working with short gaps too)."""
     full = next((p for ext in EXTS if (p := ROOT / "recorded" / f"full.{ext}").exists()), None)
     if not full:
         return {}
-    gaps = sorted(silences(full, -40, 0.5), key=lambda g: g[1] - g[0], reverse=True)[: len(scenes) - 1]
-    if len(gaps) < len(scenes) - 1:
-        sys.exit(f"{full.name}: found {len(gaps)} long pauses, need {len(scenes) - 1}. Leave about 2 s between scenes.")
-    cuts = [0.0] + sorted((a + b) / 2 for a, b in gaps) + [seconds(full)]
+    total = seconds(full)
+    gaps = silences(full, -40, 0.2)
+    sizes = [len(s["vo"]) for s in scenes]
+    cuts, done = [0.0], 0
+    for k in range(len(scenes) - 1):
+        done += sizes[k]
+        guess = done / sum(sizes) * total
+        win = max(2.5, 0.15 * total * sizes[k] / sum(sizes) + 1.5)
+        near = [(a, b) for a, b in gaps if abs((a + b) / 2 - guess) < win and (a + b) / 2 > cuts[-1] + 1]
+        if not near:
+            sys.exit(f"{full.name}: no pause near {guess:.1f}s (end of {scenes[k]['id']}). Leave a short pause between scenes.")
+        # the longest pause wins; closeness to the guess breaks ties
+        a, b = max(near, key=lambda g: (g[1] - g[0]) - 0.05 * abs((g[0] + g[1]) / 2 - guess))
+        cuts.append((a + b) / 2)
+    cuts.append(total)
     out = ROOT / "recorded" / "_split"
     out.mkdir(exist_ok=True)
     parts = {}
@@ -195,6 +208,8 @@ def elevenlabs(scenes: list[dict]) -> None:
     lex += [f"  <lexeme><grapheme>{g}</grapheme><alias>{a}</alias></lexeme>" for g, a in ALIASES.items()]
     (d / "pronunciation.pls").write_text("\n".join(lex + ["</lexicon>", ""]))
     (d / "full_multilingual_v2.txt").write_text("\n\n".join(spoken(s, True) for s in scenes).replace("\n\n", '\n<break time="2.5s" />\n') + "\n")
+    # one paste for v3/v4: scenes as paragraphs, a long pause between them
+    (d / "full.txt").write_text("\n\n[long pause]\n\n".join(spoken(s, False) for s in scenes) + "\n")
     for s in scenes:
         (d / f'{s["id"]}.txt').write_text(spoken(s, False) + "\n")
     md = [
