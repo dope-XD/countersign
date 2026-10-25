@@ -1,0 +1,389 @@
+\documentclass[conference,a4paper]{IEEEtran}
+\usepackage[T1]{fontenc}
+\usepackage{newtxtext,newtxmath}
+\usepackage{graphicx,booktabs,amsmath,multirow,array}
+\usepackage{microtype}
+\usepackage[hidelinks]{hyperref}
+\usepackage{xurl}
+\renewcommand{\arraystretch}{1.12}
+\newcommand{\amber}{\textsc{amber}}
+\newcommand{\red}{\textsc{red}}
+\newcommand{\watch}{\textsc{watch}}
+
+\begin{document}
+
+\title{Countersign: On-Device Detection of Impersonation Scam Calls with Family-Linked Response}
+
+\author{\IEEEauthorblockN{Pushkar Joshi, Sarah Mittal, Reshaan Nadar}
+\IEEEauthorblockA{Team \emph{losers}, RAKSHAM 2026 Finale, Track 1 (voice-cloning fraud)\\
+Code, data cards and every result: \url{https://github.com/dope-XD/countersign}}}
+
+\maketitle
+
+\begin{abstract}
+Impersonation calls (``digital arrest'', fake bank KYC, a relative in trouble) persuade victims to transfer money
+while the call is still in progress. We present Countersign, an Android application that detects such calls on the
+victim's own phone and brings in the victim's family before money moves. Speech is transcribed on the device, and
+two independent judges assess the conversation: a multilingual encoder (e5-small) fine-tuned on 267{,}601
+conversation windows, which scores the call as a whole, and a negation-aware rule base of 19 scam ``moves'' that
+supplies the explanation shown to the user. A warning is raised when either judge is confident; the family alarm
+requires two independent sources. A separate check asks a family member's own phone whether it placed the call,
+which defeats voice cloning and caller-ID spoofing without using audio. On 1{,}019 genuine bank conversations never
+used in training, 2.3\% raise a warning (a keyword baseline: 50.1\%); 87.8\% of 4{,}499 held-out scam conversations
+do. We report the weaknesses we measured, among them scripted English scams and talk about scams.
+\end{abstract}
+
+\begin{IEEEkeywords}
+scam detection, social engineering, on-device inference, speech, multilingual, privacy
+\end{IEEEkeywords}
+
+\section{Introduction}
+
+In a typical ``digital arrest'' call, a caller claiming to be from the CBI tells the victim that a parcel in her
+name contained drugs, keeps her on the line for an hour, forbids her to tell anyone, and finally asks her to move her
+savings to a ``safe account'' to clear her name. Fake KYC updates and ``your son has had an accident'' calls follow
+the same script. Two properties make these calls hard to stop: the harm happens \emph{during} the call, and the
+victim is deliberately isolated from the people who would recognise the scam.
+
+A detector for this setting must therefore work in real time, on the victim's phone, in the languages the call is
+held in (English, Hindi and their mixture, Hinglish), and it must hand the decision to a person the victim trusts.
+It must also not alarm on genuine calls: a real bank's fraud team uses the same vocabulary (\emph{OTP},
+\emph{account}, \emph{police}) as the scammer. Our first prototype, which scored keyword cues, warned on half of
+genuine bank calls (Table~\ref{tab:icfd}); this observation shaped the design below.
+
+\textbf{Contributions.}
+\begin{itemize}
+\item An on-device detection pipeline that judges \emph{what the caller is doing} across the whole conversation,
+using a fine-tuned multilingual encoder, combined with interpretable cue rules through a two-source rule for the
+highest alert level (Section~\ref{sec:detect}).
+\item A caller check that needs no audio: the claimed family member's phone reports its own calls, so a cloned voice
+or a spoofed number fails because that phone never placed the call (Section~\ref{sec:response}).
+\item A response path that reaches the family (full-screen alarm, SMS fallback, escalation) and a two-tap recovery
+from false alarms, with privacy constraints enforced in the architecture (Sections~\ref{sec:response}, \ref{sec:privacy}).
+\item An evaluation on data the models never saw, with false-positive rates and named failure cases
+(Section~\ref{sec:eval}); all numbers are reproducible from the repository.
+\end{itemize}
+
+\section{Related Work}
+
+\textbf{Deployed on-device detectors.} Google's Scam Detection analyses calls on Pixel phones for ``patterns commonly
+associated with scams'' and keeps no audio or transcript~\cite{google}. It is English-only, limited to specific
+handsets, and does not involve the victim's family.
+
+\textbf{Models for conversational scams.} PreScam~\cite{prescam} collects 11{,}573 scam conversations from user
+reports and finds that a fine-tuned BERT predicts scam progression better than zero-shot large language models
+(83.4 vs.\ 63.3--69.9 AUC). SCRIPTMIND~\cite{scriptmind} models scams as crime scripts with fine-tuned small
+language models, and Shen et~al.~\cite{shen} study real-time LLM warnings and the trade-off between timeliness and
+precision. These results motivate our choice of a compact fine-tuned encoder over an on-phone generative model.
+
+\textbf{Data.} ICFD-31k~\cite{icfd} provides about 31{,}000 bilingual (English and Hinglish) bank-call conversations,
+synthetic and generated with Llama~3.3~70B, with streaming verdicts every 3~s, ten fraud families in the main set and
+five unseen fraud types in a separate cross-domain set. It is our main training and test source.
+
+\textbf{Synthetic voice detection.} Leaderboards of speech deepfake detectors report that small models trade accuracy
+for efficiency~\cite{dfarena}. We use the first layers of a post-trained AntiDeepfake model~\cite{antideepfake} and,
+given its error rate over phone audio (Section~\ref{sec:eval}), treat it as weak evidence only.
+
+\section{System Overview}
+
+\begin{figure*}[t]
+\centering
+\includegraphics[width=\textwidth]{fig/architecture.pdf}
+\caption{Architecture. All listening and judging happen on the protected user's phone. The relay carries identifiers
+only; the detection server is optional and receives audio only after the phone itself has raised a warning.}
+\label{fig:arch}
+\end{figure*}
+
+Fig.~\ref{fig:arch} shows the three parties. Every family member installs the app. The \emph{protected user's
+phone} captures the call, transcribes it and decides; the \emph{relay}, a small server without models, links family
+phones and carries call events, caller checks and alerts as identifiers; an optional \emph{detection server} gives a
+second opinion on calls the phone already finds suspicious.
+
+\textbf{Threat model.} The attacker calls from an unknown number or spoofs a known one, impersonates an authority, a
+bank or a family member, may use a cloned voice, and steers the victim towards a transfer, a one-time password, or
+installing a remote-access app. We assume the attacker cannot control the family member's phone. Detection requires
+the call to be on speaker (Section~\ref{sec:limits}).
+
+\textbf{Alert levels.} A call is at one of four levels: \emph{none}, \watch{} (a few signs; no visible warning),
+\amber{} (a warning card naming the scam and the reasons) and \red{} (``This is likely a scam. Hang up.'' and the
+family alarm). Within a call the level never decreases, except when the user declares the call genuine.
+
+\section{On-Device Detection}
+\label{sec:detect}
+
+\subsection{Audio capture and speech recognition}
+Android lets an accessibility service keep the microphone during a call; the app uses one to record 16~kHz mono
+audio into memory while a call is active and listening is enabled. Silero VAD~\cite{silero} segments speech
+(threshold 0.5, minimum silence 0.4~s, segments up to 12~s). Each segment is transcribed by Meta's Omnilingual
+ASR~\cite{omniasr} (300M parameters, CTC, int8) through sherpa-onnx, and its audio is discarded. We selected this
+recogniser on our 59 spoken calls: its word error rate was 28\%, against 65\% and 44\% for the Hindi and English
+IndicConformer models, each of which also loses the other language of a code-mixed call.
+
+\subsection{Judge 1: the conversation model}
+\begin{figure*}[t]
+\centering
+\includegraphics[width=\textwidth]{fig/decision.pdf}
+\caption{Decision. Both judges see the transcript and the phone's context. \amber{} follows the more confident
+judge; \red{} requires two independent sources.}
+\label{fig:decision}
+\end{figure*}
+
+The first judge reads the conversation so far and estimates whether the caller has made a scam move.
+
+\emph{Model.} We fine-tune \texttt{multilingual-e5-small}~\cite{e5} (118M parameters) with mean pooling and a logistic
+head. Inputs are the most recent part of the call (left-truncated to 320 tokens, which covers 99\% of 1{,}200-character
+windows), normalised but kept in its original script, with the e5 ``query:'' prefix.
+
+\emph{Training data.} ICFD-31k streaming windows plus our own sets (Hinglish call lines, public scam dialogues and SMS
+corpora, and template-generated genuine calls that use scam vocabulary), 267{,}601 windows in total with 24.6\%
+positive. Our own rows are repeated eight times to balance the synthetic majority. We train for one epoch with AdamW and a linear schedule with warm-up, and select the checkpoint on the
+development set only (mean per-source AUC 0.989).
+
+\emph{Splits.} ICFD's validation and test splits contain only fraud, so we hold out conversations of its training
+split by a hash of the conversation id: 10\% for development and 10\% as the only ICFD test set with genuine calls.
+ICFD's own test split and its cross-domain split stay untouched.
+
+\emph{On the phone.} The model runs as an fp32 ONNX graph (470~MB) with onnxruntime; it reproduces PyTorch to within
+$10^{-5}$, whereas int8 quantisation shifted scores by up to 0.20 and was rejected. Tokenisation uses our own Kotlin
+implementation of the SentencePiece unigram model, identical to the reference tokenizer on 3{,}005 test texts.
+
+\emph{Accumulation.} Let $p_t$ be the model's score after segment $t$ and $s_t=\tfrac12(p_t+p_{t-1})$. The call reaches
+\begin{equation}
+\mathrm{level}_t=\begin{cases}
+\red{} & \text{if } s_t \ge 0.9855 \text{ and } s_{t-1} \ge 0.9855,\\
+\amber{} & \text{if } s_t \ge 0.142,\\
+\watch{} & \text{if } s_t \ge 0.0102,\\
+\text{none} & \text{otherwise,}
+\end{cases}
+\end{equation}
+and the level of the call is the highest $\mathrm{level}_t$ reached so far.
+The thresholds were set on 1{,}788 genuine development calls at 10\%, 3\% and 0.5\% false-positive rate. A known
+contact or a verified caller raises them (0.142, 0.9865, 0.9932). A failed caller check or an opened remote-access
+app is sufficient for \amber{} on its own. Together with \amber{} from speech, these signals, an unknown video
+call or an international number produce \red{}.
+
+\emph{Reasons.} A move matcher embeds each segment with the base e5 model and compares it with written descriptions
+of 17 scam moves (e.g.\ ``claims to be police'', ``asks to keep it secret'', ``asks for the OTP''). Each move has its
+own threshold, the 99.5th percentile of similarity on held-out genuine turns. A move is reported only when $p_t$ rose
+by at least 0.15 or the level changed. The matcher never sets the level.
+
+\subsection{Judge 2: cue rules}
+The second judge is a rule base of phrases in English, Hinglish and Hindi grouped into 19 categories (authority,
+threat, secrecy, money request, credentials, remote access, urgency, and others). A negation window prevents
+``we will never ask for your OTP'' from counting as a request; a \emph{discussion} category (talk about scams) never
+counts towards \red{}. Combinations of categories name the scam type (e.g.\ \emph{digital arrest} = authority plus
+a threat, secrecy or a video-call demand). The rules reach \watch{} with one category, \amber{} with two strong
+categories, and \red{} with four including an action and a type. A context signal counts once: it is never also used
+as a cue towards the same \amber{}.
+
+\subsection{Context and voice evidence}
+The phone contributes signals of its own: an unknown or international number, a remote-access app (AnyDesk,
+TeamViewer and others) or a payment app brought to the front during the call, a call longer than 15 minutes, a failed
+caller check, the user reading out four to eight digits on an unknown call, and an unknown number claiming to be a
+bank or authority. A voice-clone check scores the first 20~s of speech with the first six layers of AntiDeepfake
+wav2vec-large~\cite{antideepfake} and a logistic head (int8, 127~MB). Because of its error rate over phone audio
+(Table~\ref{tab:voice}), a synthetic-voice signal can raise \watch{} to \amber{} but never produces \red{}.
+
+\subsection{Combination}
+Fig.~\ref{fig:decision} summarises the rule. \amber{} is the higher of the two judges, except that cue words alone
+do not produce \amber{} while the conversation model is below \watch{}: genuine bank and courier calls use the same
+words. \red{} requires two independent sources: one judge at \red{} from speech together with the other judge at
+\amber{} or above; a judge that already paired speech with a strong phone signal; the user pressing ``Alert family'';
+or the detection server. The server, when present, can raise the level but never lower it.
+
+\subsection{Optional second opinion}
+Once the phone itself is at \amber{}, it may stream the call to the detection server, which runs a larger recogniser
+(Omnilingual 1B), the same conversation model, and the full 24-layer AntiDeepfake model on 4~s windows. Audio is
+kept in a rolling 20~s buffer in memory and dropped when the stream closes.
+
+\section{Caller Check and Response}
+\label{sec:response}
+
+\begin{figure*}[t]
+\centering
+\includegraphics[width=0.94\textwidth]{fig/sequence.pdf}
+\caption{Message flow for one scam call: caller check, optional second opinion, alert, family alarm with SMS
+fallback and escalation, and the false-alarm path. Dashed: optional or fallback paths.}
+\label{fig:seq}
+\end{figure*}
+
+\textbf{Caller check.} When a caller claims to be a family member, or calls from a family member's number, the relay
+compares the claim with that member's own reported call events around the moment the call rang
+(Fig.~\ref{fig:seq}). An outgoing call to the protected user verifies the caller; no call while the member's app was
+seen in the last two minutes yields ``Not Rahul's phone''; an app not seen for two minutes yields ``could not
+check'', never a false negative. Negative verdicts wait up to 6~s for late events. Numbers are matched to member
+identifiers on the phone and never leave it. The user may also ring the member, whose phone asks ``Is it you?''; a
+``yes'' is signed by a hardware-backed key after biometric confirmation.
+
+\textbf{Alert and escalation.} The first time a call reaches \red{}, the phone sends one alert carrying the call
+identifier, level, scam type and cue identifiers. The relay rings every family member whose app is online with a
+full-screen alarm (``Mummy may be on a scam call'', with \emph{Call} and \emph{Message} actions) and returns the
+offline members, whom the phone texts from its own SIM. If nobody acknowledges within 60~s, the phone texts all
+members and places a call to the first one.
+
+\textbf{Recovering from false alarms.} ``I know this caller'' or ``It's not a scam'', confirmed once, stops warnings
+for the call, closes any server stream, clears the alarm on family phones (``False alarm: Mummy says it's fine'')
+and stores one identifier-only record for human review.
+
+\section{Privacy}
+\label{sec:privacy}
+
+\begin{table}[t]
+\centering
+\caption{Where each kind of data goes}
+\label{tab:privacy}
+\small
+\begin{tabular}{@{}p{0.27\columnwidth}p{0.66\columnwidth}@{}}
+\toprule
+Data & Handling \\
+\midrule
+Call audio & Phone memory, discarded per segment; to the server only after \amber{}, in memory; one 20~s AES-256 encrypted clip for a confirmed scam, deleted after 30 days \\
+Transcript & Phone memory for the duration of the call; never stored or sent \\
+Phone numbers & On the phone only; matched to member identifiers by the last ten digits \\
+Relay & Call events (member ids), check verdicts, alert (level, type, cue ids) \\
+Logs & Levels, types and cue identifiers; never words or numbers \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+Table~\ref{tab:privacy} lists every data flow. Detection, the explanation and the caller check work without sending
+speech or text anywhere; the relay cannot reconstruct what was said. ``Check a recording or message'' applies the same
+analyser to a file or pasted text, entirely on the phone.
+
+\section{Implementation}
+
+The Android client is written in Kotlin; the server, the training code and the evaluation are in Python. Every
+decision component exists in both languages, and continuous integration checks that both give identical results on
+shared test vectors (tokenizer, conversation accumulator, cue rules, combination). The model pack is a single
+798~MB download, verified by hash, sized for a phone with 6~GB of RAM; detection works offline after the download. Of the
+product code, 66\% was written during the 48-hour finale (measured with \texttt{git blame} against the check-in
+commit).
+
+\section{Evaluation}
+\label{sec:eval}
+
+\textbf{Protocol.} Thresholds were chosen on development data only. Test sets were never used for training,
+threshold selection or checkpoint choice. A call counts as \emph{flagged} when it reaches \amber{} or \red{} at any
+point. ICFD conversations are fed in their streaming chunks, our calls segment by segment as the phone does.
+
+\begin{table}[t]
+\centering
+\caption{ICFD-31k conversations not used in training: share reaching \amber{} / \red{}}
+\label{tab:icfd}
+\small
+\begin{tabular}{@{}lrcc@{}}
+\toprule
+Set & $n$ & Countersign & Keyword baseline \\
+\midrule
+Genuine, clear & 1{,}019 & 2.3 / 0.4 & 50.1 / 8.9 \\
+Genuine, ambiguous & 511 & 4.5 / 0.8 & 70.8 / 15.5 \\
+\midrule
+Scam, test split & 4{,}499 & 87.8 / 59.9 & 94.3 / 51.5 \\
+Scam, held out (clear) & 193 & 99.5 / 82.9 & -- \\
+Scam, held out (subtle) & 370 & 98.9 / 75.9 & -- \\
+Unseen types (clear) & 760 & 75.8 / 42.9 & 90.9 / 34.7 \\
+Unseen types (subtle) & 240 & 54.6 / 17.5 & 78.3 / 22.5 \\
+\bottomrule
+\end{tabular}
+
+\vspace{2pt}\footnotesize Percent. Median time to \amber{}: 45~s (test split), 36~s (held out).
+\end{table}
+
+\textbf{False alarms on genuine calls.} Table~\ref{tab:icfd} shows the effect of judging the conversation instead of
+keywords: on clear genuine bank calls, warnings fall from 50.1\% to 2.3\% and alarms from 8.9\% to 0.4\%. The keyword
+baseline catches more scams only because it flags most genuine calls as well.
+
+\textbf{Scams.} 87.8\% of scam conversations in ICFD's test split reach \amber{} and 59.9\% reach \red{}, half a
+minute to a minute into the call. Detection drops on the five fraud types absent from training (75.8\% clear,
+54.6\% subtle), which bounds what the model generalises.
+
+\begin{table}[t]
+\centering
+\caption{Other held-out sets (text, fed turn by turn)}
+\label{tab:ours}
+\small
+\begin{tabular}{@{}lcccc@{}}
+\toprule
+Set & \multicolumn{2}{c}{$n$ (scam / genuine)} & Scams & Genuine \\
+\midrule
+Team calls & 16 & 13 & 93.8\% & 7.7\% \\
+Adversarial rewrites & 16 & 14 & 75.0\% & 21.4\% \\
+Hinglish call lines & 124 & 22 & 100\% & 0\% \\
+Near-domain genuine & 0 & 30 & -- & 10.0\% \\
+Fresh set$^\dagger$ & 10 & 10 & 10/10 & 2/10 \\
+\midrule
+Spot-check kit & \multicolumn{4}{l}{28 of 30 items correct} \\
+\bottomrule
+\end{tabular}
+
+\vspace{2pt}\footnotesize Share flagged (\amber{} or \red{}). $^\dagger$Calls over a simulated phone line.
+\end{table}
+
+\textbf{Our sets and unseen inputs.} Table~\ref{tab:ours} reports the combined system on our own held-out sets. The
+fresh set was written after the system was frozen and used for nothing else: six calls spoken by voices absent from
+all training data, each also passed through a simulated phone line, and four messages per class. All ten scams were
+flagged. The genuine items flagged were people discussing a scam and a bank fraud alert read by a synthetic voice.
+
+\textbf{Audio end to end.} On 59 spoken calls (32 scams) passed through the recogniser, the conversation model alone
+flags 66\% of scams on clean audio, 62\% over G.711 and 50\% after loudspeaker replay plus G.711, with 7--11\% of
+genuine calls at \amber{} and at most 4\% at \red{}. Here the keyword path did better on scams (88\% over G.711):
+our English scam scripts are more formal than ICFD's bank-call English. The combined system has not yet been measured
+on this audio set.
+
+\begin{table}[t]
+\centering
+\caption{Voice-clone check (shipped int8 model)}
+\label{tab:voice}
+\small
+\begin{tabular}{@{}lcc@{}}
+\toprule
+Held-out set & Channel & Equal error rate \\
+\midrule
+In-the-Wild & clean / G.711 & 23.2 / 24.6\% \\
+ReplayDF (replayed by speaker) & G.711 & 35.2\% \\
+Stock TTS vs.\ real Hindi & clean / G.711 & 10.5 / 17.5\% \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\textbf{Voice.} Table~\ref{tab:voice} explains why the voice check is weak evidence: equal error rates of 23--35\%
+on realistic channels are too high to justify an alarm on their own.
+
+\section{Limitations and Future Work}
+\label{sec:limits}
+
+\textbf{Measured weaknesses.} (i) Scams read politely from a script in English can stay below \amber{}. (ii) People
+talking \emph{about} a scam can trigger \amber{}, occasionally \red{}. (iii) A genuine call in a synthetic voice can
+reach \amber{}; the card then names the voice as the reason. (iv) Short calls rarely reach \red{}, since it requires
+evidence over two segments. (v) Recognition errors over a loudspeaker lower detection (Section~\ref{sec:eval}).
+
+\textbf{Deployment constraints.} On the earpiece the microphone mostly hears the user, so the call must be on
+speaker, and some handsets' echo cancellation removes the caller even then. ICFD-31k is synthetic; performance on
+real recorded calls needs a pilot with consented data.
+
+\textbf{Not yet built.} A full-screen block over payment apps (designed; today the call card and home screen warn), a
+small on-device language model as a third judge (prompt and parser written and tested, no runtime yet), three
+specified phone signals (screen sharing, long unknown video calls, 1600-series numbers), and the combined system on
+the server.
+
+\section{Conclusion}
+
+Countersign shows that impersonation scams can be detected on the victim's phone, in Indian languages, with an
+explanation the victim can read, and that the decisive step, bringing in the family, can be automated without
+sending the conversation anywhere. Judging the whole conversation rather than its keywords cut false warnings on
+genuine bank calls from one in two to about two in a hundred.
+
+\begin{thebibliography}{10}
+\bibitem{prescam} W.~Sun, S.~Ma, Y.~Li, T.~Ma, Z.~Wang, C.~Nelson, X.~Xiao, and Y.~Ye, ``PreScam: A benchmark for predicting scam progression from early conversations,'' arXiv:2605.12243, 2026.
+\bibitem{icfd} R.~Ahuja, K.~Prateek, and S.~Singh, ``ICFD-31k: A large-scale dataset and benchmark for real-time conversational fraud detection,'' in \emph{Proc.\ IJCAI}, 2026, pp.~7065--7073.
+\bibitem{scriptmind} H.~Kim, C.~Kim, S.~Shin, and J.~Kang, ``SCRIPTMIND: Crime script inference and cognitive evaluation for LLM-based social engineering scam detection system,'' arXiv:2601.13581, 2026.
+\bibitem{shen} Z.~Shen, S.~Yan, Y.~Zhang, X.~Luo, G.~Ngai, and E.~Y.~Fu, ``\,`It warned me just at the right moment': Exploring LLM-based real-time detection of phone scams,'' arXiv:2502.03964, 2025.
+\bibitem{e5} L.~Wang, N.~Yang, X.~Huang, L.~Yang, R.~Majumder, and F.~Wei, ``Multilingual E5 text embeddings: A technical report,'' arXiv:2402.05672, 2024.
+\bibitem{omniasr} Omnilingual ASR Team (Meta FAIR), ``Omnilingual ASR: Open-source multilingual speech recognition for 1600+ languages,'' arXiv:2511.09690, 2025.
+\bibitem{antideepfake} W.~Ge, X.~Wang, X.~Liu, and J.~Yamagishi, ``Post-training for deepfake speech detection,'' arXiv:2506.21090, 2025.
+\bibitem{dfarena} S.~Dowerah \emph{et al.}, ``Speech DF Arena: A leaderboard for speech deepfake detection models,'' arXiv:2509.02859, 2025.
+\bibitem{silero} Silero Team, ``Silero VAD: Pre-trained enterprise-grade voice activity detector,'' GitHub, 2024.
+\bibitem{google} Google, ``New real-time protections on Android,'' Google Security Blog, Nov.~2024.
+\end{thebibliography}
+
+\end{document}

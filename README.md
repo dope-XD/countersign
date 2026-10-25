@@ -126,6 +126,8 @@ You can see every screen and every alert without any calls, using pretend data. 
 
 ## For developers
 
+How every part works, from the call ringing to the alarm on a family phone: [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md). The system as a short paper (5 pages, with every measured result): [docs/paper/Countersign-paper.pdf](docs/paper/Countersign-paper.pdf); the same on two flowchart pages: [docs/paper/Countersign-brief.pdf](docs/paper/Countersign-brief.pdf).
+
 **Build the app**
 
 ```bash

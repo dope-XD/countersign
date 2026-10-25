@@ -1,0 +1,118 @@
+{
+ "calls": [
+  [
+   "call_s1",
+   "scam",
+   "en-hinglish",
+   "Hello, main Telecom Regulatory Authority se bol raha hoon. Aapke Aadhaar se ek SIM nikla hai jo money laundering case mein use hua hai. Mumbai Cyber Crime mein case darj hai. Abhi aapko video call pe officer se baat karni hogi, aur ye baat kisi ko mat batana warna aapko arrest kiya jayega. Verification ke liye aapko apne account ka paisa RBI ke safe account mein transfer karna hoga."
+  ],
+  [
+   "call_s2",
+   "scam",
+   "en",
+   "Dear customer, this is from the electricity department. Your connection will be cut tonight at nine thirty because last month's bill was not updated. To avoid disconnection, please download the app I am sending on WhatsApp and pay ten rupees for verification. Do it now, the officer is waiting."
+  ],
+  [
+   "call_s3",
+   "scam",
+   "hi",
+   "हेलो आंटी, मैं राहुल का दोस्त बोल रहा हूँ। राहुल का एक्सीडेंट हो गया है, वो अस्पताल में है। डॉक्टर तुरंत पचास हज़ार माँग रहे हैं। प्लीज़ अभी इस नंबर पर यूपीआई से भेज दीजिए, घर पर किसी को मत बताइए, वो घबरा जाएँगे।"
+  ],
+  [
+   "call_s4",
+   "scam",
+   "en",
+   "Good afternoon, I'm calling from FedEx international. A parcel booked under your Aadhaar has been seized by customs in Mumbai. It contains five passports and drugs. I'm transferring you to the narcotics officer. You must not disconnect this call. To clear your name you will pay a refundable security deposit."
+  ],
+  [
+   "call_s5",
+   "scam",
+   "en-hinglish",
+   "Sir, main Angel Capital se Priya bol rahi hoon. Hamare premium WhatsApp group mein IPO allotment guaranteed hai, ek mahine mein double return. Aaj hi registration ke liye pachees hazaar bhejiye, kal se slots band ho jayenge."
+  ],
+  [
+   "call_s6",
+   "scam",
+   "en",
+   "Sir, your credit card reward points of eight thousand are expiring today. To redeem them I will guide you. Please install AnyDesk from the Play Store and tell me the nine digit code. Then read out the OTP you receive."
+  ],
+  [
+   "call_g1",
+   "harmless",
+   "en",
+   "Hello, this is a call from your bank's fraud monitoring team. We noticed a card transaction of four thousand rupees at an online store. If you made it, no action is needed. If not, please block the card from the mobile app or call the number on the back of your card. We will never ask you for your PIN or OTP."
+  ],
+  [
+   "call_g2",
+   "harmless",
+   "en-hinglish",
+   "Hello ma'am, Amazon se delivery hai. Main aapke gate pe khada hoon, parcel cash on delivery hai, teen sau pachaas rupaye. Aap neeche aa jaayengi ya main guard ke paas chhod doon?"
+  ],
+  [
+   "call_g3",
+   "harmless",
+   "hi",
+   "हाँ बेटा, मैं ठीक हूँ। आज पापा की दवाई लेने गए थे। शाम को आ जाना, खाना साथ में खाएँगे। और सुनो, आते वक्त दूध ले आना।"
+  ],
+  [
+   "call_g4",
+   "harmless",
+   "en",
+   "Good morning, I am the constable from the local police station for your passport verification. Please come to the station tomorrow between ten and one with your Aadhaar and two address proofs. There is no fee for this."
+  ],
+  [
+   "call_g5",
+   "harmless",
+   "en-hinglish",
+   "Arre suna tune? Sharma ji ko kal ek call aaya, bola CBI se hai, digital arrest kar denge. Unhone turant phone kaat diya aur cyber crime ki helpline pe report kar diya. Achha kiya na?"
+  ],
+  [
+   "call_g6",
+   "harmless",
+   "en",
+   "Hi, this is Doctor Mehta's clinic confirming your appointment for Thursday at five pm. Please bring your old reports. If you need to reschedule, call the front desk."
+  ]
+ ],
+ "texts": [
+  [
+   "text_s1",
+   "scam",
+   "Dear Customer, your HDFC account will be blocked today due to incomplete KYC. Update now: http://hdfc-kyc-update.in/verify - Team HDFC"
+  ],
+  [
+   "text_s2",
+   "scam",
+   "Congratulations! You have won Rs 25,00,000 in KBC lucky draw. To claim, send processing fee Rs 5,000 to UPI kbc.office@upi and WhatsApp your details."
+  ],
+  [
+   "text_s3",
+   "scam",
+   "Part time job! Ghar baithe YouTube videos like karke roz 3000 kamaye. Joining ke liye abhi Telegram pe message karein."
+  ],
+  [
+   "text_s4",
+   "scam",
+   "प्रिय ग्राहक, आपका बिजली कनेक्शन आज रात 9:30 बजे काट दिया जाएगा। तुरंत इस नंबर पर कॉल करें: 9876500021"
+  ],
+  [
+   "text_g1",
+   "harmless",
+   "Your OTP for login to Flipkart is 482913. Do not share it with anyone. Flipkart will never call you for OTP."
+  ],
+  [
+   "text_g2",
+   "harmless",
+   "Rs 2,450.00 debited from A/c XX1234 on 25-Oct for electricity bill payment. Not you? Call 18002586161."
+  ],
+  [
+   "text_g3",
+   "harmless",
+   "Mummy main 7 baje tak ghar aa jaunga, traffic bahut hai. Khana mat banana, bahar se le aaunga."
+  ],
+  [
+   "text_g4",
+   "harmless",
+   "Reminder: Your Airtel postpaid bill of Rs 599 is due on 28 Oct. Pay via Airtel Thanks app. Ignore if already paid."
+  ]
+ ]
+}
