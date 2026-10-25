@@ -224,13 +224,16 @@ val DIGIT_WORDS: Set<String> = (
 /** An OTP is 4 to 8 digits; a 10-digit phone number is not one. */
 val DIGITS_READ_OUT = 4..8
 
+/** Helplines and short codes are said, not read out. */
+val HELPLINES = setOf("1930", "100", "112", "1800", "1600", "181", "1098", "14422", "155260")
+
 /** Lengths of the runs of digits read out in a row: "4 5 2 1", "4521", "char paanch do ek" are each 4. */
 fun digitRuns(tokens: List<String>): List<Int> {
     val runs = ArrayList<Int>()
     var n = 0
     for (t in tokens) {
         when {
-            t.isNotEmpty() && t.all { it in '0'..'9' } -> n += t.length
+            t.isNotEmpty() && t.all { it in '0'..'9' } && t !in HELPLINES -> n += t.length
             t in DIGIT_WORDS -> n += 1
             else -> {
                 if (n > 0) runs.add(n)

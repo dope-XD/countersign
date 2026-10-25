@@ -59,7 +59,6 @@
           "parcel_customs",
           "secrecy",
           "threat",
-          "urgency",
           "video_move"
         ]
       }
@@ -119,6 +118,7 @@
         "categories": [
           "boss_pretext",
           "credentials",
+          "direct_ask",
           "money_ask",
           "threat",
           "urgency",
@@ -147,6 +147,7 @@
         "type": "remote_access",
         "categories": [
           "credentials",
+          "direct_ask",
           "remote_access",
           "threat",
           "verification_pretext"
@@ -304,8 +305,7 @@
         "type": "investment",
         "categories": [
           "investment",
-          "job_task",
-          "money_ask"
+          "job_task"
         ]
       }
     },
@@ -422,12 +422,9 @@
         "Please remember the bank will never ask for your OTP, PIN or CVV on a call."
       ],
       "expect": {
-        "level": "watch",
+        "level": "none",
         "type": "otp_upi",
-        "categories": [
-          "credentials",
-          "money_ask"
-        ]
+        "categories": []
       }
     },
     {
@@ -491,8 +488,7 @@
         "level": "watch",
         "type": "unknown",
         "categories": [
-          "money_ask",
-          "urgency"
+          "money_ask"
         ]
       }
     },
@@ -640,11 +636,9 @@
         "You can pay by UPI when you pick it up this evening."
       ],
       "expect": {
-        "level": "watch",
+        "level": "none",
         "type": "unknown",
-        "categories": [
-          "money_ask"
-        ]
+        "categories": []
       }
     },
     {

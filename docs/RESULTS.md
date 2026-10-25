@@ -528,3 +528,33 @@ checks give `scam` on a digital-arrest and a KYC/OTP scam, and `ok` on a real Am
 on this laptop (GTX 1050, mostly CPU). The full run and the phone runtime (LiteRT-LM, `LlmCheck.kt`) are not done yet;
 until the near-domain gate (false scam at most 5%) is measured, the phone has no smarter check and nothing changes for it.
 Not measured yet: audio end to end, victim-side (earpiece) calls, real role-play calls on phones.
+
+## Intent, not words (25 Oct, afternoon)
+
+A genuine bank alert and a scam can use the same words (bank, card, OTP, "kisi ko mat batana"). What differs is the
+intent: a warning versus an ask. Changes, each kept only because false red stayed the same on every genuine set:
+
+- **A warning is not an ask.** New non-scoring category `protective` ("bank kabhi OTP nahi maangta", "never share your
+  OTP", "1930 pe complaint", "we have blocked your card"): with it, the mention of an OTP or of "don't tell anyone" is
+  read as the warning it is, and cue words alone can't make red.
+- **An ask is not a mention.** New category `direct_ask` ("woh mujhe bata dijiye", "mujhe bhej do"). The scam's own
+  playbook said outright (an ask + a code, money or an app + secrecy or a threat) makes red even when the conversation
+  model hears nothing: it did not raise false red on any set.
+- **Loose words removed:** a bare "hazaar"/"lakh"/"rupees" (an amount is not a demand), "abhi" (now), "fraud" (as in
+  "fraud monitoring team", which scammers say too), a bare "mat batana". Helplines (1930, 100, 112, 1800…) no longer
+  count as digits read out. Scam openers that were missed ("suspicious activity", "misuse", "case darj", "charge dena
+  hoga") were added.
+
+| set | scam calls | recall at warn | recall at scam | genuine calls | false warn | false scam |
+|---|---:|---:|---:|---:|---:|---:|
+| team_calls | 16 | 100.0% | 75.0% | 13 | 7.7% | 0.0% |
+| adversarial | 16 | 81.2% (was 75.0%) | 50.0% (was 43.8%) | 14 | 21.4% | 7.1% |
+| hinglish_calls | 124 | 100.0% | 21.8% (was 17.7%) | 22 | 0.0% | 0.0% |
+| near_domain (genuine only) | 0 | - | - | 30 | 6.7% | 3.3% |
+
+In basic mode (no model pack) a genuine HDFC fraud alert no longer reaches red, and a scam that hides behind
+protective words ("I'm not asking for your OTP… move your savings to the RBI safe account") now does.
+
+One rule was tried and dropped: "the conversation model alone can't make amber without an ask". It kept our scripted
+bank alert quiet but changed nothing on held-out genuine calls and cost 4 points of Hinglish recall, so it was tuning
+to the demo. The demo's genuine bank call now stays quiet on its own merits.

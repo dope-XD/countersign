@@ -14,15 +14,15 @@
   "adversarial/cues_only": {
    "n_scam": 16,
    "warn_scam": 14,
-   "red_scam": 5,
+   "red_scam": 8,
    "n_genuine": 14,
-   "warn_genuine": 7,
+   "warn_genuine": 6,
    "red_genuine": 1
   },
   "adversarial/hybrid": {
    "n_scam": 16,
-   "warn_scam": 12,
-   "red_scam": 7,
+   "warn_scam": 13,
+   "red_scam": 8,
    "n_genuine": 14,
    "warn_genuine": 3,
    "red_genuine": 1
@@ -37,13 +37,13 @@
    "n_genuine": 22,
    "n_scam": 124,
    "warn_scam": 68,
-   "red_scam": 5
+   "red_scam": 10
   },
   "hinglish_calls/hybrid": {
    "n_genuine": 22,
    "n_scam": 124,
    "warn_scam": 124,
-   "red_scam": 22
+   "red_scam": 27
   },
   "near_domain/conv_only": {
    "n_genuine": 30,
@@ -71,7 +71,7 @@
    "warn_scam": 16,
    "red_scam": 11,
    "n_genuine": 13,
-   "warn_genuine": 6
+   "warn_genuine": 5
   },
   "team_calls/hybrid": {
    "n_scam": 16,
@@ -156,7 +156,7 @@
    "id": "hinglish_calls/45",
    "label": 1,
    "conv_only": "warn",
-   "cues_only": "none",
+   "cues_only": "watch",
    "hybrid": "warn"
   },
   {
@@ -184,7 +184,7 @@
    "id": "hinglish_calls/86",
    "label": 1,
    "conv_only": "warn",
-   "cues_only": "none",
+   "cues_only": "watch",
    "hybrid": "warn"
   },
   {
@@ -205,8 +205,8 @@
    "id": "hinglish_calls/96",
    "label": 1,
    "conv_only": "warn",
-   "cues_only": "warn",
-   "hybrid": "warn"
+   "cues_only": "scam",
+   "hybrid": "scam"
   },
   {
    "id": "hinglish_calls/98",
@@ -373,7 +373,7 @@
    "id": "hinglish_calls/188",
    "label": 1,
    "conv_only": "warn",
-   "cues_only": "none",
+   "cues_only": "watch",
    "hybrid": "warn"
   },
   {
@@ -408,7 +408,7 @@
    "id": "hinglish_calls/238",
    "label": 1,
    "conv_only": "warn",
-   "cues_only": "none",
+   "cues_only": "watch",
    "hybrid": "warn"
   },
   {
@@ -422,8 +422,8 @@
    "id": "hinglish_calls/250",
    "label": 1,
    "conv_only": "warn",
-   "cues_only": "warn",
-   "hybrid": "warn"
+   "cues_only": "scam",
+   "hybrid": "scam"
   },
   {
    "id": "hinglish_calls/254",
@@ -485,8 +485,8 @@
    "id": "hinglish_calls/281",
    "label": 1,
    "conv_only": "warn",
-   "cues_only": "warn",
-   "hybrid": "warn"
+   "cues_only": "scam",
+   "hybrid": "scam"
   },
   {
    "id": "hinglish_calls/282",
@@ -562,7 +562,7 @@
    "id": "hinglish_calls/325",
    "label": 1,
    "conv_only": "warn",
-   "cues_only": "none",
+   "cues_only": "watch",
    "hybrid": "warn"
   },
   {
@@ -590,8 +590,8 @@
    "id": "hinglish_calls/333",
    "label": 1,
    "conv_only": "warn",
-   "cues_only": "warn",
-   "hybrid": "warn"
+   "cues_only": "scam",
+   "hybrid": "scam"
   },
   {
    "id": "hinglish_calls/340",
@@ -667,14 +667,14 @@
    "id": "hinglish_calls/366",
    "label": 1,
    "conv_only": "warn",
-   "cues_only": "none",
+   "cues_only": "watch",
    "hybrid": "warn"
   },
   {
    "id": "hinglish_calls/373",
    "label": 1,
    "conv_only": "warn",
-   "cues_only": "none",
+   "cues_only": "watch",
    "hybrid": "warn"
   },
   {
@@ -695,7 +695,7 @@
    "id": "hinglish_calls/388",
    "label": 1,
    "conv_only": "warn",
-   "cues_only": "none",
+   "cues_only": "watch",
    "hybrid": "warn"
   },
   {
@@ -786,7 +786,7 @@
    "id": "hinglish_calls/467",
    "label": 1,
    "conv_only": "warn",
-   "cues_only": "none",
+   "cues_only": "watch",
    "hybrid": "warn"
   },
   {
@@ -961,8 +961,8 @@
    "id": "hinglish_calls/629",
    "label": 1,
    "conv_only": "warn",
-   "cues_only": "warn",
-   "hybrid": "warn"
+   "cues_only": "scam",
+   "hybrid": "scam"
   },
   {
    "id": "hinglish_calls/640",
@@ -1045,7 +1045,7 @@
    "id": "hinglish_calls/694",
    "label": 1,
    "conv_only": "warn",
-   "cues_only": "none",
+   "cues_only": "watch",
    "hybrid": "warn"
   },
   {
@@ -1073,14 +1073,14 @@
    "id": "hinglish_calls/715",
    "label": 1,
    "conv_only": "warn",
-   "cues_only": "none",
+   "cues_only": "watch",
    "hybrid": "warn"
   },
   {
    "id": "hinglish_calls/717",
    "label": 1,
    "conv_only": "warn",
-   "cues_only": "none",
+   "cues_only": "watch",
    "hybrid": "warn"
   },
   {
@@ -1094,7 +1094,7 @@
    "id": "hinglish_calls/723",
    "label": 1,
    "conv_only": "warn",
-   "cues_only": "none",
+   "cues_only": "watch",
    "hybrid": "warn"
   },
   {
@@ -1213,8 +1213,8 @@
    "id": "team_calls/en_genuine_bank_fraud_alert",
    "label": 0,
    "conv_only": "none",
-   "cues_only": "warn",
-   "hybrid": "watch"
+   "cues_only": "none",
+   "hybrid": "none"
   },
   {
    "id": "team_calls/en_delivery_otp",
@@ -1283,8 +1283,8 @@
    "id": "team_calls/en_mechanic_payment",
    "label": 0,
    "conv_only": "none",
-   "cues_only": "watch",
-   "hybrid": "watch"
+   "cues_only": "none",
+   "hybrid": "none"
   },
   {
    "id": "team_calls/hi_police_verification_genuine",
@@ -1339,8 +1339,8 @@
    "id": "adversarial/para_family_emergency",
    "label": 1,
    "conv_only": "none",
-   "cues_only": "warn",
-   "hybrid": "watch"
+   "cues_only": "scam",
+   "hybrid": "warn"
   },
   {
    "id": "adversarial/misspell_digital_arrest",
@@ -1360,8 +1360,8 @@
    "id": "adversarial/translit_hi_to_latin_arrest",
    "label": 1,
    "conv_only": "watch",
-   "cues_only": "warn",
-   "hybrid": "warn"
+   "cues_only": "scam",
+   "hybrid": "scam"
   },
   {
    "id": "adversarial/translit_latin_to_hi_kyc",
@@ -1388,7 +1388,7 @@
    "id": "adversarial/negation_abuse_no_money",
    "label": 1,
    "conv_only": "scam",
-   "cues_only": "warn",
+   "cues_only": "scam",
    "hybrid": "scam"
   },
   {
@@ -1423,8 +1423,8 @@
    "id": "adversarial/genuine_bank_fraud_check",
    "label": 0,
    "conv_only": "none",
-   "cues_only": "warn",
-   "hybrid": "watch"
+   "cues_only": "none",
+   "hybrid": "none"
   },
   {
    "id": "adversarial/genuine_bank_loan_followup",
@@ -1528,15 +1528,15 @@
    "id": "near_domain/bank_card_blocked_info",
    "label": 0,
    "conv_only": "none",
-   "cues_only": "watch",
-   "hybrid": "watch"
+   "cues_only": "none",
+   "hybrid": "none"
   },
   {
    "id": "near_domain/bank_loan_offer",
    "label": 0,
    "conv_only": "none",
-   "cues_only": "watch",
-   "hybrid": "watch"
+   "cues_only": "none",
+   "hybrid": "none"
   },
   {
    "id": "near_domain/bank_cheque_confirm",
@@ -1728,5 +1728,5 @@
    "hybrid": "none"
   }
  ],
- "markdown": "| set | path | scam calls | recall at warn | recall at scam | genuine calls | false warn | false scam |\n|---|---|---:|---:|---:|---:|---:|---:|\n| adversarial | conv_only | 16 | 43.8% | 18.8% | 14 | 14.3% | 7.1% |\n| adversarial | cues_only | 16 | 87.5% | 31.2% | 14 | 50.0% | 7.1% |\n| adversarial | hybrid | 16 | 75.0% | 43.8% | 14 | 21.4% | 7.1% |\n| hinglish_calls | conv_only | 124 | 100.0% | 25.8% | 22 | 0.0% | 0.0% |\n| hinglish_calls | cues_only | 124 | 54.8% | 4.0% | 22 | 0.0% | 0.0% |\n| hinglish_calls | hybrid | 124 | 100.0% | 17.7% | 22 | 0.0% | 0.0% |\n| near_domain | conv_only | 0 | - | - | 30 | 3.3% | 3.3% |\n| near_domain | cues_only | 0 | - | - | 30 | 30.0% | 0.0% |\n| near_domain | hybrid | 0 | - | - | 30 | 6.7% | 3.3% |\n| team_calls | conv_only | 16 | 75.0% | 37.5% | 13 | 7.7% | 0.0% |\n| team_calls | cues_only | 16 | 100.0% | 68.8% | 13 | 46.2% | 0.0% |\n| team_calls | hybrid | 16 | 100.0% | 75.0% | 13 | 7.7% | 0.0% |"
+ "markdown": "| set | path | scam calls | recall at warn | recall at scam | genuine calls | false warn | false scam |\n|---|---|---:|---:|---:|---:|---:|---:|\n| adversarial | conv_only | 16 | 43.8% | 18.8% | 14 | 14.3% | 7.1% |\n| adversarial | cues_only | 16 | 87.5% | 50.0% | 14 | 42.9% | 7.1% |\n| adversarial | hybrid | 16 | 81.2% | 50.0% | 14 | 21.4% | 7.1% |\n| hinglish_calls | conv_only | 124 | 100.0% | 25.8% | 22 | 0.0% | 0.0% |\n| hinglish_calls | cues_only | 124 | 54.8% | 8.1% | 22 | 0.0% | 0.0% |\n| hinglish_calls | hybrid | 124 | 100.0% | 21.8% | 22 | 0.0% | 0.0% |\n| near_domain | conv_only | 0 | - | - | 30 | 3.3% | 3.3% |\n| near_domain | cues_only | 0 | - | - | 30 | 30.0% | 0.0% |\n| near_domain | hybrid | 0 | - | - | 30 | 6.7% | 3.3% |\n| team_calls | conv_only | 16 | 75.0% | 37.5% | 13 | 7.7% | 0.0% |\n| team_calls | cues_only | 16 | 100.0% | 68.8% | 13 | 38.5% | 0.0% |\n| team_calls | hybrid | 16 | 100.0% | 75.0% | 13 | 7.7% | 0.0% |"
 }

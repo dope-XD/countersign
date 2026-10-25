@@ -73,7 +73,6 @@
    "money_ask",
    "secrecy",
    "threat",
-   "urgency",
    "video_move"
   ],
   "sources": [
@@ -162,6 +161,7 @@
    "credentials",
    "synthetic_voice",
    "boss_pretext",
+   "direct_ask",
    "money_ask",
    "threat",
    "urgency",
@@ -205,6 +205,7 @@
    "remote_access",
    "video_call_unknown",
    "credentials",
+   "direct_ask",
    "threat",
    "verification_pretext"
   ],
@@ -422,8 +423,7 @@
   "cues": [
    "investment",
    "job_task",
-   "video_call_unknown",
-   "money_ask"
+   "video_call_unknown"
   ],
   "sources": [
    "context",
@@ -598,16 +598,14 @@
    "reason_hi": ""
   },
   "levels": [
-   "warn",
-   "warn",
-   "warn"
+   "watch",
+   "watch",
+   "watch"
   ],
-  "level": "warn",
+  "level": "watch",
   "type": "otp_upi",
   "cues": [
-   "synthetic_voice",
-   "credentials",
-   "money_ask"
+   "synthetic_voice"
   ],
   "sources": [
    "cues",
@@ -686,14 +684,13 @@
    "reason_hi": "वे गिरफ़्तारी की धमकी देकर पैसे मांग रहे हैं।"
   },
   "levels": [
-   "watch",
+   "none",
    "watch"
   ],
   "level": "watch",
   "type": "digital_arrest",
   "cues": [
-   "money_ask",
-   "urgency"
+   "money_ask"
   ],
   "sources": [
    "cues"
@@ -904,17 +901,13 @@
   ],
   "llm": null,
   "levels": [
-   "watch",
-   "watch"
+   "none",
+   "none"
   ],
-  "level": "watch",
+  "level": "none",
   "type": "unknown",
-  "cues": [
-   "money_ask"
-  ],
-  "sources": [
-   "cues"
-  ],
+  "cues": [],
+  "sources": [],
   "reason": null
  },
  {
@@ -1183,8 +1176,8 @@
   "llm": null,
   "levels": [
    "warn",
-   "warn",
-   "warn",
+   "scam",
+   "scam",
    "scam"
   ],
   "level": "scam",
@@ -1192,6 +1185,7 @@
   "cues": [
    "caller_check_failed",
    "family_emergency",
+   "money_ask",
    "secrecy",
    "urgency"
   ],
@@ -1308,6 +1302,7 @@
    "parcel_customs",
    "remote_app_opened",
    "authority",
+   "money_ask",
    "reward",
    "secrecy",
    "threat",
@@ -1348,7 +1343,6 @@
    "bank_claim_not_1600",
    "credentials",
    "threat",
-   "urgency",
    "verification_pretext"
   ],
   "sources": [
@@ -1426,12 +1420,11 @@
    "warn"
   ],
   "level": "warn",
-  "type": "digital_arrest",
+  "type": "unknown",
   "cues": [
    "synthetic_voice",
    "authority",
    "money_ask",
-   "secrecy",
    "urgency"
   ],
   "sources": [
@@ -1463,7 +1456,8 @@
    "remote_access",
    "threat",
    "video_call_unknown",
-   "authority"
+   "authority",
+   "money_ask"
   ],
   "sources": [
    "context",
@@ -1665,19 +1659,16 @@
    "warn",
    "warn",
    "warn",
-   "scam"
+   "warn"
   ],
-  "level": "scam",
+  "level": "warn",
   "type": "impersonation",
   "cues": [
-   "caller_check_failed",
-   "credentials",
-   "money_ask"
+   "caller_check_failed"
   ],
   "sources": [
    "caller_check",
-   "context",
-   "cues"
+   "context"
   ],
   "reason": null
  },
@@ -1924,7 +1915,6 @@
   "type": "bank_kyc",
   "cues": [
    "video_call_unknown",
-   "credentials",
    "threat",
    "verification_pretext"
   ],

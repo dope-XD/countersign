@@ -14,6 +14,16 @@ private val BANK_CLAIM = setOf("authority", "verification_pretext") // claims to
 private val TRUSTED = setOf("known_contact", "caller_verified")
 private val PHONE = setOf("context", "caller_check", "voice")
 
+/*
+ * The scam's own playbook, said outright: an ask for the code or money, to this person, under secrecy or a threat.
+ * Genuine callers don't say all of it (ml/eval/hybrid_eval.py: no false red on any genuine set), so it stands alone.
+ */
+private val ASKED = setOf("direct_ask")
+private val TAKES = setOf("credentials", "money_ask", "remote_access")
+private val PRESSES = setOf("secrecy", "threat")
+
+fun playbook(cues: List<String>): Boolean = cues.any { it in ASKED } && cues.any { it in TAKES } && cues.any { it in PRESSES }
+
 fun atLeast(level: String, floor: String) = LEVELS.indexOf(level) >= LEVELS.indexOf(floor)
 
 /** Signals the phone derives from the words: [said] is the cue categories and the conversation's moves so far. */
@@ -61,7 +71,7 @@ fun combine(
         val cuePaired = cue.level == "scam" && !cue.alone
         convPaired || cuePaired ||
             (convSaid && (atLeast(cue.level, "warn") || raiseLlm)) ||
-            (cue.level == "scam" && cue.alone && (atLeast(convModel, "watch") || raiseLlm))
+            (cue.level == "scam" && cue.alone && (atLeast(convModel, "watch") || raiseLlm || playbook(cue.cues)))
     }
     red = red || (raiseLlm && atLeast(level, "warn"))
     if (red) level = "scam"
