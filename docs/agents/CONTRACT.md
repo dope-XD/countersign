@@ -113,7 +113,11 @@ The user pressed "I understand" on the pay guard. → `{"scam": null}`. The pay 
 
 The phone listens to its own calls (an accessibility service records the mic; on speaker it hears the caller too) and decides how much the call looks like a scam. **Nothing is ever played into the call.** How the phone does it: `docs/agents/platform.md`, "Call listener".
 
-**Levels:** `none` < `watch` (keep quiet) < `warn` (amber card) < `scam` (red card, family alarmed, pay guard on). With the model pack installed, the **conversation check** decides (`Conversation.kt`, `assets/conv.json`): the conversation model's p for the call so far, averaged over the last two segments, reaches `watch` / `warn`; `scam` needs p above the red threshold on two segments in a row, or `warn` plus a strong context signal (`remote_app_opened`, `caller_check_failed`, …), or the user pressing "Alert family" (`user`). A failed caller check or a remote-control app reaches `warn` on its own. The voice-clone check (`synthetic_voice`) lifts `watch` to `warn`, never makes `scam`. A known contact or verified caller gets stricter thresholds. `cues` are then the moves the caller made (same ids as the cue categories, so the app's words don't change). **Basic mode** (no model pack yet): the cue rules and our small classifier through `fusion.json`, as before.
+**Levels:** `none` < `watch` (keep quiet) < `warn` (amber card) < `scam` (red card, family alarmed, pay guard on). Two judges read what was said, both on the phone: the **conversation check** (with the model pack: `Conversation.kt`, `assets/conv.json`; the model's p for the call so far, averaged over the last two segments) and the **cue rules** (`scam_patterns.json` through `fusion.json`; without the pack, with our small classifier: basic mode). The cue rules include what a *victim* says (`victim_says`: "OTP bata doon?", "kaunsa app download karun") and `digits_read_out`, so the phone can judge a call from its owner's side alone, when it can't hear the caller.
+- `watch` / `warn`: the higher of the two judges. A failed caller check or a remote-control app reaches `warn` on its own. The voice-clone check (`synthetic_voice`) lifts `watch` to `warn`, never makes `scam`. A known contact or verified caller gets stricter thresholds.
+- `scam` needs **two independent sources** that agree: a judge at `scam` (the conversation model above the red threshold on two segments in a row, or the cue rules' own `scam` rule) plus another source at `warn` or above (the other judge, the smarter check, or a strong context signal); or the call at `warn` plus the smarter check saying scam; or the call at `warn` from what was said plus a strong context signal (`remote_app_opened`, `caller_check_failed`, `screen_share_started`, `unknown_video_long`, `video_call_unknown`, `international_number`, `digits_read_out`). A context signal counts once: it never also counts as a cue towards that `warn`. Or the user pressing "Alert family" (`user`), or the server's stronger check.
+- **The smarter check** (source `llm`; optional download, pack part `llm`, flagships only): an on-phone language model (Gemma 4 E2B, LiteRT-LM) reads the last ~1,500 characters and the signal list once the call is at `warn`, about every 15 s. It answers `scam`, `unsure` or `ok` with a type and one plain reason in English and Hindi (`Risk.reason`, shown on the card). `scam` counts as a source as above; `ok` and `unsure` never lower the level. Prompt: `assets/llm_prompt.txt`, shared with `ml/eval/llm_confirm.py`.
+- `cues` are the moves the caller made and the cue categories that fired (same ids as the cue categories, so the app's words don't change).
 
 **Everything runs on the phone** (`data/listen/`): speech-to-text (sherpa-onnx), the conversation model and the move matcher (`ConversationModels.kt`, ONNX from the model pack, our `E5Tokenizer`), the accumulator (`Conversation.kt`), the voice-clone model (ONNX), and `Analyzer.kt`, which puts them together for a live call and for "Check a recording or message". Basic mode: `ScamScorer.kt` (cues), `ScamClassifier.kt`, `Fusion.kt`. Python twins (`engine/listener/`, `ml/listener_clf.py`) give the same answers on shared test vectors, so `python -m ml.eval.kit` reproduces the phone's verdicts on a laptop.
 
@@ -123,13 +127,13 @@ The phone listens to its own calls (an accessibility service records the mic; on
 
 **Types:** `digital_arrest`, `bank_kyc`, `otp_upi`, `remote_access`, `family_emergency`, `courier_customs`, `trai_sim`, `job_task`, `investment`, `reward`, `boss_payment` (a boss or CEO ordering an urgent, secret payment to a new account), `impersonation`, `unknown`.
 
-**Rules:** `android/app/src/main/assets/scam_patterns.json` (cue categories and phrases) and `fusion.json` (thresholds), owned by A, read by both the app and the engine. Test transcripts: `android/app/src/test/resources/scam_transcripts.json`.
+**Rules:** `android/app/src/main/assets/scam_patterns.json` (cue categories and phrases; `victim_says` is what a victim says back), `fusion.json` and `conv.json` (thresholds), owned by A, read by both the app and the engine. Test transcripts: `android/app/src/test/resources/scam_transcripts.json`.
 
 ### `POST /api/m/scam-alert`
 Sent once when a call first reaches `scam` (or the user presses "Alert family"). **Ids only: no words, no audio.**
 ```json
 {"call_id": "local-uuid", "level": "scam", "type": "digital_arrest",
- "cues": ["authority", "threat", "secrecy", "money_ask"], "sources": ["cues", "phone_ai"]}
+ "cues": ["authority", "threat", "secrecy", "money_ask"], "sources": ["cues", "phone_ai", "llm"]}
 ```
 → `{"scam": Scam, "alarmed": ["c_cd34"], "text_these": ["c_ef56"]}`
 - Turns on scam context (`Scam.reason` = `listener:digital_arrest`), so the pay guard shows.
@@ -169,10 +173,14 @@ A family link has `circle`: `family` or `work` (a boss or colleague who could or
 The joiner picks it in `POST /api/m/family/join` (`"circle": "work"`); both sides get the same tag; `Member.circle`.
 
 ### Context signal ids (sent in `context`, also used on the phone)
-`unknown_number`, `international_number`, `video_call_unknown`, `remote_app_opened` (AnyDesk, TeamViewer, RustDesk, QuickSupport), `payment_app_opened`, `long_call` (over 15 minutes), `caller_check_failed`, `synthetic_voice` (the voice-clone model on the first ~20 s of the caller's speech; warn at most).
+`unknown_number`, `international_number`, `video_call_unknown`, `remote_app_opened` (AnyDesk, TeamViewer, RustDesk, QuickSupport, AirDroid, Splashtop), `screen_share_started` (Android's "start recording or casting?" prompt appeared during the call), `payment_app_opened`, `long_call` (over 15 minutes), `unknown_video_long` (an internet video call from someone not in contacts, over 10 minutes: the digital-arrest pattern), `caller_check_failed`, `synthetic_voice` (the voice-clone model on the first ~20 s of the caller's speech; warn at most), `digits_read_out` (this phone's owner read 4 to 8 digits out in a row on an unknown call: likely an OTP or card number), `series_1600` (the number is a 1600-series number, which Indian banks and regulators must use for service calls), `bank_claim_not_1600` (derived on the phone: the caller claims to be a bank or authority on an unknown number that isn't 1600-series; one piece of evidence, never strong on its own, since many genuine bank calls still come from other numbers).
 
-### `GET /api/m/models` → `[{"name": "countersign-pack-v1", "size_mb": 180, "sha256": "…", "url": "https://github.com/dope-XD/countersign/releases/download/models-v1/countersign-pack-v1.zip", "parts": ["asr-hi", "asr-en", "vad", "voice"]}]`
+**Pay guard after the call:** a call that reached `warn` or `scam` keeps the pay guard on for 30 minutes after it ends (scammers often say "call back after you transfer").
+
+### `GET /api/m/models` → `[{"name": "countersign-pack-v2", "size_mb": 798, "sha256": "…", "url": "https://github.com/dope-XD/countersign/releases/download/models-v2/countersign-pack-v2.zip", "parts": ["asr", "vad", "voice", "conv"]}, {"name": "gemma-4-e2b", "size_mb": 2588, "sha256": "…", "url": "https://huggingface.co/litert-community/gemma-4-E2B-it-litert-lm/resolve/<commit>/gemma-4-E2B-it.litertlm", "parts": ["llm"], "optional": true, "min_ram_gb": 8}]`
 One model pack for every language: speech-to-text (Hindi-capable + English), Silero VAD, the voice-clone model and the two conversation models (`conv` in `pack.json`: `model`, `base`). The app downloads it once (`Repository.downloadModels()`, progress in `modelState`) and checks the sha256. The scam classifier and the cue rules are small and ship inside the APK.
+
+The entry with `"optional": true` and part `llm` is the smarter check: one `.litertlm` file, not a zip. The app offers it only on phones with at least `min_ram_gb` of RAM, downloads it on Wi-Fi only (`Repository.downloadSmartCheck()`, progress in `smartCheck`) and checks the sha256. Phones without it keep everything else.
 
 ## Approvals (the ring screen)
 
