@@ -1,5 +1,7 @@
 # Runbook: the live demo
 
+**The judges' 5-minute scripted demo, with printed cards, rehearsed lines and a pre-flight check: [DEMO_SCRIPT.md](DEMO_SCRIPT.md).** This page is the longer version.
+
 The phones check every call themselves. The detection server (a team laptop) adds the stronger check for suspicious
 calls and runs the bank's contact-centre path.
 

@@ -31,3 +31,5 @@ models/conv_model*/
 
 # Wrangler's local cache (deploy/keepalive)
 .wrangler/
+# TTS of the demo scripts (ml/eval/demo_rehearsal.py renders them again)
+data/demo/tts/

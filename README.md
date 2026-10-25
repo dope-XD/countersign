@@ -68,6 +68,8 @@ Everything here is checked on the phone. Nothing is sent to the internet.
 
 ## Try a real scam call (15 minutes, 3 phones)
 
+For the judges we have a tested 5 minute version with printed cards: [docs/DEMO_SCRIPT.md](docs/DEMO_SCRIPT.md).
+
 **Get ready**
 
 - Phone 1 is **Mummy**. Phone 2 is **Rahul**. Both have the app and did "Start the app" above.

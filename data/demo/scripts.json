@@ -1,0 +1,87 @@
+{
+ "about": "The demo's scripts (docs/DEMO_SCRIPT.md). Each line is what one person says, in order. Checked line by line by python -m ml.eval.demo_rehearsal: scam scripts must reach red at least one line before their end, genuine ones must stay at watch or below.",
+ "scripts": [
+  {
+   "id": "scene1_friend_accident_hinglish",
+   "label": "scam",
+   "lang": "hinglish",
+   "context": [
+    "unknown_number"
+   ],
+   "about": "The 'your son's friend, he's had an accident, hospital needs an advance' call, as reported to 1930 again and again: a new number, a friend's name, panic, a small urgent amount, 'don't tell uncle'.",
+   "lines": [
+    "Hello? Haan aunty namaste, main Amit bol raha hoon, Rahul ka dost, college wala.",
+    "Aunty ek problem ho gayi hai, Rahul ka bike se accident ho gaya, hum log abhi hospital mein hain.",
+    "Nahi nahi ghabraiye mat, woh theek hai, bas sir pe chot hai, par doctor bol rahe hain abhi operation karna padega.",
+    "Hospital wale pachaas hazaar advance maang rahe hain, Rahul ka phone toot gaya isliye main call kar raha hoon.",
+    "Aap na abhi isi number pe GPay kar do, aur uncle ko abhi mat batana, woh tension le lenge.",
+    "Aunty jaldi please, koi OTP aaye to mujhe bata dena, main counter pe khada hoon."
+   ]
+  },
+  {
+   "id": "scene2_delivery_hinglish",
+   "label": "genuine",
+   "lang": "hinglish",
+   "context": [
+    "unknown_number"
+   ],
+   "about": "A real delivery agent at the gate: the OTP is the delivery code for a parcel she ordered.",
+   "lines": [
+    "Haan madam, Amazon se bol raha hoon, aapka parcel aaya hai.",
+    "Main neeche gate pe hoon, aap aa rahe ho ya guard ko de doon?",
+    "Achha theek hai, ek delivery wala OTP aaya hoga aapke phone pe, woh bata do bas.",
+    "Haan ho gaya madam, guard ke paas rakh diya hai, thank you."
+   ]
+  },
+  {
+   "id": "alt_fedex_digital_arrest_english",
+   "label": "scam",
+   "lang": "en",
+   "context": [
+    "unknown_number"
+   ],
+   "about": "The FedEx-parcel-to-'Mumbai cyber crime' handoff that starts most digital-arrest cases: a parcel with drugs, an FIR on her Aadhaar, a Skype call, 'don't tell your husband', money to an 'RBI verification account'.",
+   "lines": [
+    "Hello, am I speaking with Mrs Sharma? Ma'am this is FedEx, your parcel to Taiwan has been stopped at Mumbai customs.",
+    "It has five passports and some MD drugs inside, so I'm connecting you to Mumbai cyber crime police.",
+    "Ma'am, Sub Inspector Vikram here. There's an FIR on your Aadhaar, money laundering case, there is an arrest warrant. You have to join a Skype video call right now.",
+    "Don't disconnect and don't tell anybody, not even your husband, this is a confidential investigation.",
+    "To clear your name you have to transfer your funds to the RBI verification account, it'll be refunded in 24 hours.",
+    "Ma'am do it now, otherwise the local police will come to your house tonight."
+   ]
+  },
+  {
+   "id": "alt_police_son_caught_hindi",
+   "label": "scam",
+   "lang": "hi",
+   "context": [
+    "unknown_number"
+   ],
+   "about": "'Your son has been caught by the police' (often with a cloned voice crying in the background): pay now to settle it, tell no one.",
+   "lines": [
+    "हेलो, आप राहुल की मम्मी बोल रही हैं? मैं थाने से इंस्पेक्टर यादव बोल रहा हूँ।",
+    "आपका बेटा एक केस में पकड़ा गया है, लड़की वाले FIR करवाने पर अड़े हैं।",
+    "देखिए, मामला अभी यहीं निपट सकता है, वरना कल कोर्ट जाएगा और उसकी जिंदगी खराब हो जाएगी।",
+    "आप अभी पचास हज़ार इस नंबर पर ट्रांसफर कर दीजिए, और किसी को कुछ मत बताइए।",
+    "जल्दी कीजिए मैडम, आधे घंटे में फाइल ऊपर चली जाएगी।"
+   ]
+  }
+ ],
+ "messages": [
+  {
+   "id": "msg_kyc_scam_en",
+   "label": "scam",
+   "text": "Sir I am calling from your bank. Your KYC has expired and your account will be blocked today. I have sent you an OTP, please tell me the OTP now to update your KYC, otherwise your account will be closed."
+  },
+  {
+   "id": "msg_cbi_scam_hinglish",
+   "label": "scam",
+   "text": "Madam main CBI officer bol raha hoon. Aapke naam pe money laundering ka case hai, arrest warrant nikla hai. Video call pe rahiye, kisi ko mat batana. Apne saare paise RBI ke safe account mein transfer kariye, verification ke baad wapas mil jayenge."
+  },
+  {
+   "id": "msg_delivery_genuine",
+   "label": "genuine",
+   "text": "Hello madam, Amazon delivery here. I am at your gate with your parcel, please come down."
+  }
+ ]
+}
