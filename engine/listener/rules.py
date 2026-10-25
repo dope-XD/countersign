@@ -211,13 +211,14 @@ DIGIT_WORDS = frozenset(
     "शून्य एक दो तीन चार पांच पाँच छह छः छे सात आठ नौ".split()
 )
 DIGITS_READ_OUT = (4, 8)  # an OTP is 4 to 8 digits; a 10-digit phone number is not one
+HELPLINES = frozenset({"1930", "100", "112", "1800", "1600", "181", "1098", "14422", "155260"})  # said, not read out
 
 
 def digit_runs(tokens: list[str]) -> list[int]:
     """Lengths of the runs of digits read out in a row: '4 5 2 1', '4521', 'char paanch do ek' are each 4."""
     runs, n = [], 0
     for t in tokens:
-        if t.isascii() and t.isdigit():
+        if t.isascii() and t.isdigit() and t not in HELPLINES:
             n += len(t)
         elif t in DIGIT_WORDS:
             n += 1

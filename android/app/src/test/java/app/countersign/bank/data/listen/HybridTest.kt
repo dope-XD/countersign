@@ -130,4 +130,16 @@ class HybridTest {
         assertEquals("scam", r.level)
         assertTrue(!r.alone && "context" in r.sources)
     }
+
+    @Test
+    fun aWarningIsNotAnAskButTheSameWordsAsAnAskAre() {
+        val f = FusionConfig.parse(asset("fusion.json"))
+        val warned = CallScorer(rules).feed("main HDFC Bank se bol rahi hoon, card humne block kar diya hai. Bank kabhi bhi call pe OTP ya PIN nahi maangta, toh kisi ko bhi mat batana.")
+        assertTrue("protective" in warned.categories)
+        assertTrue(fuse(warned, rules, f, setOf("unknown_number")).level in setOf("none", "watch"))
+        val asked = CallScorer(rules).feed("Aapke phone pe ek OTP aayega, woh mujhe bata dijiye. Aur abhi kisi ko phone mat kariye, warna account freeze ho jayega.")
+        assertTrue(playbook(asked.categories))
+        assertEquals("scam", combine(fuse(asked, rules, f, setOf("unknown_number")), none, "none").verdict.level)
+        assertTrue(!digitsReadOut(normalize("1930 pe complaint karna")))
+    }
 }

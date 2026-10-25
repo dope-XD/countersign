@@ -38,7 +38,6 @@
    "parcel_customs",
    "secrecy",
    "threat",
-   "urgency",
    "video_move"
   ],
   "sources": [
@@ -81,6 +80,7 @@
   "cues": [
    "boss_pretext",
    "credentials",
+   "direct_ask",
    "money_ask",
    "threat",
    "urgency",
@@ -103,6 +103,7 @@
   "type": "remote_access",
   "cues": [
    "credentials",
+   "direct_ask",
    "remote_access",
    "threat",
    "verification_pretext",
@@ -220,8 +221,7 @@
   "type": "investment",
   "cues": [
    "investment",
-   "job_task",
-   "money_ask"
+   "job_task"
   ],
   "sources": [
    "cues",
@@ -313,14 +313,10 @@
   "text": "Hello, this is HDFC Bank calling about a card transaction of four thousand two hundred at Amazon. If this was you, no action is needed. Please remember the bank will never ask for your OTP, PIN or CVV on a call.",
   "context": [],
   "voice": null,
-  "level": "scam",
+  "level": "warn",
   "type": "otp_upi",
-  "cues": [
-   "credentials",
-   "money_ask"
-  ],
+  "cues": [],
   "sources": [
-   "cues",
    "phone_ai"
   ],
   "p_scam": 0.9122260688282717
@@ -370,8 +366,7 @@
   "level": "watch",
   "type": "unknown",
   "cues": [
-   "money_ask",
-   "urgency"
+   "money_ask"
   ],
   "sources": [
    "cues"
@@ -486,11 +481,8 @@
   "voice": 0.2,
   "level": "warn",
   "type": "unknown",
-  "cues": [
-   "money_ask"
-  ],
+  "cues": [],
   "sources": [
-   "cues",
    "phone_ai"
   ],
   "p_scam": 0.9759145219243379
@@ -624,9 +616,10 @@
   "context": [],
   "voice": null,
   "level": "scam",
-  "type": "unknown",
+  "type": "family_emergency",
   "cues": [
    "family_emergency",
+   "money_ask",
    "secrecy",
    "urgency"
   ],
@@ -686,6 +679,7 @@
   "type": "digital_arrest",
   "cues": [
    "authority",
+   "money_ask",
    "reward",
    "secrecy",
    "threat",
@@ -709,7 +703,6 @@
   "cues": [
    "credentials",
    "threat",
-   "urgency",
    "verification_pretext"
   ],
   "sources": [
@@ -746,12 +739,11 @@
   "text": "Ma'am I am not asking for your OTP, never share it with anyone. I'm from the RBI fraud cell. Your savings are not safe in your account right now because of a hacking case. Just move them to the secure RBI account I give you, and don't tell your bank manager because he is under investigation.",
   "context": [],
   "voice": null,
-  "level": "warn",
-  "type": "digital_arrest",
+  "level": "scam",
+  "type": "unknown",
   "cues": [
    "authority",
    "money_ask",
-   "secrecy",
    "urgency"
   ],
   "sources": [
@@ -771,6 +763,7 @@
   "type": "remote_access",
   "cues": [
    "authority",
+   "money_ask",
    "remote_access",
    "caller_check_failed"
   ],
@@ -856,15 +849,10 @@
   "text": "Hello, this is HDFC Bank's fraud monitoring team. We blocked a card transaction of twelve thousand rupees at an online store a few minutes ago. If this was not you, no action is needed, the card stays blocked and you can collect a new one from your branch. We will never ask for your PIN or OTP.",
   "context": [],
   "voice": null,
-  "level": "warn",
-  "type": "otp_upi",
-  "cues": [
-   "credentials",
-   "money_ask"
-  ],
-  "sources": [
-   "cues"
-  ],
+  "level": "none",
+  "type": "unknown",
+  "cues": [],
+  "sources": [],
   "p_scam": 0.5514964472197581
  },
  {
@@ -974,7 +962,6 @@
   "level": "warn",
   "type": "bank_kyc",
   "cues": [
-   "credentials",
    "threat",
    "verification_pretext",
    "caller_check_failed"

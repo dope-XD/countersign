@@ -13,6 +13,8 @@ from pathlib import Path
 from engine.listener.rules import ASSETS, Result, rules
 
 LEVELS = ["none", "watch", "warn", "scam"]
+NOT_CUES = {"discussion", "protective"}  # talk about scams, a real caller's warning: never evidence of a scam
+WARNED = {"credentials", "secrecy"}  # what a warning mentions
 
 
 @cache
@@ -53,7 +55,10 @@ def fuse(
 ) -> Verdict:
     """[cfg]: fusion settings to use instead of fusion.json (the eval's leave-one-dataset-out runs)."""
     f, r = cfg or config(), rules()
-    talk = set(cues.categories) - {"discussion"}
+    talk = set(cues.categories) - NOT_CUES
+    protective = "protective" in cues.categories
+    if protective:
+        talk -= WARNED  # "never share your OTP", "kisi ko mat batana": the caller is warning, not asking
     cats = talk | (set(context) & set(f["context_as_category"]))
     strong = cats - r.weak
     extra = f["trusted_extra"] if set(context) & set(f["trusted_context"]) else 0
@@ -91,12 +96,12 @@ def fuse(
         len(cats - strong_ctx) >= s["cues_min_categories"] + extra
         and (not s["cues_need_action"] or bool(cats & r.action))
         and (not s["cues_need_type"] or cues.type != "unknown")
-        and not (s["discussion_blocks_cues"] and cues.discussion)
+        and not (s["discussion_blocks_cues"] and (cues.discussion or protective))
     )
     scam_clf = (
         bool(j and j.p_scam >= s["clf_p"] and len(cats) >= s["clf_min_categories"])
         and (not s["clf_needs_cue_warn"] or warn_said)
-        and not (s["discussion_blocks_cues"] and cues.discussion)
+        and not (s["discussion_blocks_cues"] and (cues.discussion or protective))
     )
     # two independent kinds of evidence: what was said (cues or the classifier) and what the phone saw; the phone's
     # signal counts once, so it can't also be one of the cues that made the warn
@@ -123,7 +128,7 @@ def fuse(
         if kind == "unknown" and server.type != "unknown":
             kind = server.type
         sources |= {"server"}
-        cats |= set(server.cues) - {"discussion"}
+        cats |= set(server.cues) - NOT_CUES
         alone = alone and server.level != "scam"
     level = higher(level, prev)
     return Verdict(level, kind, sorted(cats), sorted(sources), alone)

@@ -144,3 +144,44 @@ def test_cue_words_alone_need_the_conversation_model_to_hear_something_for_amber
     assert combine(v("warn"), NONE, "none")[0].level == "watch"
     assert combine(v("warn", ("cues", "context")), NONE, "none")[0].level == "warn"  # a phone signal still reaches amber
     assert combine(v("warn"), None)[0].level == "warn"  # basic mode: as before
+
+
+# ---------------------------------------------------------------- intent, not words
+GENUINE_ALERT = [
+    "Namaste, main HDFC Bank credit card team se Priya bol rahi hoon. Aap Sunita ji bol rahi hain?",
+    "Ma'am aapke card par abhi Amazon par chaar hazaar ka ek payment try hua tha, humne usse rok diya hai.",
+    "Agar aapne nahi kiya tha toh koi baat nahi, card humne block kar diya hai, naya card paanch din mein ghar aa jayega.",
+    "Aur ma'am, bank kabhi bhi call pe OTP ya PIN nahi maangta, toh kisi ko bhi mat batana.",
+]
+SCAM_TWIN = [
+    "Namaste, main HDFC Bank credit card team se Rohit bol raha hoon. Aap Sunita ji bol rahi hain?",
+    "Ma'am aapke card par abhi Amazon par pachaas hazaar ka payment hua hai, aapka card hack ho gaya hai.",
+    "Ghabraiye mat, main abhi block kar deta hoon. Aapke phone pe ek OTP aayega, woh mujhe bata dijiye.",
+    "Aur ma'am abhi kisi ko phone mat kariye, warna account freeze ho jayega. Jaldi bataiye OTP.",
+]
+
+
+def test_a_warning_is_not_an_ask():
+    cues = score_text(" ".join(GENUINE_ALERT))
+    assert "protective" in cues.categories
+    assert fuse(cues, {"unknown_number"}).level in ("none", "watch")  # "OTP" and "mat batana" were the bank warning her
+
+
+def test_the_same_words_as_an_ask_with_pressure_are_the_playbook():
+    from engine.listener.hybrid import playbook
+
+    cues = score_text(" ".join(SCAM_TWIN))
+    assert {"direct_ask", "credentials", "secrecy", "threat"} <= set(cues.categories)
+    assert playbook(cues.categories)
+    assert combine(fuse(cues, {"unknown_number"}), NONE, "none")[0].level == "scam"  # even with the model quiet
+
+
+def test_amounts_and_now_are_not_asks():
+    cats = score_text("aapke card se abhi chaar hazaar ka transaction hua").categories
+    assert "money_ask" not in cats and "urgency" not in cats
+    assert "discussion" not in score_text("main SBI fraud monitoring team se bol raha hoon").categories
+
+
+def test_helplines_are_not_digits_read_out():
+    assert not digits_read_out(normalize("kuch galat lage toh 1930 pe complaint karna"))
+    assert digits_read_out(normalize("otp hai 4 5 2 1"))

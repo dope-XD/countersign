@@ -31,6 +31,18 @@ TRUSTED = {"known_contact", "caller_verified"}
 PHONE = {"context", "caller_check", "voice"}
 
 
+# the scam's own playbook, said outright: an ask for the code or money, to this person, under secrecy or a threat.
+# Genuine callers don't say all of it (ml/eval/hybrid_eval.py: no false red on any genuine set), so it stands alone.
+ASKED = {"direct_ask"}
+TAKES = {"credentials", "money_ask", "remote_access"}
+PRESSES = {"secrecy", "threat"}
+
+
+def playbook(cues: list[str]) -> bool:
+    c = set(cues)
+    return bool(c & ASKED and c & TAKES and c & PRESSES)
+
+
 def at_least(level: str, floor: str) -> bool:
     return LEVELS.index(level) >= LEVELS.index(floor)
 
@@ -81,7 +93,7 @@ def combine(
             conv_paired
             or cue_paired
             or (conv_said and (at_least(cue.level, "warn") or raise_llm))
-            or (cue.level == "scam" and cue.alone and (at_least(conv_model, "watch") or raise_llm))
+            or (cue.level == "scam" and cue.alone and (at_least(conv_model, "watch") or raise_llm or playbook(cue.cues)))
         )
     red = red or (raise_llm and at_least(level, "warn"))
     if red:

@@ -16,6 +16,12 @@ import org.json.JSONObject
 
 val LEVELS = listOf("none", "watch", "warn", "scam")
 
+/** Talk about scams, a real caller's warning: never evidence of a scam. */
+val NOT_CUES = setOf("discussion", "protective")
+
+/** What a warning mentions ("never share your OTP", "kisi ko mat batana"): not counted when the caller is warning. */
+val WARNED = setOf("credentials", "secrecy")
+
 fun higher(a: String, b: String) = if (LEVELS.indexOf(a) >= LEVELS.indexOf(b)) a else b
 
 /** What the scam classifier (ScamClassifier.kt) said about the transcript so far. */
@@ -79,7 +85,8 @@ fun fuse(
     user: Boolean = false,
     prev: String = "none",
 ): Verdict {
-    val talk = cues.categories.toSet() - "discussion"
+    val protective = "protective" in cues.categories
+    val talk = cues.categories.toSet() - NOT_CUES - (if (protective) WARNED else emptySet())
     val cats = talk + (context intersect f.contextAsCategory)
     val strong = cats - rules.weak
     val extra = if ((context intersect f.trustedContext).isNotEmpty()) f.trustedExtra else 0
@@ -111,10 +118,10 @@ fun fuse(
     val scamCues = (cats - strongCtx).size >= f.scamCuesMin + extra &&
         (!f.scamCuesNeedAction || (cats intersect rules.action).isNotEmpty()) &&
         (!f.scamCuesNeedType || cues.type != "unknown") &&
-        !(f.scamDiscussionBlocks && cues.discussion)
+        !(f.scamDiscussionBlocks && (cues.discussion || protective))
     val scamClf = j != null && j.pScam >= f.scamClfP && cats.size >= f.scamClfMinCats &&
         (!f.scamClfNeedsCueWarn || warnSaid) &&
-        !(f.scamDiscussionBlocks && cues.discussion)
+        !(f.scamDiscussionBlocks && (cues.discussion || protective))
     // two independent kinds of evidence: what was said (cues or the classifier) and what the phone saw; the phone's
     // signal counts once, so it can't also be one of the cues that made the warn
     val scamCtx = strongCtx.isNotEmpty() && (warnSaid || warnClf)
@@ -136,7 +143,7 @@ fun fuse(
         level = higher(level, server.level)
         if (kind == "unknown" && server.type != "unknown") kind = server.type
         sources += "server"
-        all = cats + (server.cues.toSet() - "discussion")
+        all = cats + (server.cues.toSet() - NOT_CUES)
         alone = alone && server.level != "scam"
     }
     level = higher(level, prev)
