@@ -149,7 +149,7 @@ const Waffle: React.FC<{lit: number; color: string}> = ({lit, color}) => (
 
 export const S08: React.FC = () => {
   const {t, cue, out} = useScene();
-  const head = cue('We tested it');
+  const head = Math.min(cue('We tested it'), 0.25);
   const old = cue('Our old version');
   const now = cue('This one flags');
   const catches = cue('It catches 88');
@@ -157,6 +157,7 @@ export const S08: React.FC = () => {
   // genuine calls flagged amber: old keyword path 50.1%, now 2.3% (RESULTS.md, ICFD "Clear Normal")
   const lit = t < now ? mix(0, 50.1, ramp(t, old, old + 1)) : mix(50.1, 2.3, ramp(t, now, now + 1.2, EASE_IO));
   const pct = t < now ? 50.1 * ramp(t, old, old + 1) : mix(50.1, 2.3, ramp(t, now, now + 1.2, EASE_IO));
+  const good = t > now && lit <= 8; // green only once it has come down
   const ring = 87.8 * ramp(t, catches, catches + 1.2, EASE_IO);
   const R = 120;
   const L = 2 * Math.PI * R;
@@ -171,9 +172,9 @@ export const S08: React.FC = () => {
         <Card style={{width: 860, height: 620, padding: 50}}>
           <div style={{fontSize: 30, fontWeight: 650, color: C.muted}}>Genuine calls it wrongly flagged</div>
           <div style={{display: 'flex', alignItems: 'center', gap: 50, marginTop: 34}}>
-            <Waffle lit={lit} color={lit > 8 ? C.amberBright : C.green} />
+            <Waffle lit={lit} color={good ? C.green : C.amberBright} />
             <div style={{opacity: ramp(t, old, old + 0.3)}}>
-              <div style={{fontSize: 108, fontWeight: 800, letterSpacing: '-0.05em', color: lit > 8 ? C.amber : C.green, fontVariantNumeric: 'tabular-nums'}}>{pct.toFixed(1)}%</div>
+              <div style={{fontSize: 108, fontWeight: 800, letterSpacing: '-0.05em', color: good ? C.green : C.amber, fontVariantNumeric: 'tabular-nums'}}>{pct.toFixed(1)}%</div>
               <div style={{fontSize: 30, fontWeight: 650, color: C.ink}}>{t < now ? 'Our old version' : 'This one'}</div>
               <div style={{fontSize: 24, color: C.muted, marginTop: 6, opacity: ramp(t, now + 1, now + 1.4)}}>was 50.1%</div>
             </div>

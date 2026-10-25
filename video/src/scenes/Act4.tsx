@@ -31,7 +31,7 @@ const Tap: React.FC<{x: number; y: number; at: number}> = ({x, y, at}) => {
 export const S09: React.FC = () => {
   const {t, cue, out} = useScene();
   const {fps} = useVideoConfig();
-  const head = cue("It isn't perfect");
+  const head = Math.min(cue("It isn't perfect"), 0.25);
   const polite = cue('A scam read politely');
   const rel = cue('and relatives talking');
   const wrong = cue("If it's wrong");
