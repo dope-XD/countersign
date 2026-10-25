@@ -33,6 +33,7 @@ The same text as the paper form. Everything that existed before check-in is decl
 | Test-set voices: Microsoft edge-tts (en-IN, hi-IN) | Microsoft | Only to speak our test scripts for evaluation and the spot-check kit; never in the product | Microsoft service terms |
 | Amazon Connect + Kinesis Video Streams, RunPod, ngrok | AWS; RunPod; ngrok | Before check-in only; not in the final demo path | Pay per use / free tier |
 | Render (free web service) | Render | Hosts the relay (no ML) | Free tier |
+| Remotion 4 | Remotion | **On site:** renders the explainer video (`video/`) from our own React scenes; the music and sound effects are synthesised by our script (`video/music/make_music.py`). Not part of the product | Remotion licence (free for individuals and teams of up to 3) |
 
 Brought in before check-in, then removed on site (PR #33): ElevenLabs TTS/STT and the Groq, Gemini and Mistral LLM APIs used by the old bank assistant. Cut on site: the Ollama LLM judge and faster-whisper on the laptop (PRs #58, #66 closed).
 

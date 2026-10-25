@@ -1,0 +1,1 @@
+[measured, quietly proud] We tested it on calls it never trained on. Our old version flagged half the genuine calls. This one flags about two in a hundred. It catches eighty-eight percent of the scams, a few fewer than before, and gets twenty-eight of the thirty kit samples right.

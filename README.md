@@ -2,6 +2,13 @@
 
 **A family app that stops "digital arrest", KYC and fake-relative scam calls while they happen, on the phone itself.**
 
+**Countersign in two minutes** (an overview; the working app is shown live on the phone):
+
+https://github.com/user-attachments/assets/9b032668-20ea-406b-acd6-e2d188ba4b15
+
+Every number in the video is from [docs/RESULTS.md](docs/RESULTS.md); the clip marked "Real app, recorded" is the app
+on an emulator. The video is made in code: [video/](video/README.md).
+
 An Indian scam call today: someone rings Mummy saying they're CBI, or her bank, or "Rahul's friend, Rahul's had an
 accident". Within the hour she has shared an OTP or sent money by UPI. Countersign is installed by the whole family:
 

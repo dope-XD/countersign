@@ -1,0 +1,95 @@
+{
+ "note": "The voiceover, one entry per scene. tools/vo.py writes SCRIPT.md, the ElevenLabs scripts (elevenlabs/) and the voice from this file. tone and tags are delivery directions for ElevenLabs v3/v4; pause marks a beat before a phrase.",
+ "scenes": [
+  {
+   "id": "s01",
+   "title": "The call",
+   "min": 9,
+   "vo": "Mummy's phone rings. The man says he's from the CBI, and there's a parcel in her name with drugs in it.",
+   "tone": "[quiet, serious, like telling a true story]"
+  },
+  {
+   "id": "s02",
+   "title": "The hour",
+   "min": 12,
+   "vo": "He tells her to stay on the line and tell no one. Fifty-eight minutes later he asks her to move her savings, to clear her name. She does.",
+   "tone": "[slow, heavy]",
+   "pause": [
+    "She does."
+   ]
+  },
+  {
+   "id": "s03",
+   "title": "Our first try",
+   "min": 10,
+   "vo": "Our first version listened for words like police and OTP. Then a real bank called, used the same words, and it went off. So we started again.",
+   "tone": "[plain, a little rueful]",
+   "pause": [
+    "So we started again."
+   ]
+  },
+  {
+   "id": "s04",
+   "title": "Countersign",
+   "min": 5,
+   "vo": "This is Countersign. Everyone in the family installs it.",
+   "tone": "[warm, brighter, a small smile]"
+  },
+  {
+   "id": "s05",
+   "title": "How it works",
+   "min": 23,
+   "vo": "On speaker, her phone writes the call down by itself. A model we trained reads it as it goes and asks: is this caller doing what scammers do? Saying he's police. Telling her to keep quiet. The card turns amber and says why. If the caller claims to be Rahul, the app asks Rahul's phone. It says no.",
+   "tone": "[clear, calm, explaining]",
+   "pause": [
+    "Saying he's police.",
+    "It says no."
+   ]
+  },
+  {
+   "id": "s06",
+   "title": "Red",
+   "min": 10,
+   "vo": "If it turns red, Rahul's phone rings full screen, or he gets an SMS if his app is off. If Mummy opens GPay, a red screen gets there first.",
+   "tone": "[urgent but steady]"
+  },
+  {
+   "id": "s07",
+   "title": "What we read",
+   "min": 16,
+   "vo": "We read up before we built. Google and Samsung both run their scam checks on the phone. A 2026 study of eleven thousand real scam calls found small fine-tuned models scored 83, and chatbots at most 70. So we fine-tuned one on thirty-one thousand Indian bank calls. It runs on a six-gigabyte phone.",
+   "tone": "[confident, conversational]"
+  },
+  {
+   "id": "s08",
+   "title": "Measured",
+   "min": 14,
+   "vo": "We tested it on calls it never trained on. Our old version flagged half the genuine calls. This one flags about two in a hundred. It catches 88 percent of the scams, a few fewer than before, and gets 28 of the 30 kit samples right.",
+   "tone": "[measured, quietly proud]"
+  },
+  {
+   "id": "s09",
+   "title": "Misses and mistakes",
+   "min": 14,
+   "vo": "It isn't perfect. A scam read politely from a script in English can slip past it, and relatives talking about scams sometimes set it off. If it's wrong, two taps clear it and tell the family. Only suspicious calls reach our server, and the audio is dropped after the check. We keep one thing: a twenty-second encrypted clip of a confirmed scam, for thirty days.",
+   "tone": "[honest, plain]",
+   "tags": {
+    "If it's wrong": "[reassuring]",
+    "We keep one thing": "[firm]"
+   },
+   "pause": [
+    "We keep one thing"
+   ]
+  },
+  {
+   "id": "s10",
+   "title": "End",
+   "min": 7,
+   "vo": "Countersign. Catch the scam while it's still a call.",
+   "tone": "[warm, slow, final]",
+   "pause": [
+    "Catch the scam"
+   ]
+  }
+ ]
+}
