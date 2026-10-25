@@ -188,6 +188,14 @@ enum class RiskSource(val wire: String) {
     CONTEXT("context"),
     CALLER_CHECK("caller_check"),
     USER("user"),
+
+    /** The smarter check: an on-phone language model (optional download, flagships only) that read the call at warn. */
+    LLM("llm"),
+}
+
+/** One plain sentence on why the call looks like a scam, in both languages (the smarter check writes it). */
+data class Reason(val en: String, val hi: String) {
+    fun forLang(lang: Lang) = if (lang == Lang.HI) hi.ifBlank { en } else en.ifBlank { hi }
 }
 
 data class Risk(
@@ -198,6 +206,8 @@ data class Risk(
     val sources: Set<RiskSource>,
     /** When this level was first reached. */
     val since: Long,
+    /** The smarter check's reason, shown on the card under the headline; null without it. */
+    val reason: Reason? = null,
 )
 
 enum class ModelStatus { NOT_NEEDED, MISSING, DOWNLOADING, READY, FAILED }

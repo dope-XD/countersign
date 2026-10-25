@@ -77,6 +77,15 @@ interface Repository {
     /** Download the model pack once; [modelState] reports progress. */
     suspend fun downloadModels() {}
 
+    /**
+     * The optional smarter check (pack part `llm`, ~2.6 GB, Wi-Fi only): an on-phone language model that reads a call
+     * once it's at warn and writes the plain reason on the card. NOT_NEEDED on phones too small to run it.
+     */
+    val smartCheck: StateFlow<ModelState> get() = NO_MODEL_NEEDED
+
+    /** Download the smarter check; [smartCheck] reports progress. Throws (with a message to show) off Wi-Fi. */
+    suspend fun downloadSmartCheck() {}
+
     suspend fun setListening(listenCalls: Boolean? = null, smsFallback: Boolean? = null): Me = error("Not built yet.")
 
     /** "Alert family" on the call card: treat this call as a scam now and alarm the family. */

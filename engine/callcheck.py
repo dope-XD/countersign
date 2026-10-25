@@ -88,7 +88,7 @@ SCAM_TYPES = (
     "digital_arrest", "bank_kyc", "otp_upi", "remote_access", "family_emergency", "courier_customs",
     "trai_sim", "job_task", "investment", "reward", "boss_payment", "impersonation", "unknown",
 )  # fmt: skip
-SOURCES = ("cues", "phone_ai", "voice", "server", "context", "caller_check", "user")
+SOURCES = ("cues", "phone_ai", "voice", "server", "context", "caller_check", "user", "llm")
 
 
 class ScamAlert(BaseModel):
@@ -98,7 +98,7 @@ class ScamAlert(BaseModel):
     level: str = Field(pattern="^scam$")
     type: str = "unknown"
     cues: list[str] = Field(default_factory=list, max_length=30)
-    sources: list[str] = Field(default_factory=list, max_length=6)
+    sources: list[str] = Field(default_factory=list, max_length=8)
 
     @field_validator("type")
     @classmethod
