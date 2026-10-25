@@ -496,6 +496,26 @@ These are the ways basic mode fails today, from the tables above and from testin
    stay below amber: the cue rules are built for calls.
 
 
+## Fresh check: inputs nobody trained or tuned on (25 Oct)
+
+`data/fresh/`: 20 items written on 25 Oct after the models were fixed, and not used for any change since. 12 calls (6
+scams, 6 genuine, among them a real bank fraud alert, a police passport check and friends talking about a scam) in
+English, Hinglish and Hindi, spoken by voices no model here trained on (macOS Rishi, Lekha), clean and through a phone
+line (`make_audio.sh`); 8 SMS (4 scams, 4 genuine). `python -m ml.eval.kit data/fresh/<clean|phone>` and
+`data/fresh` give the phone's verdict (the hybrid, as on "Check a recording"; since 25 Oct the kit also passes the voice
+check's result in, as the phone does).
+
+| set | right | wrong |
+|---|---|---|
+| SMS | 8/8 | – |
+| calls, clean | 9/12 | 3 genuine calls at amber: friends talking about a digital-arrest call, and (because the voice *is* computer-made) the bank fraud alert and the Amazon delivery |
+| calls, phone line | 10/12 | friends talking about a scam; the bank fraud alert |
+
+Every scam reached amber or red (12/12 calls, 4/4 SMS). The misses are the known ones: talk *about* scams, and a
+computer-made voice counting as one more warning sign. With a human voice the voice check stays low and those two
+genuine calls stay at "a few warning signs" (without the voice signal: 11/12 and 11/12). On the emulator's own
+"Check a recording", three of these files gave the same level and reasons as the laptop.
+
 ## Hybrid detection: both judges on every call (25 Oct)
 
 `python -m ml.eval.hybrid_eval` (text, fed segment by segment as the phone does, on an unknown number; `models/eval/hybrid.json`).

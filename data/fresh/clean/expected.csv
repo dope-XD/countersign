@@ -1,0 +1,13 @@
+file,kind,expect,source,licence
+call_s1.wav,call,scam,fresh/en-hinglish,ours
+call_s2.wav,call,scam,fresh/en,ours
+call_s3.wav,call,scam,fresh/hi,ours
+call_s4.wav,call,scam,fresh/en,ours
+call_s5.wav,call,scam,fresh/en-hinglish,ours
+call_s6.wav,call,scam,fresh/en,ours
+call_g1.wav,call,harmless,fresh/en,ours
+call_g2.wav,call,harmless,fresh/en-hinglish,ours
+call_g3.wav,call,harmless,fresh/hi,ours
+call_g4.wav,call,harmless,fresh/en,ours
+call_g5.wav,call,harmless,fresh/en-hinglish,ours
+call_g6.wav,call,harmless,fresh/en,ours
